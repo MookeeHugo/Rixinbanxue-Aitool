@@ -1,0 +1,14 @@
+{
+  "cookies": [],
+  "origins": [
+    {
+      "origin": "http://localhost:3002",
+      "localStorage": [
+        {
+          "name": "sb-byccgjdynwwlsrdvtpky-auth-token",
+          "value": "{\"access_token\":\"eyJhbGciOiJIUzI1NiIsImtpZCI6IkMzdWVMbVRFV1Zqa04vQ0MiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2J5Y2NnamR5bnd3bHNyZHZ0cGt5LnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiIxYTE5ODljOC1kMTBhLTQ4NWYtYmE4My0xYjAzMDA5MmEyYzYiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzYzNDA4NTg1LCJpYXQiOjE3NjM0MDQ5ODUsImVtYWlsIjoicGxheXdyaWdodC1zdHVkZW50QHRlc3QuY29tIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCJdfSwidXNlcl9tZXRhZGF0YSI6eyJlbWFpbCI6InBsYXl3cmlnaHQtc3R1ZGVudEB0ZXN0LmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJuYW1lIjoiUGxheXdyaWdodOWtpueUnyIsInBob25lX3ZlcmlmaWVkIjpmYWxzZSwicm9sZSI6InN0dWRlbnQiLCJzdWIiOiIxYTE5ODljOC1kMTBhLTQ4NWYtYmE4My0xYjAzMDA5MmEyYzYifSwicm9sZSI6ImF1dGhlbnRpY2F0ZWQiLCJhYWwiOiJhYWwxIiwiYW1yIjpbeyJtZXRob2QiOiJwYXNzd29yZCIsInRpbWVzdGFtcCI6MTc2MzQwNDk4NX1dLCJzZXNzaW9uX2lkIjoiNzE3MGNmOWMtMDFlYy00N2MzLWIxNmEtODEyZmNkMzlmMmRjIiwiaXNfYW5vbnltb3VzIjpmYWxzZX0.pgPCwdTUctlJdhgyBJ4VphE21Buwn_Qo6eWio0dG8kI\",\"token_type\":\"bearer\",\"expires_in\":3600,\"expires_at\":1763408585,\"refresh_token\":\"v4zmnguhdd7t\",\"user\":{\"id\":\"1a1989c8-d10a-485f-ba83-1b030092a2c6\",\"aud\":\"authenticated\",\"role\":\"authenticated\",\"email\":\"playwright-student@test.com\",\"email_confirmed_at\":\"2025-11-17T18:08:43.824551Z\",\"phone\":\"\",\"confirmed_at\":\"2025-11-17T18:08:43.824551Z\",\"last_sign_in_at\":\"2025-11-17T18:43:05.728930943Z\",\"app_metadata\":{\"provider\":\"email\",\"providers\":[\"email\"]},\"user_metadata\":{\"email\":\"playwright-student@test.com\",\"email_verified\":true,\"name\":\"Playwright学生\",\"phone_verified\":false,\"role\":\"student\",\"sub\":\"1a1989c8-d10a-485f-ba83-1b030092a2c6\"},\"identities\":[{\"identity_id\":\"c5a72036-fffd-44b0-8804-cf88d71da44a\",\"id\":\"1a1989c8-d10a-485f-ba83-1b030092a2c6\",\"user_id\":\"1a1989c8-d10a-485f-ba83-1b030092a2c6\",\"identity_data\":{\"email\":\"playwright-student@test.com\",\"email_verified\":false,\"name\":\"Playwright学生\",\"phone_verified\":false,\"role\":\"student\",\"sub\":\"1a1989c8-d10a-485f-ba83-1b030092a2c6\"},\"provider\":\"email\",\"last_sign_in_at\":\"2025-11-17T18:08:43.821694Z\",\"created_at\":\"2025-11-17T18:08:43.821741Z\",\"updated_at\":\"2025-11-17T18:08:43.821741Z\",\"email\":\"playwright-student@test.com\"}],\"created_at\":\"2025-11-17T18:08:43.819388Z\",\"updated_at\":\"2025-11-17T18:43:05.7982Z\",\"is_anonymous\":false},\"weak_password\":null}"
+        }
+      ]
+    }
+  ]
+}

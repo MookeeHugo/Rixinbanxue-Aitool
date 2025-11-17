@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="">
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" href="./favicon.ico">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- 在 index.html 或 <head> 中加 -->
+
+  <link href="https://cdn.filatex.cn/file/static/remixicon/fonts/remixicon.css" rel="stylesheet" />
+
+  <title>奇思妙想 LaTeX</title>
+  <script type="module" crossorigin src="https://cdn.filatex.cn/file/filatex/index-B6v_PU1L.js"></script>
+  <link rel="stylesheet" crossorigin href="https://cdn.filatex.cn/file/filatex/index-uuLF77pM.css">
+</head>
+
+<body>
+  <div id="app"></div>
+</body>
+
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']],
+    },
+    chtml: {
+      // fontURL: 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2'
+      displayAlign: 'center',
+    },
+    
+  };
+</script>
+
+<script src="https://unpkg.zhimg.com/mathjax@3.2.2/es5/tex-chtml.js" async></script>
+
+
+
+</html>

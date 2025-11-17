@@ -1,0 +1,1 @@
+import{a1 as r}from"./index-B6v_PU1L.js";const a=e=>r.post("/payment/createOrder",e),s=e=>r.post("/payment/getPaymentParams",e),n=e=>r.post("/payment/queryOrder",{orderNo:e}),c=(e={})=>r.get("/payment/getUserOrders",{params:e}),o=e=>r.post("/payment/cancelOrder",{orderNo:e});export{s as a,a as b,o as c,c as g,n as q};

@@ -1,0 +1,8 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "# list_network_requests response\n## Network requests\nShowing 1-12 of 12 (Page 1 of 1).\nreqid=1 GET https://filatex.cn/ [success - 200]\nreqid=2 GET https://cdn.filatex.cn/file/static/remixicon/fonts/remixicon.css [success - 200]\nreqid=3 GET https://cdn.filatex.cn/file/filatex/index-BgD26KLB.js [success - 200]\nreqid=4 GET https://cdn.filatex.cn/file/filatex/index-BRSlg8iY.css [success - 200]\nreqid=5 GET https://unpkg.zhimg.com/mathjax@3.2.2/es5/tex-chtml.js [success - 200]\nreqid=6 GET https://cdn.filatex.cn/file/filatex/Index-COL1HEjf.js [success - 200]\nreqid=7 GET https://cdn.filatex.cn/file/filatex/Index-CQsUrv2S.css [success - 200]\nreqid=8 GET https://filatex.cn/favicon.ico [success - 200]\nreqid=9 GET https://cdn.filatex.cn/file/static/remixicon/fonts/remixicon.woff2?t=1760071648894 [success - 200]\nreqid=10 GET https://cdn.filatex.cn/file/files/68d8c96e8f95e.png [success - 200]\nreqid=11 GET https://cdn.filatex.cn/file/files/68d8cb9c544b0.png [success - 200]\nreqid=12 GET https://cdn.filatex.cn/file/files/68d8cd1c6abab.png [success - 200]"
+    }
+  ]
+}

@@ -1,0 +1,454 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========================================
+   日新平台 - 全局样式 & CSS变量
+   ========================================== */
+
+@layer base {
+  /* ===== CSS变量定义（Light Mode） ===== */
+  :root {
+    /* 背景色 */
+    --background: 0 0% 100%;        /* #ffffff */
+    --foreground: 222 47% 11%;      /* #111827 */
+
+    /* 卡片 */
+    --card: 0 0% 100%;              /* #ffffff */
+    --card-foreground: 222 47% 11%; /* #111827 */
+
+    /* 主色调（紫色） */
+    --primary: 262 83% 58%;         /* #8b5cf6 */
+    --primary-foreground: 0 0% 100%;/* #ffffff */
+
+    /* 次要色（灰色） */
+    --secondary: 220 13% 91%;       /* #e5e7eb */
+    --secondary-foreground: 222 47% 11%; /* #111827 */
+
+    /* 静音色 */
+    --muted: 220 13% 91%;           /* #e5e7eb */
+    --muted-foreground: 215 16% 47%;/* #6b7280 */
+
+    /* 强调色 */
+    --accent: 220 13% 91%;          /* #e5e7eb */
+    --accent-foreground: 222 47% 11%; /* #111827 */
+
+    /* 危险色（红色） */
+    --destructive: 0 84% 60%;       /* #ef4444 */
+    --destructive-foreground: 0 0% 100%; /* #ffffff */
+
+    /* 边框 */
+    --border: 214 32% 91%;          /* #e5e7eb */
+    --input: 0 0% 100%;             /* #ffffff */
+    --ring: 262 83% 58%;            /* #8b5cf6 */
+
+    /* 圆角 */
+    --radius: 0.5rem;               /* 8px */
+
+    /* 侧边栏 */
+    --sidebar: 220 13% 98%;         /* #f9fafb */
+    --sidebar-foreground: 222 47% 23%; /* #374151 */
+    --sidebar-border: 214 32% 91%;  /* #e5e7eb */
+    --sidebar-primary: 262 83% 58%; /* #8b5cf6 */
+    --sidebar-primary-foreground: 0 0% 100%; /* #ffffff */
+
+    /* Popover */
+    --popover: 0 0% 100%;           /* #ffffff */
+    --popover-foreground: 222 47% 11%; /* #111827 */
+  }
+
+  /* ===== 暗色模式 ===== */
+  .dark {
+    --background: 0 0% 4%;          /* #0a0a0a */
+    --foreground: 0 0% 93%;         /* #ededed */
+
+    --card: 0 0% 10%;               /* #1a1a1a */
+    --card-foreground: 0 0% 93%;    /* #ededed */
+
+    --primary: 262 70% 72%;         /* #a78bfa (更亮) */
+    --primary-foreground: 0 0% 0%;  /* #000000 */
+
+    --secondary: 0 0% 12%;          /* #1f1f1f */
+    --secondary-foreground: 0 0% 93%; /* #ededed */
+
+    --muted: 0 0% 12%;              /* #1f1f1f */
+    --muted-foreground: 0 0% 63%;   /* #a1a1a1 */
+
+    --accent: 0 0% 12%;             /* #1f1f1f */
+    --accent-foreground: 0 0% 93%;  /* #ededed */
+
+    --destructive: 0 63% 55%;       /* #dc2626 */
+    --destructive-foreground: 0 0% 93%; /* #ededed */
+
+    --border: 0 0% 16%;             /* #2a2a2a */
+    --input: 0 0% 10%;              /* #1a1a1a */
+    --ring: 262 70% 72%;            /* #a78bfa */
+
+    --sidebar: 0 0% 6%;             /* #0f0f0f */
+    --sidebar-foreground: 0 0% 73%; /* #bababanull */
+    --sidebar-border: 0 0% 16%;     /* #2a2a2a */
+    --sidebar-primary: 262 70% 72%; /* #a78bfa */
+    --sidebar-primary-foreground: 0 0% 0%; /* #000000 */
+
+    --popover: 0 0% 10%;            /* #1a1a1a */
+    --popover-foreground: 0 0% 93%; /* #ededed */
+  }
+
+  /* ===== 基础样式重置 ===== */
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* ===== 排版增强 ===== */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+
+  h1 {
+    @apply text-5xl leading-tight;
+  }
+
+  h2 {
+    @apply text-4xl;
+  }
+
+  h3 {
+    @apply text-3xl;
+  }
+
+  h4 {
+    @apply text-2xl;
+  }
+
+  h5 {
+    @apply text-xl;
+  }
+
+  p {
+    @apply leading-relaxed;
+  }
+
+  /* ===== 滚动条样式 ===== */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-muted;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-400 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-500;
+  }
+
+  .dark ::-webkit-scrollbar-thumb {
+    @apply bg-gray-600;
+  }
+
+  .dark ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-500;
+  }
+
+  /* ===== 选中文本样式 ===== */
+  ::selection {
+    @apply bg-primary/20 text-primary-foreground;
+  }
+
+  /* ===== 焦点样式 ===== */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
+  /* 隐藏鼠标点击的焦点轮廓 */
+  *:focus:not(:focus-visible) {
+    @apply outline-none;
+  }
+}
+
+/* ==========================================
+   自定义组件样式
+   ========================================== */
+
+@layer components {
+  /* ===== 容器 ===== */
+  .container-page {
+    @apply container mx-auto px-6 py-12 max-w-7xl;
+  }
+
+  /* ===== 渐变背景 ===== */
+  .gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+
+  .gradient-primary-hover {
+    background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%);
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent;
+  }
+
+  /* ===== 玻璃态（Glassmorphism） ===== */
+  .glass {
+    @apply backdrop-blur-lg bg-white/80 dark:bg-gray-900/80;
+    @apply border border-gray-200/50 dark:border-gray-700/50;
+  }
+
+  /* ===== 卡片悬停效果 ===== */
+  .card-hover {
+    @apply transition-all duration-300 ease-out;
+    @apply hover:shadow-lg hover:-translate-y-1;
+    @apply hover:border-primary/30;
+  }
+
+  /* ===== 骨架屏加载 ===== */
+  .skeleton {
+    @apply animate-pulse bg-muted rounded;
+  }
+
+  /* ===== AI徽章渐变 ===== */
+  .ai-badge {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    @apply text-white px-3 py-1 rounded-full text-xs font-medium;
+  }
+
+  /* ===== 难度徽章 ===== */
+  .difficulty-easy {
+    @apply bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-400;
+  }
+
+  .difficulty-medium {
+    @apply bg-warning-100 text-warning-700 dark:bg-warning-900/30 dark:text-warning-400;
+  }
+
+  .difficulty-hard {
+    @apply bg-error-100 text-error-700 dark:bg-error-900/30 dark:text-error-400;
+  }
+
+  /* ===== 数学公式背景 ===== */
+  .formula-block {
+    @apply bg-primary-50 dark:bg-primary-950 border border-primary-200 dark:border-primary-800;
+    @apply rounded-lg p-4 my-4;
+  }
+
+  /* ===== 代码块 ===== */
+  .code-block {
+    @apply font-mono bg-muted text-sm p-4 rounded-lg overflow-x-auto;
+    @apply border border-border;
+  }
+
+  /* ===== 链接样式 ===== */
+  .link {
+    @apply text-primary hover:text-primary/80 underline-offset-4 hover:underline;
+    @apply transition-colors duration-200;
+  }
+}
+
+/* ==========================================
+   工具类扩展
+   ========================================== */
+
+@layer utilities {
+  /* ===== 文本截断 ===== */
+  .line-clamp-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* ===== 隐藏滚动条 ===== */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* ===== 平滑滚动 ===== */
+  .scroll-smooth {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* ===== 安全区域适配（iOS） ===== */
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .safe-left {
+    padding-left: env(safe-area-inset-left);
+  }
+
+  .safe-right {
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
+/* ==========================================
+   第三方库样式覆盖
+   ========================================== */
+
+/* ===== React Katex 数学公式 ===== */
+.katex-display {
+  @apply my-4 overflow-x-auto;
+}
+
+.katex {
+  @apply text-foreground;
+}
+
+/* ===== React Markdown ===== */
+.markdown-content {
+  @apply prose dark:prose-invert max-w-none;
+}
+
+.markdown-content h1 {
+  @apply text-3xl font-bold mt-8 mb-4;
+}
+
+.markdown-content h2 {
+  @apply text-2xl font-semibold mt-6 mb-3;
+}
+
+.markdown-content p {
+  @apply mb-4 leading-relaxed;
+}
+
+.markdown-content code {
+  @apply bg-muted px-1.5 py-0.5 rounded text-sm font-mono;
+}
+
+.markdown-content pre {
+  @apply bg-muted p-4 rounded-lg overflow-x-auto my-4;
+}
+
+/* ===== Shadcn UI 组件微调 ===== */
+[data-radix-scroll-area-viewport] {
+  @apply scroll-smooth;
+}
+
+/* ==========================================
+   移动端优化
+   ========================================== */
+
+@media (max-width: 768px) {
+  /* 字体缩小 */
+  html {
+    font-size: 14px;
+  }
+
+  /* 减少动画 */
+  .reduce-motion,
+  .reduce-motion * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  /* 触摸优化 */
+  button,
+  a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* ===== 无障碍：减少动画 ===== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ===== 打印样式 ===== */
+@media print {
+  *,
+  *::before,
+  *::after {
+    background: transparent !important;
+    color: #000 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  a,
+  a:visited {
+    text-decoration: underline;
+  }
+
+  abbr[title]::after {
+    content: ' (' attr(title) ')';
+  }
+
+  pre {
+    white-space: pre-wrap !important;
+    border: 1px solid #999;
+    page-break-inside: avoid;
+  }
+
+  blockquote {
+    border: 1px solid #999;
+    page-break-inside: avoid;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  tr,
+  img {
+    page-break-inside: avoid;
+  }
+
+  p,
+  h2,
+  h3 {
+    orphans: 3;
+    widows: 3;
+  }
+
+  h2,
+  h3 {
+    page-break-after: avoid;
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "# take_snapshot response\n## Page content\nuid=8_0 RootWebArea \"登录 - 奇思妙想 LaTeX\" url=\"https://filatex.cn/login\"\n  uid=8_1 image \"每一份努力都不会被辜负\" url=\"https://cdn.filatex.cn/file/files/685a982c7a6d9.svg\"\n  uid=8_2 button \"上一张\"\n  uid=8_3 button \"下一张\"\n  uid=8_4 StaticText \"每一份努力都不会被辜负\"\n  uid=8_5 button \"切换到第 1 张\"\n  uid=8_6 button \"切换到第 2 张\"\n  uid=8_7 button \"切换到第 3 张\"\n  uid=8_8 button \"切换到第 4 张\"\n  uid=8_9 button \"切换到第 5 张\"\n  uid=8_10 StaticText \"欢迎登录！\"\n  uid=8_11 StaticText \"验证码登陆/注册\"\n  uid=8_12 textbox \"请输入邮箱\"\n  uid=8_13 textbox \"请输入密码\"\n  uid=8_14 image \"eye-invisible\"\n  uid=8_15 button \"立即登录\"\n"
+    }
+  ]
+}

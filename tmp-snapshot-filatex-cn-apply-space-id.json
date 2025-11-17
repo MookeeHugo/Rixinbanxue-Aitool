@@ -1,0 +1,8 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "# take_snapshot response\n## Page content\nuid=6_0 RootWebArea \"申请个人空间 - 奇思妙想 LaTeX\" url=\"https://filatex.cn/apply-space-id\"\n  uid=6_1 heading \"申请个人空间\" level=\"2\"\n  uid=6_2 StaticText \"个人空间ID\"\n  uid=6_3 textbox \"请输入空间ID\"\n  uid=6_4 StaticText \"只能使用 3–8 位数字或小写字母，例如：abcd, abc123, user01, a12...\"\n  uid=6_5 StaticText \"⚠️ 个人空间一旦申请成功将不可更改，请谨慎填写。\"\n  uid=6_6 LineBreak \"\n\"\n  uid=6_7 StaticText \"⚠️ 申请成功后，管理员审核通过后，将以邮件通知。\"\n  uid=6_8 button \"提交申请\" disableable disabled\n  uid=6_9 button \"返回首页\"\n"
+    }
+  ]
+}
