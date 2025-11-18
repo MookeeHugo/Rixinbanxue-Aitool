@@ -116,7 +116,7 @@ export default function MyMistakesPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-secondary">加载中...</p>
+        <p className="text-foreground-secondary">加载中...</p>
       </div>
     )
   }
@@ -125,31 +125,31 @@ export default function MyMistakesPage() {
     <div className="min-h-screen bg-background py-8">
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-white">我的错题本</h1>
-          <div className="text-secondary">
+          <h1 className="text-3xl font-bold text-foreground">我的错题本</h1>
+          <div className="text-foreground-secondary">
             共 {mistakes.length} 道错题
           </div>
         </div>
 
         {mistakes.length === 0 ? (
-          <div className="bg-card rounded-lg p-12 text-center">
+          <div className="bg-card rounded-lg p-12 text-center border border-border">
             <div className="text-6xl mb-4">🎉</div>
-            <p className="text-white text-xl mb-2">太棒了！暂无错题</p>
-            <p className="text-secondary">继续保持，加油！</p>
+            <p className="text-foreground text-xl mb-2">太棒了！暂无错题</p>
+            <p className="text-foreground-secondary">继续保持，加油！</p>
           </div>
         ) : (
           <>
             {/* 知识点统计 */}
-            <div className="bg-card rounded-lg p-6 mb-6">
-              <h2 className="text-lg font-semibold text-white mb-4">知识点分布</h2>
+            <div className="bg-card rounded-lg p-6 mb-6 border border-border">
+              <h2 className="text-lg font-semibold text-foreground mb-4">知识点分布</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {knowledgeStats.map((stat) => (
                   <div
                     key={stat.name}
-                    className="bg-background rounded-lg p-4 text-center"
+                    className="bg-background rounded-lg p-4 text-center border border-border"
                   >
-                    <p className="text-secondary text-sm mb-1">{stat.name}</p>
-                    <p className="text-primary text-2xl font-bold">{stat.count}</p>
+                    <p className="text-foreground-secondary text-sm mb-1">{stat.name}</p>
+                    <p className="text-brand-red text-2xl font-bold">{stat.count}</p>
                   </div>
                 ))}
               </div>
@@ -162,8 +162,8 @@ export default function MyMistakesPage() {
                   onClick={() => setSelectedKnowledge('all')}
                   className={`px-4 py-2 rounded-lg transition-colors ${
                     selectedKnowledge === 'all'
-                      ? 'bg-primary text-white'
-                      : 'bg-card text-secondary hover:bg-gray-800'
+                      ? 'bg-brand-red text-white'
+                      : 'bg-card text-foreground-secondary border border-border hover:bg-border-light'
                   }`}
                 >
                   全部 ({mistakes.length})
@@ -174,8 +174,8 @@ export default function MyMistakesPage() {
                     onClick={() => setSelectedKnowledge(kp)}
                     className={`px-4 py-2 rounded-lg transition-colors ${
                       selectedKnowledge === kp
-                        ? 'bg-primary text-white'
-                        : 'bg-card text-secondary hover:bg-gray-800'
+                        ? 'bg-brand-red text-white'
+                        : 'bg-card text-foreground-secondary border border-border hover:bg-border-light'
                     }`}
                   >
                     {kp} ({mistakes.filter(m => m.knowledgePoint === kp).length})
@@ -187,47 +187,47 @@ export default function MyMistakesPage() {
             {/* 错题列表 */}
             <div className="space-y-6">
               {filteredMistakes.map((mistake, index) => (
-                <div key={`${mistake.questionId}-${index}`} className="bg-card rounded-lg p-6">
+                <div key={`${mistake.questionId}-${index}`} className="bg-card rounded-lg p-6 border border-border">
                   <div className="flex justify-between items-start mb-4">
                     <div className="flex items-center gap-3">
-                      <span className="text-xs bg-red-500/20 text-red-500 px-2 py-1 rounded">
+                      <span className="text-xs bg-error/20 text-error px-2 py-1 rounded">
                         错题
                       </span>
-                      <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded">
+                      <span className="text-xs bg-brand-red/20 text-brand-red px-2 py-1 rounded">
                         {mistake.question.type === 'choice' ? '选择题' :
                          mistake.question.type === 'fill' ? '填空题' : '解答题'}
                       </span>
-                      <span className="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded">
+                      <span className="text-xs bg-secondary text-foreground-secondary px-2 py-1 rounded">
                         {mistake.knowledgePoint}
                       </span>
                     </div>
-                    <span className="text-secondary text-sm">
+                    <span className="text-foreground-secondary text-sm">
                       {new Date(mistake.submittedAt).toLocaleDateString()}
                     </span>
                   </div>
 
                   <div className="mb-4">
-                    <p className="text-white text-lg mb-2">{mistake.question.content}</p>
+                    <p className="text-foreground text-lg mb-2">{mistake.question.content}</p>
                     {mistake.question.type === 'choice' && mistake.question.options && (
                       <div className="space-y-2 mt-3">
                         {Object.entries(mistake.question.options).map(([key, value]) => (
                           <div
                             key={key}
-                            className={`p-3 rounded ${
+                            className={`p-3 rounded border ${
                               key === mistake.correctAnswer
-                                ? 'bg-green-500/10 border border-green-500/30'
+                                ? 'bg-success/10 border-success/30'
                                 : key === mistake.studentAnswer
-                                ? 'bg-red-500/10 border border-red-500/30'
-                                : 'bg-background'
+                                ? 'bg-error/10 border-error/30'
+                                : 'bg-background border-border'
                             }`}
                           >
-                            <span className="text-white">
+                            <span className="text-foreground">
                               {key}. {value}
                               {key === mistake.correctAnswer && (
-                                <span className="ml-2 text-green-500 text-sm">✓ 正确答案</span>
+                                <span className="ml-2 text-success text-sm">✓ 正确答案</span>
                               )}
                               {key === mistake.studentAnswer && (
-                                <span className="ml-2 text-red-500 text-sm">✗ 你的答案</span>
+                                <span className="ml-2 text-error text-sm">✗ 你的答案</span>
                               )}
                             </span>
                           </div>
@@ -237,20 +237,20 @@ export default function MyMistakesPage() {
                   </div>
 
                   {mistake.question.type !== 'choice' && (
-                    <div className="bg-background rounded-lg p-4 space-y-3">
+                    <div className="bg-background rounded-lg p-4 space-y-3 border border-border">
                       <div>
-                        <p className="text-red-500 text-sm mb-1">你的答案:</p>
-                        <p className="text-white">{mistake.studentAnswer}</p>
+                        <p className="text-error text-sm mb-1">你的答案:</p>
+                        <p className="text-foreground">{mistake.studentAnswer}</p>
                       </div>
                       <div>
-                        <p className="text-green-500 text-sm mb-1">正确答案:</p>
-                        <p className="text-white">{mistake.correctAnswer}</p>
+                        <p className="text-success text-sm mb-1">正确答案:</p>
+                        <p className="text-foreground">{mistake.correctAnswer}</p>
                       </div>
                     </div>
                   )}
 
-                  <div className="mt-4 pt-4 border-t border-gray-800">
-                    <p className="text-secondary text-sm">
+                  <div className="mt-4 pt-4 border-t border-border">
+                    <p className="text-foreground-secondary text-sm">
                       来源: {mistake.assignmentName}
                     </p>
                   </div>

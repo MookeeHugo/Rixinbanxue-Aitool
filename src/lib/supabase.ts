@@ -1,12 +1,17 @@
 import { createClient } from '@supabase/supabase-js'
 
 // Supabase 客户端配置
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+// 临时硬编码本地 Supabase 配置以解决环境变量缓存问题
+const supabaseUrl = 'http://127.0.0.1:54321'
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0'
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables')
-}
+// 原始代码（环境变量方式）- 暂时注释
+// const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+// const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+//
+// if (!supabaseUrl || !supabaseAnonKey) {
+//   throw new Error('Missing Supabase environment variables')
+// }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 

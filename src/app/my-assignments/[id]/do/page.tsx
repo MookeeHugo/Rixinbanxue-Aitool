@@ -112,7 +112,7 @@ export default function DoAssignmentPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-secondary">加载中...</p>
+        <p className="text-foreground-secondary">加载中...</p>
       </div>
     )
   }
@@ -122,41 +122,41 @@ export default function DoAssignmentPage() {
       <div className="max-w-4xl mx-auto px-4">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">
+            <h1 className="text-3xl font-bold text-foreground mb-2">
               {assignment?.papers?.name}
             </h1>
-            <p className="text-secondary">
+            <p className="text-foreground-secondary">
               班级: {assignment?.classes?.name} | 截止时间: {new Date(assignment?.deadline).toLocaleString()}
             </p>
           </div>
           <button
             onClick={() => router.back()}
-            className="bg-gray-600 text-white px-6 py-2 rounded-lg"
+            className="bg-secondary text-foreground px-6 py-2 rounded-lg hover:bg-border-medium transition-colors"
           >
             返回
           </button>
         </div>
 
-        <div className="bg-card rounded-lg p-8 mb-6">
+        <div className="bg-card rounded-lg p-8 mb-6 border border-border">
           <div className="space-y-8">
             {questions.map((question, index) => (
-              <div key={question.id} className="border-b border-gray-800 pb-6 last:border-b-0">
+              <div key={question.id} className="border-b border-border pb-6 last:border-b-0">
                 <div className="flex gap-4">
-                  <span className="text-white font-semibold min-w-[2rem]">{index + 1}.</span>
+                  <span className="text-foreground font-semibold min-w-[2rem]">{index + 1}.</span>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-3">
-                      <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded">
+                      <span className="text-xs bg-brand-red/20 text-brand-red px-2 py-1 rounded">
                         {question.type === 'choice' ? '选择题' : question.type === 'fill' ? '填空题' : '解答题'}
                       </span>
                     </div>
-                    <p className="text-white mb-4 text-lg">{question.content}</p>
+                    <p className="text-foreground mb-4 text-lg">{question.content}</p>
 
                     {question.type === 'choice' && question.options && (
                       <div className="space-y-3">
                         {Object.entries(question.options).map(([key, value]) => (
                           <label
                             key={key}
-                            className="flex items-start gap-3 cursor-pointer hover:bg-background p-3 rounded transition-colors"
+                            className="flex items-start gap-3 cursor-pointer hover:bg-background p-3 rounded transition-colors border border-transparent hover:border-border"
                           >
                             <input
                               type="radio"
@@ -166,7 +166,7 @@ export default function DoAssignmentPage() {
                               onChange={(e) => handleAnswerChange(question.id, e.target.value)}
                               className="mt-1"
                             />
-                            <span className="text-white flex-1">{key}. {value}</span>
+                            <span className="text-foreground flex-1">{key}. {value}</span>
                           </label>
                         ))}
                       </div>
@@ -178,7 +178,7 @@ export default function DoAssignmentPage() {
                         value={answers[question.id] || ''}
                         onChange={(e) => handleAnswerChange(question.id, e.target.value)}
                         placeholder="请输入答案"
-                        className="w-full bg-background border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-primary"
+                        className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:border-brand-red"
                       />
                     )}
 
@@ -188,7 +188,7 @@ export default function DoAssignmentPage() {
                         onChange={(e) => handleAnswerChange(question.id, e.target.value)}
                         placeholder="请输入答案"
                         rows={6}
-                        className="w-full bg-background border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-primary resize-none"
+                        className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:border-brand-red resize-none"
                       />
                     )}
                   </div>
@@ -198,15 +198,15 @@ export default function DoAssignmentPage() {
           </div>
         </div>
 
-        <div className="bg-card rounded-lg p-6">
+        <div className="bg-card rounded-lg p-6 border border-border">
           <div className="flex justify-between items-center">
-            <p className="text-secondary">
+            <p className="text-foreground-secondary">
               已作答: {Object.keys(answers).length} / {questions.length} 题
             </p>
             <button
               onClick={handleSubmit}
               disabled={submitting}
-              className="bg-primary text-white px-8 py-3 rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
+              className="bg-brand-red text-white px-8 py-3 rounded-lg hover:bg-brand-red-hover transition-colors disabled:opacity-50"
             >
               {submitting ? '提交中...' : '提交作业'}
             </button>

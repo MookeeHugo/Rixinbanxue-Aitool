@@ -1,20 +1,20 @@
--- 添加 Playwright E2E 测试专用账号
--- 这些账号仅用于自动化测试，不影响开发测试数据
+-- 添加本地开发测试账号
+-- 这些账号用于本地开发测试，会在 seed.sql 中使用
 
 -- 临时禁用 RLS 以便插入测试数据
 ALTER TABLE profiles DISABLE ROW LEVEL SECURITY;
 
 DO $$
 DECLARE
-  playwright_teacher_uuid uuid;
-  playwright_student_uuid uuid;
+  test_teacher_uuid uuid := 'aaaaaaaa-1111-1111-1111-111111111111';
+  test_student_uuid uuid := 'aaaaaaaa-2222-2222-2222-222222222222';
 BEGIN
 
--- 创建 Playwright 教师测试账号
--- 邮箱: playwright-teacher@test.com
--- 密码: Playwright123!
-DELETE FROM auth.users WHERE email = 'playwright-teacher@test.com';
-DELETE FROM public.profiles WHERE email = 'playwright-teacher@test.com';
+-- 创建测试教师账号
+-- 邮箱: teacher@test.com
+-- 密码: test123456
+DELETE FROM auth.users WHERE email = 'teacher@test.com';
+DELETE FROM public.profiles WHERE email = 'teacher@test.com';
 
 INSERT INTO auth.users (
   instance_id,
@@ -35,11 +35,11 @@ INSERT INTO auth.users (
   recovery_token
 ) VALUES (
   '00000000-0000-0000-0000-000000000000',
-  'bbbbbbbb-0000-0000-0000-000000000001',
+  test_teacher_uuid,
   'authenticated',
   'authenticated',
-  'playwright-teacher@test.com',
-  crypt('Playwright123!', gen_salt('bf')),
+  'teacher@test.com',
+  crypt('test123456', gen_salt('bf')),
   NOW(),
   NOW(),
   NOW(),
@@ -50,23 +50,22 @@ INSERT INTO auth.users (
   '',
   '',
   ''
-)
-RETURNING id INTO playwright_teacher_uuid;
+);
 
 -- 创建对应的 profiles 记录
 INSERT INTO public.profiles (id, email, name, role)
 VALUES (
-  playwright_teacher_uuid,
-  'playwright-teacher@test.com',
-  'Playwright教师',
+  test_teacher_uuid,
+  'teacher@test.com',
+  '张老师',
   'teacher'
 );
 
--- 创建 Playwright 学生测试账号
--- 邮箱: playwright-student@test.com
--- 密码: Playwright123!
-DELETE FROM auth.users WHERE email = 'playwright-student@test.com';
-DELETE FROM public.profiles WHERE email = 'playwright-student@test.com';
+-- 创建测试学生账号
+-- 邮箱: student@test.com
+-- 密码: test123456
+DELETE FROM auth.users WHERE email = 'student@test.com';
+DELETE FROM public.profiles WHERE email = 'student@test.com';
 
 INSERT INTO auth.users (
   instance_id,
@@ -87,11 +86,11 @@ INSERT INTO auth.users (
   recovery_token
 ) VALUES (
   '00000000-0000-0000-0000-000000000000',
-  'cccccccc-0000-0000-0000-000000000002',
+  test_student_uuid,
   'authenticated',
   'authenticated',
-  'playwright-student@test.com',
-  crypt('Playwright123!', gen_salt('bf')),
+  'student@test.com',
+  crypt('test123456', gen_salt('bf')),
   NOW(),
   NOW(),
   NOW(),
@@ -102,23 +101,22 @@ INSERT INTO auth.users (
   '',
   '',
   ''
-)
-RETURNING id INTO playwright_student_uuid;
+);
 
 -- 创建对应的 profiles 记录
 INSERT INTO public.profiles (id, email, name, role)
 VALUES (
-  playwright_student_uuid,
-  'playwright-student@test.com',
-  'Playwright学生',
+  test_student_uuid,
+  'student@test.com',
+  '李同学',
   'student'
 );
 
 RAISE NOTICE '===================================';
-RAISE NOTICE 'Playwright 测试账号创建完成！';
+RAISE NOTICE '测试账号创建完成！';
 RAISE NOTICE '===================================';
-RAISE NOTICE '教师账号: playwright-teacher@test.com / Playwright123!';
-RAISE NOTICE '学生账号: playwright-student@test.com / Playwright123!';
+RAISE NOTICE '教师账号: teacher@test.com / test123456';
+RAISE NOTICE '学生账号: student@test.com / test123456';
 RAISE NOTICE '===================================';
 
 END $$;
