@@ -1,10 +1,10 @@
 "use client"
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { getCurrentProfile } from '@/lib/auth'
 import type { Profile } from '@/lib/supabase'
 import { QuestionForm } from '@/app/questions/_components/question-form'
+import { logger } from '@/lib/logger'
 
 export default function CreateQuestionPage() {
   const router = useRouter()
@@ -14,14 +14,31 @@ export default function CreateQuestionPage() {
   useEffect(() => {
     const loadProfile = async () => {
       try {
-        const data = await getCurrentProfile()
+        // 使用 API 路由获取 profile，避免客户端 Supabase SDK 初始化超时
+        const response = await fetch('/api/profile', {
+          method: 'GET',
+          credentials: 'include', // 确保发送 cookies
+        })
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            // 未登录，跳转到登录页
+            router.push('/login')
+            return
+          }
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+        }
+
+        const { profile: data } = await response.json()
+
         if (!data || data.role !== 'teacher') {
           router.push('/')
           return
         }
         setProfile(data)
-      } catch (error) {
-        console.error('Failed to load profile:', error)
+      } catch (err) {
+        logger.error('加载用户信息失败:', { error: err })
+        // 出错时也跳转到登录页
         router.push('/login')
       } finally {
         setLoading(false)
@@ -29,6 +46,18 @@ export default function CreateQuestionPage() {
     }
     loadProfile()
   }, [router])
+
+  const handleSuccess = useCallback((created: any) => {
+    const targetId = created?.id
+    if (targetId) {
+      router.push(`/questions/${targetId}`)
+    } else {
+      router.push('/questions')
+    }
+    router.refresh()
+  }, [router])
+
+  const handleCancel = useCallback(() => router.push('/questions'), [router])
 
   if (loading) {
     return (
@@ -46,16 +75,8 @@ export default function CreateQuestionPage() {
     <QuestionForm
       mode="create"
       profile={profile}
-      onSuccess={(created) => {
-        const targetId = created?.id
-        if (targetId) {
-          router.push(`/questions/${targetId}`)
-        } else {
-          router.push('/questions')
-        }
-        router.refresh()
-      }}
-      onCancel={() => router.push('/questions')}
+      onSuccess={handleSuccess}
+      onCancel={handleCancel}
     />
   )
 }

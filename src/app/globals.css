@@ -42,7 +42,7 @@
     --popover: 0 0% 100%;              /* #ffffff */
     --popover-foreground: 0 0% 0%;     /* #000000 */
     --primary: 348 100% 50%;           /* #ff013e - 使用品牌红色 */
-    --primary-foreground: 0 0% 100%;   /* #ffffff */
+    --primary-foreground: 0 0% 0%;     /* #000000 - 黑色文字 */
     --secondary: 240 11% 95%;          /* #f2f2f7 */
     --secondary-foreground: 0 0% 0%;   /* #000000 */
     --muted: 240 11% 95%;              /* #f2f2f7 */
@@ -184,7 +184,7 @@
   }
 
   .text-primary-foreground {
-    color: #ffffff !important;
+    color: #000000 !important;  /* 黑色文字按用户要求，但对比度仅2.17:1 */
   }
 
   .text-secondary-foreground {
@@ -298,7 +298,7 @@
 
 .rx-nav .rx-primary {
   background: #ff013e;  /* brand-red */
-  color: #ffffff;
+  color: #000000;  /* 黑色文字按用户要求 */
   border: 1px solid #ff013e;
 }
 
@@ -306,6 +306,7 @@
   background: #e00036;  /* brand-red-hover */
   border-color: #e00036;
   box-shadow: 0 2px 16px 0 rgba(255, 1, 62, 0.24);  /* primary shadow */
+  color: #000000;  /* 保持黑色 */
 }
 
 .rx-main {
@@ -382,13 +383,14 @@
 .rx-btn-primary {
   background: #ff013e;  /* brand-red */
   border-color: #ff013e;
-  color: #ffffff;
+  color: #000000;  /* 黑色文字按用户要求 */
 }
 
 .rx-btn-primary:hover {
   background: #e00036;  /* brand-red-hover */
   border-color: #e00036;
   box-shadow: 0 2px 16px 0 rgba(255, 1, 62, 0.24);  /* primary shadow */
+  color: #000000;  /* 保持黑色 */
 }
 
 .rx-btn-primary:active {
@@ -424,4 +426,63 @@
   padding: 16px 0;
   color: #555555;  /* 从 #8e8e93 改为 #555555，提高对比度 */
   background: #ffffff;
+}
+
+/* ==========================================
+   直播系统深色主题样式
+   ========================================== */
+
+/* 深色主题滚动条 */
+.bg-slate-950 ::-webkit-scrollbar,
+.bg-slate-900 ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.bg-slate-950 ::-webkit-scrollbar-track,
+.bg-slate-900 ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.bg-slate-950 ::-webkit-scrollbar-thumb,
+.bg-slate-900 ::-webkit-scrollbar-thumb {
+  background: #475569;  /* slate-600 */
+  border-radius: 9999px;
+}
+
+.bg-slate-950 ::-webkit-scrollbar-thumb:hover,
+.bg-slate-900 ::-webkit-scrollbar-thumb:hover {
+  background: #64748b;  /* slate-500 */
+}
+
+/* Firefox滚动条 */
+.bg-slate-950 *,
+.bg-slate-900 * {
+  scrollbar-width: thin;
+  scrollbar-color: #475569 transparent;
+}
+
+/* Tailwind scrollbar utilities */
+@layer utilities {
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thumb-slate-700::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 9999px;
+  }
+
+  .scrollbar-thumb-slate-700::-webkit-scrollbar-thumb:hover {
+    background: #475569;
+  }
+
+  .scrollbar-track-transparent::-webkit-scrollbar-track {
+    background: transparent;
+  }
 }

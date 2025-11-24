@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getCurrentUser } from '@/lib/auth'
+import { logger } from '@/lib/logger'
 
 export default function CreateClassPage() {
   const router = useRouter()
@@ -63,7 +64,7 @@ export default function CreateClassPage() {
       alert('班级创建成功！')
       router.push(`/classes/${data.id}`)
     } catch (error: any) {
-      console.error('创建失败:', error)
+      logger.error('创建失败:', { error: error })
       // 如果是班级代码重复，重试
       if (error.code === '23505') {
         alert('班级代码冲突，请重试')

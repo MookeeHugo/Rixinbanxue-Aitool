@@ -5,9 +5,13 @@ const nextConfig = {
   // 1. 使用 SWC 编译器进行代码压缩和优化
   swcMinify: true,
 
-  // 2. 编译器优化配置
-  // 注意：Turbopack 暂不支持 compiler.removeConsole
-  // 生产环境的 console 清理可通过 babel 插件实现
+  // 2. 编译器优化配置 - 生产环境移除 console
+  compiler: {
+    // 生产环境移除 console 输出（保留 console.error 和 console.warn）
+    removeConsole: process.env.NODE_ENV === 'production' ? {
+      exclude: ['error', 'warn'],
+    } : false,
+  },
 
   // 3. 实验性功能 - 提升开发体验
   experimental: {

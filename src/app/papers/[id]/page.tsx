@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getCurrentUser } from '@/lib/auth'
 import type { Paper, Question } from '@/lib/supabase'
-
+import { logger } from '@/lib/logger'
 export default function PaperDetailPage() {
   const router = useRouter()
   const params = useParams()
@@ -57,7 +57,7 @@ export default function PaperDetailPage() {
         setQuestions(orderedQuestions)
       }
     } catch (error) {
-      console.error('加载试卷失败:', error)
+      logger.error('加载试卷失败:', { error: error })
       alert('加载试卷失败')
       router.push('/papers')
     } finally {
@@ -79,7 +79,7 @@ export default function PaperDetailPage() {
       alert('删除成功')
       router.push('/papers')
     } catch (error) {
-      console.error('删除失败:', error)
+      logger.error('删除失败:', { error: error })
       alert('删除失败')
     }
   }

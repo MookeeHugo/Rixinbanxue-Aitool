@@ -1,6 +1,7 @@
 // Supabase持久化存储 - 替代内存存储
 import { createClient } from '@supabase/supabase-js'
 import type { LiveProvider, LiveSession } from "@/lib/supabase";
+import { logger } from '@/lib/logger';
 
 export type SessionRecord = {
   id: string;
@@ -69,13 +70,13 @@ export async function listSessions(): Promise<SessionRecord[]> {
       .order('created_at', { ascending: false })
 
     if (error) {
-      console.error('Error listing live sessions:', error)
+      logger.error('Error listing live sessions:', { error: error })
       return []
     }
 
     return (data as LiveSession[]).map(dbToSessionRecord)
   } catch (error) {
-    console.error('Failed to list live sessions:', error)
+    logger.error('Failed to list live sessions:', { error: error })
     return []
   }
 }
@@ -90,13 +91,13 @@ export async function getSession(id: string): Promise<SessionRecord | undefined>
       .single()
 
     if (error) {
-      console.error('Error getting live session:', error)
+      logger.error('Error getting live session:', { error: error })
       return undefined
     }
 
     return dbToSessionRecord(data as LiveSession)
   } catch (error) {
-    console.error('Failed to get live session:', error)
+    logger.error('Failed to get live session:', { error: error })
     return undefined
   }
 }
@@ -113,12 +114,11 @@ export async function saveSession(s: SessionRecord): Promise<void> {
       .upsert(dbRecord, { onConflict: 'id' })
 
     if (error) {
-      console.error('Error saving live session:', error)
+      logger.error('Error saving live session:', { error: error })
       throw error
     }
   } catch (error) {
-    console.error('Failed to save live session:', error)
+    logger.error('Failed to save live session:', { error: error })
     throw error
   }
 }
-

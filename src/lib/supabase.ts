@@ -1,19 +1,103 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
+import type { Session } from '@supabase/supabase-js'
 
 // Supabase 客户端配置
-// 临时硬编码本地 Supabase 配置以解决环境变量缓存问题
-const supabaseUrl = 'http://127.0.0.1:54321'
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0'
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-// 原始代码（环境变量方式）- 暂时注释
-// const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-// const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-//
-// if (!supabaseUrl || !supabaseAnonKey) {
-//   throw new Error('Missing Supabase environment variables')
-// }
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase environment variables')
+}
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = createSupabaseClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    flowType: 'pkce',
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+    storageKey: 'sb-auth',
+  },
+})
+
+async function syncServerSessionCookies(session: Session | null) {
+  if (typeof window === 'undefined') return
+  if (!session?.access_token || !session.refresh_token || !session.expires_at) {
+    return
+  }
+
+  try {
+    await fetch('/api/auth/set-session', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        access_token: session.access_token,
+        refresh_token: session.refresh_token,
+        expires_at: session.expires_at,
+      }),
+    })
+  } catch (error) {
+    console.error('[supabase] Failed to sync session cookie', error)
+  }
+}
+
+async function clearServerSessionCookies() {
+  if (typeof window === 'undefined') return
+  try {
+    await fetch('/api/auth/clear-session', {
+      method: 'POST',
+      credentials: 'include',
+    })
+  } catch (error) {
+    console.error('[supabase] Failed to clear session cookie', error)
+  }
+}
+
+let hasBoundAuthListener = false
+if (typeof window !== 'undefined' && !hasBoundAuthListener) {
+  hasBoundAuthListener = true
+
+  // 首次加载时尝试同步，避免 cookie 仍然是旧 token
+  supabase.auth
+    .getSession()
+    .then(({ data }) => {
+      if (data.session) {
+        syncServerSessionCookies(data.session)
+      }
+    })
+    .catch((error) => {
+      console.error('[supabase] Failed to read initial session', error)
+    })
+
+  supabase.auth.onAuthStateChange((event, session) => {
+    switch (event) {
+      case 'SIGNED_IN':
+      case 'TOKEN_REFRESHED':
+        syncServerSessionCookies(session)
+        break
+      case 'SIGNED_OUT':
+        clearServerSessionCookies()
+        break
+      default:
+        break
+    }
+  })
+}
+
+// Re-export createClient for components and server actions
+export function createClient() {
+  return createSupabaseClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      flowType: 'pkce',
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true,
+      storageKey: 'sb-auth',
+    },
+  })
+}
 
 // 数据库类型定义
 export type UserRole = 'teacher' | 'student'

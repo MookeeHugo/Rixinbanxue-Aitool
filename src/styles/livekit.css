@@ -1,0 +1,135 @@
+/* LiveKit 组件基础样式 */
+
+/* 确保LiveKit容器填满父元素 */
+.lk-room-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 视频网格布局 */
+.lk-grid-layout {
+  display: grid;
+  gap: 0.5rem;
+  height: 100%;
+  width: 100%;
+}
+
+/* 参与者tile */
+.lk-participant-tile {
+  position: relative;
+  background-color: #1a1a1a;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* 视频元素 */
+.lk-participant-tile video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 参与者信息 */
+.lk-participant-metadata {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 0.5rem;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+  color: white;
+  font-size: 0.875rem;
+}
+
+/* 控制栏 */
+.lk-control-bar {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem;
+  background-color: #2a2a2a;
+  justify-content: center;
+}
+
+/* 控制按钮 */
+.lk-button {
+  padding: 0.5rem 1rem;
+  background-color: #404040;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.lk-button:hover {
+  background-color: #505050;
+}
+
+.lk-button:active {
+  background-color: #606060;
+}
+
+/* 禁用状态 */
+.lk-button:disabled {
+  background-color: #2a2a2a;
+  color: #666;
+  cursor: not-allowed;
+}
+
+/* 麦克风静音状态 */
+.lk-button[data-lk-source="microphone"][data-lk-enabled="false"] {
+  background-color: #dc2626;
+}
+
+/* 摄像头关闭状态 */
+.lk-button[data-lk-source="camera"][data-lk-enabled="false"] {
+  background-color: #dc2626;
+}
+
+/* 加载状态 */
+.lk-spinner {
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #3498db;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 隐藏LiveKit默认的控制栏 */
+.lk-control-bar,
+.lk-video-conference .lk-control-bar,
+[data-lk-theme] .lk-control-bar,
+.lk-room-container > .lk-control-bar {
+  display: none !important;
+}
+
+/* 隐藏聊天和设置按钮 */
+.lk-chat-toggle,
+.lk-settings-toggle,
+.lk-start-audio-button {
+  display: none !important;
+}
+
+/* 确保视频区域占满整个容器 */
+.lk-video-conference,
+.lk-focus-layout {
+  height: 100% !important;
+  width: 100% !important;
+}
+
+/* 适配深色主题 */
+.lk-participant-tile {
+  background-color: #0f172a;
+}
+
+.lk-participant-metadata {
+  background: linear-gradient(to top, rgba(15, 23, 42, 0.8), transparent);
+}

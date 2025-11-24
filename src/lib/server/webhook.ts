@@ -1,5 +1,5 @@
 import crypto from 'crypto'
-
+import { logger } from '@/lib/logger'
 /**
  * 验证LiveKit Webhook签名
  * LiveKit使用API Secret作为密钥，通过HMAC-SHA256计算签名
@@ -31,7 +31,7 @@ export function verifyLiveKitWebhook(
       Buffer.from(expectedSignature)
     )
   } catch (error) {
-    console.error('LiveKit webhook verification error:', error)
+    logger.error('LiveKit webhook verification error:', { error: error })
     return false
   }
 }
@@ -84,7 +84,7 @@ export function verifyZegoWebhook(
       Buffer.from(expectedSignature)
     )
   } catch (error) {
-    console.error('ZEGO webhook verification error:', error)
+    logger.error('ZEGO webhook verification error:', { error: error })
     return false
   }
 }

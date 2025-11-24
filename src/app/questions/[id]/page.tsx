@@ -10,6 +10,7 @@ import { ArrowLeft, Edit3, Trash2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import type { Question } from '@/lib/supabase'
 import { Modal, message, Skeleton, Space, Radio } from 'antd'
+import { logger } from '@/lib/logger'
 
 type QuestionRecord = Question & {
   knowledge_points?: string[]
@@ -96,7 +97,7 @@ export default function QuestionDetailPage() {
       message.success(deleteMode === 'hard' ? '已彻底删除' : '已归档')
       router.push('/questions')
     } catch (err: any) {
-      console.error(err)
+      logger.error('Error occurred', { error: err })
       message.error(err.message || '删除失败，请稍后重试')
     } finally {
       setDeleting(false)

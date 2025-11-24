@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getCurrentUser } from '@/lib/auth'
 import type { Paper, Question } from '@/lib/supabase'
-
+import { logger } from '@/lib/logger'
 export default function PapersPage() {
   const router = useRouter()
   const [papers, setPapers] = useState<Paper[]>([])
@@ -37,7 +37,7 @@ export default function PapersPage() {
       if (error) throw error
       setPapers(data || [])
     } catch (error) {
-      console.error('加载试卷失败:', error)
+      logger.error('加载试卷失败:', { error: error })
       alert('加载试卷失败')
     } finally {
       setLoading(false)
@@ -58,7 +58,7 @@ export default function PapersPage() {
       setPapers(papers.filter(p => p.id !== id))
       alert('删除成功')
     } catch (error) {
-      console.error('删除失败:', error)
+      logger.error('删除失败:', { error: error })
       alert('删除失败')
     }
   }

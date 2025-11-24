@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { deleteFile } from '@/lib/storage'
 import { extractR2KeyFromUrl } from '@/lib/storage-utils'
-
+import { logger } from '@/lib/logger'
 interface DeletePayload {
   questionId?: string
   hard?: boolean
@@ -137,7 +137,7 @@ export async function POST(req: Request) {
     await Promise.all(
       uniqueKeys.map((key) =>
         deleteFile(key).catch((err) => {
-          console.error('删除图片失败', err)
+          logger.error('删除图片失败', { error: err })
         })
       )
     )

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getCurrentUser } from '@/lib/auth'
 import type { Question } from '@/lib/supabase'
-
+import { logger } from '@/lib/logger'
 interface ClassStats {
   classId: string
   className: string
@@ -117,7 +117,7 @@ export default function TeacherAnalyticsPage() {
       }
 
     } catch (error) {
-      console.error('加载数据失败:', error)
+      logger.error('加载数据失败:', { error: error })
       alert('加载数据失败')
     } finally {
       setLoading(false)
@@ -250,7 +250,7 @@ export default function TeacherAnalyticsPage() {
       setKnowledgeAnalysis(knowledgeStats)
 
     } catch (error) {
-      console.error('加载班级详情失败:', error)
+      logger.error('加载班级详情失败:', { error: error })
     }
   }
 

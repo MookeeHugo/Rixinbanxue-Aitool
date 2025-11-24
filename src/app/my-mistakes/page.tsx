@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getCurrentUser } from '@/lib/auth'
 import type { Question } from '@/lib/supabase'
-
+import { logger } from '@/lib/logger'
 interface MistakeItem {
   questionId: string
   question: Question
@@ -96,7 +96,7 @@ export default function MyMistakesPage() {
       setMistakes(allMistakes)
       setKnowledgePoints(Array.from(knowledgeSet).sort())
     } catch (error) {
-      console.error('加载错题失败:', error)
+      logger.error('加载错题失败:', { error: error })
       alert('加载错题失败')
     } finally {
       setLoading(false)

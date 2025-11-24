@@ -1,11 +1,12 @@
 "use client"
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import type { ColumnsType, TableRowSelection } from 'antd/es/table'
+import type { ColumnsType, TableRowSelection } from 'antd/es/table/interface'
 import { Table, message, Space, Tag, Modal, Radio, Upload } from 'antd'
 import { Input } from 'antd'
+import { logger } from '@/lib/logger'
 import {
   Plus,
   Filter,
@@ -86,32 +87,105 @@ export default function QuestionsPage() {
   }, [])
 
   useEffect(() => {
-    void loadProfile()
-  }, [])
+    const mountedRef = { current: true }
+
+    const loadProfileAsync = async () => {
+      try {
+        const data = await getCurrentProfile()
+        if (!mountedRef.current) return
+
+        if (!data || data.role !== 'teacher') {
+          router.push('/')
+          return
+        }
+        setProfile(data)
+      } catch (error) {
+        if (!mountedRef.current) return
+        logger.error('Failed to load profile:', { error: error })
+        router.push('/login')
+      }
+    }
+
+    loadProfileAsync()
+
+    return () => {
+      mountedRef.current = false
+    }
+  }, [router])
 
   useEffect(() => {
-    if (profile) {
-      void loadQuestions()
+    const mountedRef = { current: true }
+
+    const loadQuestionsAsync = async () => {
+      if (!profile) return
+      setLoading(true)
+      try {
+        let query = supabase.from('questions').select('*').order('created_at', { ascending: false })
+
+        if (filter.type) {
+          query = query.eq('type', filter.type)
+        }
+        if (filter.difficulty) {
+          query = query.eq('difficulty', filter.difficulty)
+        }
+        if (searchText.trim()) {
+          // 清理搜索关键词：移除所有特殊字符，只保留字母、数字、中文和空格
+          const keyword = searchText.trim().replace(/[^\w\s\u4e00-\u9fa5]/g, '')
+          if (keyword) {
+            // 使用 Supabase 的参数化查询，避免注入风险
+            query = query.or(`content.ilike.%${keyword}%,answer.ilike.%${keyword}%`)
+          }
+        }
+
+        const { data, error } = await query
+        if (!mountedRef.current) return
+
+        if (error) throw error
+        setQuestions((data as QuestionRecord[]) || [])
+      } catch (error) {
+        if (!mountedRef.current) return
+        logger.error('Failed to load questions:', { error: error })
+        message.error('加载题目失败')
+      } finally {
+        if (mountedRef.current) {
+          setLoading(false)
+        }
+      }
+    }
+
+    loadQuestionsAsync()
+
+    return () => {
+      mountedRef.current = false
     }
   }, [profile, filter, searchText])
 
   useEffect(() => {
     if (!exportTask || ['COMPLETED', 'FAILED'].includes(exportTask.status)) return
+    const mountedRef = { current: true }
+
     const timer = setInterval(async () => {
       try {
         const updated = await fetchExportTaskStatus(exportTask.id)
+        if (!mountedRef.current) return
+
         if (updated) {
           setExportTask(updated)
         } else {
           setExportTask(null)
         }
       } catch (error) {
-        console.error('轮询导出任务失败', error)
+        if (!mountedRef.current) return
+        logger.error('轮询导出任务失败', { error: error })
         message.error(error instanceof Error ? error.message : '查询导出任务失败')
         setExportTask(null)
       }
     }, 4000)
-    return () => clearInterval(timer)
+
+    return () => {
+      mountedRef.current = false
+      clearInterval(timer)
+    }
   }, [exportTask?.id, exportTask?.status])
 
   useEffect(() => {
@@ -130,21 +204,8 @@ export default function QuestionsPage() {
     return map
   }, [questions])
 
-  const loadProfile = async () => {
-    try {
-      const data = await getCurrentProfile()
-      if (!data || data.role !== 'teacher') {
-        router.push('/')
-        return
-      }
-      setProfile(data)
-    } catch (error) {
-      console.error('Failed to load profile:', error)
-      router.push('/login')
-    }
-  }
-
   const loadQuestions = async () => {
+    if (!profile) return
     setLoading(true)
     try {
       let query = supabase.from('questions').select('*').order('created_at', { ascending: false })
@@ -164,7 +225,7 @@ export default function QuestionsPage() {
       if (error) throw error
       setQuestions((data as QuestionRecord[]) || [])
     } catch (error) {
-      console.error('Failed to load questions:', error)
+      logger.error('Failed to load questions:', { error: error })
       message.error('加载题目失败')
     } finally {
       setLoading(false)
@@ -181,7 +242,7 @@ export default function QuestionsPage() {
     })
   }
 
-  const highlightMatch = (text: string) => {
+  const highlightMatch = useCallback((text: string) => {
     if (!searchText.trim()) return text
     const keyword = searchText.trim()
     try {
@@ -199,7 +260,7 @@ export default function QuestionsPage() {
     } catch {
       return text
     }
-  }
+  }, [searchText])
 
   const getAccessToken = async () => {
     const session = await supabase.auth.getSession()
@@ -210,7 +271,7 @@ export default function QuestionsPage() {
     return token
   }
 
-  const handleAddToBasketAction = (record: QuestionRecord) => {
+  const handleAddToBasketAction = useCallback((record: QuestionRecord) => {
     const id = String(record.id)
     if (hasQuestionInBasket(id)) {
       message.info('题目已在题篮中')
@@ -224,7 +285,7 @@ export default function QuestionsPage() {
       knowledge_points: record.knowledge_points || [],
     })
     message.success('已加入题篮')
-  }
+  }, [hasQuestionInBasket, addToBasket])
 
 const fetchExportTaskStatus = async (taskId: string) => {
     const token = await getAccessToken()
@@ -243,7 +304,7 @@ const fetchExportTaskStatus = async (taskId: string) => {
     return data.task as ExportTask
   }
 
-  const handleStartBuildFromBasket = () => {
+  const handleStartBuildFromBasket = useCallback(() => {
     if (!basketQuestions.length) {
       message.warning('题篮为空')
       return
@@ -251,13 +312,13 @@ const fetchExportTaskStatus = async (taskId: string) => {
     try {
       window.localStorage.setItem('rixin-basket-snapshot', JSON.stringify(basketQuestions))
     } catch (error) {
-      console.warn('题篮快照写入失败', error)
+      logger.warn('题篮快照写入失败', { error: error })
     }
     setBasketOpen(false)
     router.push('/papers/create?source=basket')
-  }
+  }, [basketQuestions, router])
 
-const handleExportFromBasket = async () => {
+  const handleExportFromBasket = useCallback(async () => {
     if (!basketQuestions.length) {
       message.warning('题篮为空')
       return
@@ -285,14 +346,14 @@ const handleExportFromBasket = async () => {
       message.success('导出任务已创建')
       setBasketOpen(true)
     } catch (error: any) {
-      console.error('create export task failed', error)
+      logger.error('创建导出任务失败:', { error: error })
       message.error(error?.message || '创建导出任务失败')
     } finally {
       setExportLoading(false)
     }
-  }
+  }, [basketQuestions])
 
-  const callDeleteApi = async (ids: string[], mode: 'soft' | 'hard') => {
+  const callDeleteApi = useCallback(async (ids: string[], mode: 'soft' | 'hard') => {
     const token = await getAccessToken()
     for (const id of ids) {
       const record = questionMap.get(id)
@@ -315,15 +376,15 @@ const handleExportFromBasket = async () => {
         throw new Error(data.error || '删除失败')
       }
     }
-  }
+  }, [questionMap])
 
-  const handleDelete = (id: string) => {
+  const handleDelete = useCallback((id: string) => {
     setSelectedRowKeys([id])
     setDeleteMode('soft')
     setDeleteModalOpen(true)
-  }
+  }, [])
 
-  const handleBulkDelete = async () => {
+  const handleBulkDelete = useCallback(async () => {
     if (!selectedRowKeys.length) {
       message.warning('请选择题目')
       return
@@ -336,14 +397,14 @@ const handleExportFromBasket = async () => {
       setDeleteModalOpen(false)
       void loadQuestions()
     } catch (error: any) {
-      console.error(error)
+      logger.error('Error occurred', { error: error })
       message.error(error.message || '批量删除失败')
     } finally {
       setBulkLoading(false)
     }
-  }
+  }, [selectedRowKeys, deleteMode, callDeleteApi])
 
-  const handleBulkExport = (format: 'csv' | 'json') => {
+  const handleBulkExport = useCallback((format: 'csv' | 'json') => {
     if (!selectedRowKeys.length) {
       message.warning('请选择题目')
       return
@@ -375,9 +436,9 @@ const handleExportFromBasket = async () => {
       triggerDownload(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), 'questions-export.csv')
     }
     message.success(`已导出 ${rows.length} 道题目`)
-  }
+  }, [selectedRowKeys, questionMap])
 
-  const handleBulkImport = async (file: File) => {
+  const handleBulkImport = useCallback(async (file: File) => {
     if (!profile) {
       message.error('请先登录')
       return Upload.LIST_IGNORE
@@ -411,59 +472,60 @@ const handleExportFromBasket = async () => {
       message.success(`成功导入 ${payload.length} 道题目`)
       void loadQuestions()
     } catch (error: any) {
-      console.error('Import failed:', error)
+      logger.error('导入失败:', { error: error })
       message.error(error.message || '导入失败')
     }
 
     return Upload.LIST_IGNORE
-  }
+  }, [profile])
 
-  const columns: ColumnsType<QuestionRecord> = [
-    {
-      title: '题干',
-      dataIndex: 'content',
-      key: 'content',
-      render: (text: string) => (
-        <div className="line-clamp-2 text-sm text-foreground/90">
-          {highlightMatch(text || '')}
-        </div>
-      ),
-    },
-    {
-      title: '题型',
-      dataIndex: 'type',
-      key: 'type',
-      render: (type: string) => <Badge variant="secondary">{getTypeLabel(type)}</Badge>,
-    },
-    {
-      title: '难度',
-      dataIndex: 'difficulty',
-      key: 'difficulty',
-      render: (difficulty: string) => (
-        <Tag color={getDifficultyColor(difficulty)}>{getDifficultyLabel(difficulty)}</Tag>
-      ),
-    },
-    {
-      title: '知识点',
-      dataIndex: 'knowledge_points',
-      key: 'knowledge_points',
-      render: (points?: string[]) =>
-        points?.length ? (
-          <Space size={[4, 4]} wrap>
-            {points.slice(0, 3).map((kp) => (
-              <Badge key={kp} variant="outline">
-                {kp}
-              </Badge>
-            ))}
-            {points.length > 3 && <span className="text-xs text-muted-foreground">+{points.length - 3}</span>}
-          </Space>
-        ) : (
-          <span className="text-xs text-muted-foreground">未关联</span>
+  const columns: ColumnsType<QuestionRecord> = useMemo(
+    () => [
+      {
+        title: '题干',
+        dataIndex: 'content',
+        key: 'content',
+        render: (text: string) => (
+          <div className="line-clamp-2 text-sm text-foreground/90">
+            {highlightMatch(text || '')}
+          </div>
         ),
-    },
-    {
-      title: '操作',
-      key: 'action',
+      },
+      {
+        title: '题型',
+        dataIndex: 'type',
+        key: 'type',
+        render: (type: string) => <Badge variant="secondary">{getTypeLabel(type)}</Badge>,
+      },
+      {
+        title: '难度',
+        dataIndex: 'difficulty',
+        key: 'difficulty',
+        render: (difficulty: string) => (
+          <Tag color={getDifficultyColor(difficulty)}>{getDifficultyLabel(difficulty)}</Tag>
+        ),
+      },
+      {
+        title: '知识点',
+        dataIndex: 'knowledge_points',
+        key: 'knowledge_points',
+        render: (points?: string[]) =>
+          points?.length ? (
+            <Space size={[4, 4]} wrap>
+              {points.slice(0, 3).map((kp) => (
+                <Badge key={kp} variant="outline">
+                  {kp}
+                </Badge>
+              ))}
+              {points.length > 3 && <span className="text-xs text-muted-foreground">+{points.length - 3}</span>}
+            </Space>
+          ) : (
+            <span className="text-xs text-muted-foreground">未关联</span>
+          ),
+      },
+      {
+        title: '操作',
+        key: 'action',
         render: (_, record) => (
           <Space size="small">
             <Link href={`/questions/${record.id}`}>
@@ -489,13 +551,18 @@ const handleExportFromBasket = async () => {
             </Button>
           </Space>
         ),
-    },
-  ]
+      },
+    ],
+    [highlightMatch, hasQuestionInBasket, handleAddToBasketAction, handleDelete]
+  )
 
-  const rowSelection: TableRowSelection<QuestionRecord> = {
-    selectedRowKeys,
-    onChange: setSelectedRowKeys,
-  }
+  const rowSelection: TableRowSelection<QuestionRecord> = useMemo(
+    () => ({
+      selectedRowKeys,
+      onChange: setSelectedRowKeys,
+    }),
+    [selectedRowKeys]
+  )
 
   if (!profile) {
     return (

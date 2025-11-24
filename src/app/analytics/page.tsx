@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getCurrentUser } from '@/lib/auth'
 import type { Question } from '@/lib/supabase'
-
+import { logger } from '@/lib/logger'
 interface KnowledgePointStats {
   name: string
   totalQuestions: number
@@ -180,7 +180,7 @@ export default function AnalyticsPage() {
       })
 
     } catch (error) {
-      console.error('加载分析数据失败:', error)
+      logger.error('加载分析数据失败:', { error: error })
       alert('加载分析数据失败')
     } finally {
       setLoading(false)

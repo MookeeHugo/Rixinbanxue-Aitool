@@ -1,11 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getCurrentUser } from '@/lib/auth'
 import type { Question } from '@/lib/supabase'
-
+import { logger } from '@/lib/logger'
 export default function DoAssignmentPage() {
   const router = useRouter()
   const params = useParams()
@@ -19,64 +19,85 @@ export default function DoAssignmentPage() {
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
-    checkUserAndLoad()
-  }, [assignmentId])
+    const mountedRef = { current: true }
 
-  const checkUserAndLoad = async () => {
-    const currentUser = await getCurrentUser()
-    if (!currentUser) {
-      router.push('/login')
-      return
-    }
-    setUser(currentUser)
-    loadAssignment()
-  }
+    const checkUserAndLoad = async () => {
+      try {
+        const currentUser = await getCurrentUser()
+        if (!mountedRef.current) return
 
-  const loadAssignment = async () => {
-    try {
-      const { data: assignmentData, error: assignmentError } = await supabase
-        .from('assignments')
-        .select(`
-          *,
-          papers(name, question_ids),
-          classes(name)
-        `)
-        .eq('id', assignmentId)
-        .single()
-
-      if (assignmentError) throw assignmentError
-      setAssignment(assignmentData)
-
-      const questionIds = (assignmentData as any).papers?.question_ids || []
-      if (questionIds.length > 0) {
-        const { data: questionsData } = await supabase
-          .from('questions')
-          .select('*')
-          .in('id', questionIds)
-
-        const orderedQuestions = questionIds
-          .map((id: string) => questionsData?.find(q => q.id === id))
-          .filter(Boolean) as Question[]
-
-        setQuestions(orderedQuestions)
+        if (!currentUser) {
+          router.push('/login')
+          return
+        }
+        setUser(currentUser)
+        loadAssignment(mountedRef)
+      } catch (error) {
+        logger.error('加载作业失败:', { error: error })
+        if (mountedRef.current) {
+          router.push('/login')
+        }
       }
-    } catch (error) {
-      console.error('加载失败:', error)
-      alert('加载失败')
-      router.push('/my-assignments')
-    } finally {
-      setLoading(false)
     }
-  }
 
-  const handleAnswerChange = (questionId: string, answer: string) => {
-    setAnswers({
-      ...answers,
+    const loadAssignment = async (mounted: { current: boolean }) => {
+      try {
+        const { data: assignmentData, error: assignmentError } = await supabase
+          .from('assignments')
+          .select(`
+            *,
+            papers(name, question_ids),
+            classes(name)
+          `)
+          .eq('id', assignmentId)
+          .single()
+
+        if (!mounted.current) return
+        if (assignmentError) throw assignmentError
+        setAssignment(assignmentData)
+
+        const questionIds = (assignmentData as any).papers?.question_ids || []
+        if (questionIds.length > 0) {
+          const { data: questionsData } = await supabase
+            .from('questions')
+            .select('*')
+            .in('id', questionIds)
+
+          if (!mounted.current) return
+
+          const orderedQuestions = questionIds
+            .map((id: string) => questionsData?.find(q => q.id === id))
+            .filter(Boolean) as Question[]
+
+          setQuestions(orderedQuestions)
+        }
+      } catch (error) {
+        if (!mounted.current) return
+        logger.error('加载失败:', { error: error })
+        alert('加载失败')
+        router.push('/my-assignments')
+      } finally {
+        if (mounted.current) {
+          setLoading(false)
+        }
+      }
+    }
+
+    checkUserAndLoad()
+
+    return () => {
+      mountedRef.current = false
+    }
+  }, [assignmentId, router])
+
+  const handleAnswerChange = useCallback((questionId: string, answer: string) => {
+    setAnswers(prev => ({
+      ...prev,
       [questionId]: answer
-    })
-  }
+    }))
+  }, [])
 
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     if (Object.keys(answers).length < questions.length) {
       if (!confirm('还有题目未作答，确定要提交吗？')) {
         return
@@ -98,7 +119,7 @@ export default function DoAssignmentPage() {
       alert('提交成功！')
       router.push('/my-assignments')
     } catch (error: any) {
-      console.error('提交失败:', error)
+      logger.error('提交失败:', { error: error })
       if (error.code === '23505') {
         alert('您已经提交过这个作业了')
       } else {
@@ -107,7 +128,7 @@ export default function DoAssignmentPage() {
     } finally {
       setSubmitting(false)
     }
-  }
+  }, [answers, questions.length, assignmentId, user, router])
 
   if (loading) {
     return (

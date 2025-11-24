@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyZegoWebhook } from "@/lib/server/webhook";
+import { logger } from '@/lib/logger'
 
 export async function POST(req: NextRequest) {
   try {
@@ -32,7 +33,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 签名验证通过，处理webhook事件
-    console.log("ZEGO webhook verified", {
+    logger.debug("ZEGO webhook verified", {
       event: body.event_type || body.type,
       timestamp: body.timestamp
     });
@@ -43,7 +44,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ ok: true }, { status: 202 });
   } catch (error: any) {
-    console.error('ZEGO webhook error:', error);
+    logger.error('ZEGO webhook error:', { error: error });
     return NextResponse.json({ error: "bad payload" }, { status: 400 });
   }
 }

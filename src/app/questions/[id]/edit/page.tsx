@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase'
 import type { Profile } from '@/lib/supabase'
 import { QuestionForm, type QuestionFormData } from '@/app/questions/_components/question-form'
 import { Card } from '@/components/ui/card'
+import { logger } from '@/lib/logger'
 
 export default function EditQuestionPage() {
   const params = useParams()
@@ -46,7 +47,7 @@ export default function EditQuestionPage() {
 
         setQuestion(data as QuestionFormData)
       } catch (err) {
-        console.error('Failed to load question:', err)
+        logger.error('Failed to load question:', { error: err })
         setError('加载题目失败，请稍后重试')
       } finally {
         setLoading(false)

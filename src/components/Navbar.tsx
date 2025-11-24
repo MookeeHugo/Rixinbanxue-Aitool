@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { getCurrentProfile, signOut } from '@/lib/auth'
 import { supabase } from '@/lib/supabase'
 import type { Profile } from '@/lib/supabase'
-
+import { logger } from '@/lib/logger'
 export default function Navbar() {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
@@ -36,7 +36,7 @@ export default function Navbar() {
       const data = await getCurrentProfile()
       setProfile(data)
     } catch (error) {
-      console.error('Failed to load profile:', error)
+      logger.error('Failed to load profile:', { error: error })
     } finally {
       setLoading(false)
     }
@@ -57,7 +57,7 @@ export default function Navbar() {
         window.location.href = '/login'
       }
     } catch (error) {
-      console.error('Failed to sign out:', error)
+      logger.error('Failed to sign out:', { error: error })
       alert('退出登录失败，请重试')
     }
   }

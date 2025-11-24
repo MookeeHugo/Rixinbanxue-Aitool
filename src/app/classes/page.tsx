@@ -1,50 +1,74 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getCurrentUser } from '@/lib/auth'
 import type { Class } from '@/lib/supabase'
-
+import { logger } from '@/lib/logger'
 export default function ClassesPage() {
   const router = useRouter()
   const [classes, setClasses] = useState<Class[]>([])
   const [loading, setLoading] = useState(true)
-  const [user, setUser] = useState<any>(null)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    const mountedRef = { current: true }
+
+    const checkUser = async () => {
+      try {
+        const currentUser = await getCurrentUser()
+        if (!mountedRef.current) return
+
+        if (!currentUser) {
+          router.push('/login')
+          return
+        }
+        loadClasses(currentUser.id, mountedRef)
+      } catch (err: any) {
+        if (!mountedRef.current) return
+        logger.error('用户验证失败:', { error: err })
+        setError('获取用户信息失败，请刷新页面重试')
+        setLoading(false)
+      }
+    }
+
+    const loadClasses = async (userId: string, mounted: { current: boolean }) => {
+      try {
+        if (!mounted.current) return
+        setError(null)
+        const { data, error: fetchError } = await supabase
+          .from('classes')
+          .select('*')
+          .eq('teacher_id', userId)
+          .order('created_at', { ascending: false })
+
+        if (!mounted.current) return
+        if (fetchError) {
+          logger.error('加载班级失败:', { error: fetchError })
+          setError(`加载失败: ${fetchError.message}`)
+          return
+        }
+        setClasses(data || [])
+      } catch (err: any) {
+        if (!mounted.current) return
+        logger.error('加载班级失败:', { error: err })
+        setError('加载班级列表时发生未知错误')
+      } finally {
+        if (mounted.current) {
+          setLoading(false)
+        }
+      }
+    }
+
     checkUser()
-  }, [])
 
-  const checkUser = async () => {
-    const currentUser = await getCurrentUser()
-    if (!currentUser) {
-      router.push('/login')
-      return
+    return () => {
+      mountedRef.current = false
     }
-    setUser(currentUser)
-    loadClasses(currentUser.id)
-  }
+  }, [router])
 
-  const loadClasses = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('classes')
-        .select('*')
-        .eq('teacher_id', userId)
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-      setClasses(data || [])
-    } catch (error) {
-      console.error('加载班级失败:', error)
-      alert('加载班级失败')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const deleteClass = async (id: string) => {
+  const deleteClass = useCallback(async (id: string) => {
     if (!confirm('确定要删除这个班级吗？班级下的所有作业也会被删除！')) return
 
     try {
@@ -55,13 +79,13 @@ export default function ClassesPage() {
 
       if (error) throw error
 
-      setClasses(classes.filter(c => c.id !== id))
+      setClasses(prev => prev.filter(c => c.id !== id))
       alert('删除成功')
     } catch (error) {
-      console.error('删除失败:', error)
+      logger.error('删除失败:', { error: error })
       alert('删除失败')
     }
-  }
+  }, [])
 
   if (loading) {
     return (
@@ -83,6 +107,32 @@ export default function ClassesPage() {
             + 创建班级
           </button>
         </div>
+
+        {/* 错误提示 */}
+        {error && (
+          <div className="bg-error/10 border border-error/50 rounded-lg p-6 mb-6">
+            <div className="flex justify-between items-start">
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-error mb-2">加载失败</h3>
+                <p className="text-error/80">{error}</p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => window.location.reload()}
+                  className="bg-brand-red text-white px-4 py-2 rounded-lg hover:bg-brand-red-hover transition-colors"
+                >
+                  重试
+                </button>
+                <button
+                  onClick={() => setError(null)}
+                  className="bg-secondary text-foreground px-4 py-2 rounded-lg hover:bg-border-medium transition-colors"
+                >
+                  关闭
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {classes.length === 0 ? (
           <div className="bg-card rounded-lg p-12 text-center border border-border">

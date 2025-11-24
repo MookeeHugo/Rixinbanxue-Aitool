@@ -1,11 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getCurrentUser } from '@/lib/auth'
 import type { Question } from '@/lib/supabase'
-
+import { logger } from '@/lib/logger'
 const KNOWLEDGE_POINTS = [
   '有理数加法', '有理数减法', '有理数乘法', '有理数除法', '有理数混合运算',
   '整式加减', '整式乘法', '整式除法', '因式分解',
@@ -45,62 +45,83 @@ export default function CreatePaperPage() {
   const [showPreview, setShowPreview] = useState(false)
 
   useEffect(() => {
+    const mountedRef = { current: true }
+
+    const checkUser = async () => {
+      try {
+        const currentUser = await getCurrentUser()
+        if (!mountedRef.current) return
+
+        if (!currentUser) {
+          router.push('/login')
+          return
+        }
+        setUser(currentUser)
+      } catch (error) {
+        logger.error('用户验证失败:', { error: error })
+        if (mountedRef.current) {
+          router.push('/login')
+        }
+      }
+    }
+
+    const loadKnowledgePointsFromDB = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('knowledge_points')
+          .select('name')
+          .eq('is_active', true)
+          .order('display_order')
+
+        if (!mountedRef.current) return
+
+        if (!error && data && data.length > 0) {
+          // 数据库有数据，使用数据库的知识点
+          setKnowledgePoints(data.map((kp: any) => kp.name))
+        }
+        // 如果数据库没有数据或出错，继续使用硬编码的知识点
+      } catch (error) {
+        if (!mountedRef.current) return
+        logger.debug('Knowledge points table not found, using fallback')
+        // 表不存在时，继续使用硬编码的KNOWLEDGE_POINTS
+      }
+    }
+
     checkUser()
     loadKnowledgePointsFromDB()
+
+    return () => {
+      mountedRef.current = false
+    }
+  }, [router])
+
+  const toggleKnowledgePoint = useCallback((point: string) => {
+    setSelectedKnowledgePoints(prev => {
+      if (prev.includes(point)) {
+        return prev.filter(p => p !== point)
+      } else {
+        return [...prev, point]
+      }
+    })
   }, [])
 
-  // 从数据库加载知识点（如果表存在）
-  const loadKnowledgePointsFromDB = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('knowledge_points')
-        .select('name')
-        .eq('is_active', true)
-        .order('display_order')
+  const addRequirement = useCallback(() => {
+    setRequirements(prev => [...prev, { type: '', difficulty: '', count: 0 }])
+  }, [])
 
-      if (!error && data && data.length > 0) {
-        // 数据库有数据，使用数据库的知识点
-        setKnowledgePoints(data.map((kp: any) => kp.name))
-      }
-      // 如果数据库没有数据或出错，继续使用硬编码的知识点
-    } catch (error) {
-      console.log('Knowledge points table not found, using fallback')
-      // 表不存在时，继续使用硬编码的KNOWLEDGE_POINTS
-    }
-  }
+  const removeRequirement = useCallback((index: number) => {
+    setRequirements(prev => prev.filter((_, i) => i !== index))
+  }, [])
 
-  const checkUser = async () => {
-    const currentUser = await getCurrentUser()
-    if (!currentUser) {
-      router.push('/login')
-      return
-    }
-    setUser(currentUser)
-  }
+  const updateRequirement = useCallback((index: number, field: keyof QuestionRequirement, value: any) => {
+    setRequirements(prev => {
+      const newRequirements = [...prev]
+      newRequirements[index] = { ...newRequirements[index], [field]: value }
+      return newRequirements
+    })
+  }, [])
 
-  const toggleKnowledgePoint = (point: string) => {
-    if (selectedKnowledgePoints.includes(point)) {
-      setSelectedKnowledgePoints(selectedKnowledgePoints.filter(p => p !== point))
-    } else {
-      setSelectedKnowledgePoints([...selectedKnowledgePoints, point])
-    }
-  }
-
-  const addRequirement = () => {
-    setRequirements([...requirements, { type: '', difficulty: '', count: 0 }])
-  }
-
-  const removeRequirement = (index: number) => {
-    setRequirements(requirements.filter((_, i) => i !== index))
-  }
-
-  const updateRequirement = (index: number, field: keyof QuestionRequirement, value: any) => {
-    const newRequirements = [...requirements]
-    newRequirements[index] = { ...newRequirements[index], [field]: value }
-    setRequirements(newRequirements)
-  }
-
-  const generatePaper = async () => {
+  const generatePaper = useCallback(async () => {
     if (!paperName.trim()) {
       alert('请输入试卷名称')
       return
@@ -168,14 +189,14 @@ export default function CreatePaperPage() {
       setSelectedQuestions(selected)
       setShowPreview(true)
     } catch (error) {
-      console.error('组卷失败:', error)
+      logger.error('组卷失败:', { error: error })
       alert('组卷失败')
     } finally {
       setLoading(false)
     }
-  }
+  }, [paperName, requirements, selectedKnowledgePoints])
 
-  const savePaper = async () => {
+  const savePaper = useCallback(async () => {
     if (selectedQuestions.length === 0) {
       alert('请先生成试卷')
       return
@@ -198,37 +219,46 @@ export default function CreatePaperPage() {
       alert('试卷保存成功！')
       router.push(`/papers/${data.id}`)
     } catch (error) {
-      console.error('保存失败:', error)
+      logger.error('保存失败:', { error: error })
       alert('保存失败')
     } finally {
       setLoading(false)
     }
-  }
+  }, [selectedQuestions, paperName, user, router])
 
-  const getTotalQuestions = () => {
+  const getTotalQuestions = useCallback(() => {
     return requirements.reduce((sum, req) => sum + (req.count || 0), 0)
-  }
+  }, [requirements])
 
   // 题目管理功能
-  const removeQuestion = (index: number) => {
+  const removeQuestion = useCallback((index: number) => {
     if (confirm('确定要删除这道题吗？')) {
-      setSelectedQuestions(selectedQuestions.filter((_, i) => i !== index))
+      setSelectedQuestions(prev => prev.filter((_, i) => i !== index))
     }
-  }
+  }, [])
 
-  const moveQuestionUp = (index: number) => {
+  const moveQuestionUp = useCallback((index: number) => {
     if (index === 0) return
-    const newQuestions = [...selectedQuestions]
-    ;[newQuestions[index - 1], newQuestions[index]] = [newQuestions[index], newQuestions[index - 1]]
-    setSelectedQuestions(newQuestions)
-  }
+    setSelectedQuestions(prev => {
+      const newQuestions = [...prev]
+      ;[newQuestions[index - 1], newQuestions[index]] = [newQuestions[index], newQuestions[index - 1]]
+      return newQuestions
+    })
+  }, [])
 
-  const moveQuestionDown = (index: number) => {
-    if (index === selectedQuestions.length - 1) return
-    const newQuestions = [...selectedQuestions]
-    ;[newQuestions[index], newQuestions[index + 1]] = [newQuestions[index + 1], newQuestions[index]]
-    setSelectedQuestions(newQuestions)
-  }
+  const moveQuestionDown = useCallback((index: number) => {
+    setSelectedQuestions(prev => {
+      if (index === prev.length - 1) return prev
+      const newQuestions = [...prev]
+      ;[newQuestions[index], newQuestions[index + 1]] = [newQuestions[index + 1], newQuestions[index]]
+      return newQuestions
+    })
+  }, [])
+
+  // 使用 useMemo 优化知识点过滤
+  const filteredKnowledgePoints = useMemo(() => {
+    return knowledgePoints.filter(point => point.includes(searchTerm))
+  }, [knowledgePoints, searchTerm])
 
   if (showPreview) {
     return (
@@ -352,21 +382,19 @@ export default function CreatePaperPage() {
 
           {/* 知识点列表 */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2 max-h-64 overflow-y-auto">
-            {knowledgePoints
-              .filter(point => point.includes(searchTerm))
-              .map((point) => (
-                <label key={point} className="flex items-center gap-2 text-sm cursor-pointer hover:text-brand-red">
-                  <input
-                    type="checkbox"
-                    checked={selectedKnowledgePoints.includes(point)}
-                    onChange={() => toggleKnowledgePoint(point)}
-                    className="rounded"
-                  />
-                  <span className={selectedKnowledgePoints.includes(point) ? 'text-brand-red' : 'text-foreground-secondary'}>
-                    {point}
-                  </span>
-                </label>
-              ))}
+            {filteredKnowledgePoints.map((point) => (
+              <label key={point} className="flex items-center gap-2 text-sm cursor-pointer hover:text-brand-red">
+                <input
+                  type="checkbox"
+                  checked={selectedKnowledgePoints.includes(point)}
+                  onChange={() => toggleKnowledgePoint(point)}
+                  className="rounded"
+                />
+                <span className={selectedKnowledgePoints.includes(point) ? 'text-brand-red' : 'text-foreground-secondary'}>
+                  {point}
+                </span>
+              </label>
+            ))}
           </div>
           {selectedKnowledgePoints.length > 0 && (
             <p className="text-brand-red text-sm mt-4">

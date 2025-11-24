@@ -1,0 +1,45 @@
+{
+  "cookies": [
+    {
+      "name": "sb-127-auth-token",
+      "value": "%7B%22access_token%22%3A%22eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwOi8vMTI3LjAuMC4xOjU0MzIxL2F1dGgvdjEiLCJzdWIiOiJjY2NjY2NjYy0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDIiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzYzOTMwNDI5LCJpYXQiOjE3NjM5MjY4MjksImVtYWlsIjoicGxheXdyaWdodC1zdHVkZW50QHRlc3QuY29tIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCJdfSwidXNlcl9tZXRhZGF0YSI6e30sInJvbGUiOiJhdXRoZW50aWNhdGVkIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NjM5MjY4Mjl9XSwic2Vzc2lvbl9pZCI6IjQ5Mzg2MGMyLTE1YjgtNGMwZS1hNDQxLTAxMjE2MDE5YWM3MCIsImlzX2Fub255bW91cyI6ZmFsc2V9.L7MgTxpxHkw9YNgsHqCq7XbIpAsmuFfrri0bQML9gHs%22%2C%22refresh_token%22%3A%225kz3nejjxix4%22%2C%22expires_at%22%3A1763930429%2C%22token_type%22%3A%22bearer%22%7D",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1763930429.580709,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "sb-Rixindemo-codex-m1-auth-token",
+      "value": "%7B%22access_token%22%3A%22eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwOi8vMTI3LjAuMC4xOjU0MzIxL2F1dGgvdjEiLCJzdWIiOiJjY2NjY2NjYy0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDIiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzYzOTMwNDI5LCJpYXQiOjE3NjM5MjY4MjksImVtYWlsIjoicGxheXdyaWdodC1zdHVkZW50QHRlc3QuY29tIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCJdfSwidXNlcl9tZXRhZGF0YSI6e30sInJvbGUiOiJhdXRoZW50aWNhdGVkIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NjM5MjY4Mjl9XSwic2Vzc2lvbl9pZCI6IjQ5Mzg2MGMyLTE1YjgtNGMwZS1hNDQxLTAxMjE2MDE5YWM3MCIsImlzX2Fub255bW91cyI6ZmFsc2V9.L7MgTxpxHkw9YNgsHqCq7XbIpAsmuFfrri0bQML9gHs%22%2C%22refresh_token%22%3A%225kz3nejjxix4%22%2C%22expires_at%22%3A1763930429%2C%22token_type%22%3A%22bearer%22%7D",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1763930429.581092,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "sb-auth-token",
+      "value": "%7B%22access_token%22%3A%22eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwOi8vMTI3LjAuMC4xOjU0MzIxL2F1dGgvdjEiLCJzdWIiOiJjY2NjY2NjYy0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDIiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzYzOTMwNDI5LCJpYXQiOjE3NjM5MjY4MjksImVtYWlsIjoicGxheXdyaWdodC1zdHVkZW50QHRlc3QuY29tIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCJdfSwidXNlcl9tZXRhZGF0YSI6e30sInJvbGUiOiJhdXRoZW50aWNhdGVkIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NjM5MjY4Mjl9XSwic2Vzc2lvbl9pZCI6IjQ5Mzg2MGMyLTE1YjgtNGMwZS1hNDQxLTAxMjE2MDE5YWM3MCIsImlzX2Fub255bW91cyI6ZmFsc2V9.L7MgTxpxHkw9YNgsHqCq7XbIpAsmuFfrri0bQML9gHs%22%2C%22refresh_token%22%3A%225kz3nejjxix4%22%2C%22expires_at%22%3A1763930429%2C%22token_type%22%3A%22bearer%22%7D",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1763930429.581113,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "http://localhost:3002",
+      "localStorage": [
+        {
+          "name": "sb-auth",
+          "value": "{\"access_token\":\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwOi8vMTI3LjAuMC4xOjU0MzIxL2F1dGgvdjEiLCJzdWIiOiJjY2NjY2NjYy0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDIiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzYzOTMwNDI5LCJpYXQiOjE3NjM5MjY4MjksImVtYWlsIjoicGxheXdyaWdodC1zdHVkZW50QHRlc3QuY29tIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCJdfSwidXNlcl9tZXRhZGF0YSI6e30sInJvbGUiOiJhdXRoZW50aWNhdGVkIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NjM5MjY4Mjl9XSwic2Vzc2lvbl9pZCI6IjQ5Mzg2MGMyLTE1YjgtNGMwZS1hNDQxLTAxMjE2MDE5YWM3MCIsImlzX2Fub255bW91cyI6ZmFsc2V9.L7MgTxpxHkw9YNgsHqCq7XbIpAsmuFfrri0bQML9gHs\",\"token_type\":\"bearer\",\"expires_in\":3600,\"expires_at\":1763930429,\"refresh_token\":\"5kz3nejjxix4\",\"user\":{\"id\":\"cccccccc-0000-0000-0000-000000000002\",\"aud\":\"authenticated\",\"role\":\"authenticated\",\"email\":\"playwright-student@test.com\",\"email_confirmed_at\":\"2025-11-23T19:32:51.759336Z\",\"phone\":\"\",\"confirmed_at\":\"2025-11-23T19:32:51.759336Z\",\"last_sign_in_at\":\"2025-11-23T19:40:29.524591131Z\",\"app_metadata\":{\"provider\":\"email\",\"providers\":[\"email\"]},\"user_metadata\":{},\"identities\":[],\"created_at\":\"2025-11-23T19:32:51.759336Z\",\"updated_at\":\"2025-11-23T19:40:29.526878Z\",\"is_anonymous\":false},\"weak_password\":null}"
+        }
+      ]
+    }
+  ]
+}

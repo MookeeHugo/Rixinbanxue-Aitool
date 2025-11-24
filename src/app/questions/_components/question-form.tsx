@@ -7,6 +7,7 @@ import { Save, Upload as UploadIcon, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { logger } from '@/lib/logger'
 import {
   Select,
   SelectContent,
@@ -16,7 +17,6 @@ import {
 } from '@/components/ui/select'
 import { supabase } from '@/lib/supabase'
 import type { Profile } from '@/lib/supabase'
-import { uploadFile, FileAccessLevel, deleteFile } from '@/lib/storage'
 import { extractR2KeyFromUrl } from '@/lib/storage-utils'
 
 export type QuestionType = 'choice' | 'fill' | 'essay'
@@ -141,6 +141,40 @@ export function QuestionForm({
     setPendingDeleteKeys((prev) => (prev.includes(key) ? prev : [...prev, key]))
   }
 
+  const requestDeleteKey = async (key: string) => {
+    if (!key) return
+    await fetch('/api/files/delete', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ key })
+    })
+  }
+
+  const uploadImageThroughApi = async (file: File) => {
+    const prefix = `questions/${mode === 'edit' ? questionId || 'editing' : 'temp'}`
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('prefix', prefix)
+    formData.append('access', 'public')
+
+    const response = await fetch('/api/files/upload', {
+      method: 'POST',
+      body: formData
+    })
+
+    const data = await response.json().catch(() => ({}))
+    if (!response.ok) {
+      throw new Error(data?.error || '文件上传失败')
+    }
+
+    return {
+      key: data.key as string,
+      url: (data.publicUrl || data.cdnUrl || '') as string,
+    }
+  }
+
   const handleImageUpload = async (file: File) => {
     const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
     if (!validTypes.includes(file.type)) {
@@ -159,26 +193,17 @@ export function QuestionForm({
         if (mode === 'edit' && imageKey === initialImageKey) {
           addPendingDeleteKey(imageKey)
         } else {
-          await deleteFile(imageKey).catch(() => undefined)
+          await requestDeleteKey(imageKey).catch(() => undefined)
         }
       }
 
-      const arrayBuffer = await file.arrayBuffer()
-      const buffer = Buffer.from(arrayBuffer)
-      const timestamp = Date.now()
-      const key = `questions/${mode === 'edit' ? questionId || 'editing' : 'temp'}/${timestamp}-${file.name}`
-      const result = await uploadFile({
-        file: buffer,
-        key,
-        accessLevel: FileAccessLevel.PUBLIC,
-      })
-
-      setImageUrl(result.publicUrl || result.cdnUrl || '')
-      setImageKey(result.key)
+      const uploaded = await uploadImageThroughApi(file)
+      setImageUrl(uploaded.url)
+      setImageKey(uploaded.key)
       antMessage.success('图片上传成功')
       return false
     } catch (error) {
-      console.error('Failed to upload image:', error)
+      logger.error('Failed to upload image:', { error: error })
       antMessage.error('图片上传失败')
       return false
     } finally {
@@ -195,12 +220,12 @@ export function QuestionForm({
       if (mode === 'edit' && imageKey === initialImageKey) {
         addPendingDeleteKey(imageKey)
       } else {
-        await deleteFile(imageKey)
+        await requestDeleteKey(imageKey).catch(() => undefined)
       }
       setImageUrl('')
       setImageKey('')
     } catch (error) {
-      console.error('Failed to remove image:', error)
+      logger.error('Failed to remove image:', { error: error })
       antMessage.error('删除图片失败，请稍后再试')
     }
   }
@@ -315,7 +340,7 @@ export function QuestionForm({
       if (pendingDeleteKeys.length) {
         await Promise.all(
           pendingDeleteKeys.map((key) =>
-            deleteFile(key).catch(() => undefined)
+            requestDeleteKey(key).catch(() => undefined)
           )
         )
       }
@@ -330,7 +355,7 @@ export function QuestionForm({
         onSuccess(payload)
       }
     } catch (error: any) {
-      console.error('Failed to submit question:', error)
+      logger.error('Failed to submit question:', { error: error })
       antMessage.error(error.message || '保存失败，请稍后重试')
     } finally {
       setSubmitting(false)

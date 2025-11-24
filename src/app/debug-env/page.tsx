@@ -1,3 +1,5 @@
+import { logger } from '@/lib/logger'
+
 "use client"
 
 export default function DebugEnvPage() {
@@ -57,7 +59,7 @@ export default function DebugEnvPage() {
                 key: k,
                 value: localStorage.getItem(k)?.substring(0, 100) + '...'
               }))
-              console.log('Supabase localStorage:', result)
+              logger.debug('Supabase localStorage:', result)
               alert(`找到 ${supabaseKeys.length} 个 Supabase 相关的 localStorage 键，详情请查看控制台`)
             }}
             className="rx-btn rx-btn-primary mb-4"

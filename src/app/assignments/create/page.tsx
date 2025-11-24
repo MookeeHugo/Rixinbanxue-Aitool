@@ -1,12 +1,20 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getCurrentUser } from '@/lib/auth'
 import type { Class, Paper } from '@/lib/supabase'
-
+import { logger } from '@/lib/logger'
 export default function CreateAssignmentPage() {
+  return (
+    <Suspense fallback={<div className="py-10 text-center text-muted-foreground">加载作业创建表单...</div>}>
+      <CreateAssignmentPageContent />
+    </Suspense>
+  )
+}
+
+function CreateAssignmentPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const preselectedClassId = searchParams.get('classId')
@@ -19,23 +27,13 @@ export default function CreateAssignmentPage() {
   const [deadline, setDeadline] = useState('')
   const [status, setStatus] = useState<'draft' | 'published'>('published')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    checkUser()
-  }, [])
-
-  const checkUser = async () => {
-    const currentUser = await getCurrentUser()
-    if (!currentUser) {
-      router.push('/login')
-      return
-    }
-    setUser(currentUser)
-    loadData(currentUser.id)
-  }
-
-  const loadData = async (userId: string) => {
+  const loadData = useCallback(async (userId: string, mounted: { current: boolean }) => {
     try {
+      if (!mounted.current) return
+      setError(null)
+
       // 加载班级列表
       const { data: classesData, error: classesError } = await supabase
         .from('classes')
@@ -43,7 +41,12 @@ export default function CreateAssignmentPage() {
         .eq('teacher_id', userId)
         .order('created_at', { ascending: false })
 
-      if (classesError) throw classesError
+      if (!mounted.current) return
+      if (classesError) {
+        logger.error('加载班级失败:', { error: classesError })
+        setError(`加载班级列表失败: ${classesError.message}`)
+        return
+      }
       setClasses(classesData || [])
 
       // 加载试卷列表
@@ -53,25 +56,67 @@ export default function CreateAssignmentPage() {
         .eq('created_by', userId)
         .order('created_at', { ascending: false })
 
-      if (papersError) throw papersError
+      if (!mounted.current) return
+      if (papersError) {
+        logger.error('加载试卷失败:', { error: papersError })
+        setError(`加载试卷列表失败: ${papersError.message}`)
+        return
+      }
       setPapers(papersData || [])
-    } catch (error) {
-      console.error('加载数据失败:', error)
-      alert('加载数据失败')
+    } catch (err: any) {
+      if (!mounted.current) return
+      logger.error('加载数据失败:', { error: err })
+      setError('加载数据时发生未知错误')
     }
-  }
+  }, [])
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  useEffect(() => {
+    const mountedRef = { current: true }
+
+    const checkUser = async () => {
+      try {
+        const currentUser = await getCurrentUser()
+        if (!mountedRef.current) return
+
+        if (!currentUser) {
+          router.push('/login')
+          return
+        }
+
+        setUser(currentUser)
+        loadData(currentUser.id, mountedRef)
+      } catch (error) {
+        logger.error('用户验证失败:', { error: error })
+        if (mountedRef.current) {
+          router.push('/login')
+        }
+      }
+    }
+
+    checkUser()
+
+    return () => {
+      mountedRef.current = false
+    }
+  }, [router, loadData])
+
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
 
+    if (!user) {
+      setError('用户未登录，请刷新页面重试')
+      return
+    }
+
     if (!selectedClassId || !selectedPaperId || !deadline) {
-      alert('请填写所有必填字段')
+      setError('请填写所有必填字段')
       return
     }
 
     setLoading(true)
+    setError(null)
     try {
-      const { error } = await supabase
+      const { error: insertError } = await supabase
         .from('assignments')
         .insert({
           class_id: selectedClassId,
@@ -81,29 +126,50 @@ export default function CreateAssignmentPage() {
           created_by: user.id
         })
 
-      if (error) throw error
+      if (insertError) {
+        logger.error('发布作业失败:', { error: insertError })
+        setError(`发布失败: ${insertError.message}`)
+        return
+      }
 
-      alert('作业发布成功！')
       router.push('/assignments')
-    } catch (error) {
-      console.error('发布失败:', error)
-      alert('发布失败')
+    } catch (err: any) {
+      logger.error('发布作业失败:', { error: err })
+      setError('发布作业时发生未知错误')
     } finally {
       setLoading(false)
     }
-  }
+  }, [selectedClassId, selectedPaperId, deadline, status, user, router])
 
   // 获取最小日期时间（当前时间）
-  const getMinDateTime = () => {
+  const minDateTime = useMemo(() => {
     const now = new Date()
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset())
     return now.toISOString().slice(0, 16)
-  }
+  }, [])
 
   return (
     <div className="min-h-screen bg-background py-8">
       <div className="max-w-2xl mx-auto px-4">
         <h1 className="text-3xl font-bold text-foreground mb-8">发布作业</h1>
+
+        {/* 错误提示 */}
+        {error && (
+          <div className="bg-error/10 border border-error/50 rounded-lg p-6 mb-6">
+            <div className="flex justify-between items-start">
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-error mb-2">操作失败</h3>
+                <p className="text-error/80">{error}</p>
+              </div>
+              <button
+                onClick={() => setError(null)}
+                className="bg-secondary text-foreground px-4 py-2 rounded-lg hover:bg-border-medium transition-colors"
+              >
+                关闭
+              </button>
+            </div>
+          </div>
+        )}
 
         {classes.length === 0 ? (
           <div className="bg-card rounded-lg p-12 text-center border border-border">
@@ -187,7 +253,7 @@ export default function CreateAssignmentPage() {
                 type="datetime-local"
                 value={deadline}
                 onChange={(e) => setDeadline(e.target.value)}
-                min={getMinDateTime()}
+                min={minDateTime}
                 className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:border-brand-red"
                 required
               />

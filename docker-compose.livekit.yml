@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  livekit:
+    image: livekit/livekit-server:latest
+    container_name: livekit_server
+    # 使用配置文件启动（Windows 需要使用端口映射而不是 host 网络）
+    command: --config /etc/livekit.yaml
+    ports:
+      # HTTP/WebSocket 端口
+      - "7880:7880"
+      # RTC TCP 端口
+      - "7881:7881"
+      # UDP 端口范围（用于 WebRTC）
+      - "7882:7882/udp"
+      - "50000-50099:50000-50099/udp"
+    environment:
+      # 日志级别
+      LIVEKIT_LOG_LEVEL: "info"
+    volumes:
+      # 挂载配置文件
+      - ./livekit.yaml:/etc/livekit.yaml:ro
+      # 持久化数据（可选）
+      - ./livekit-data:/livekit
+    restart: unless-stopped

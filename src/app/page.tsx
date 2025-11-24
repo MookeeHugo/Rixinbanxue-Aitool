@@ -1,28 +1,28 @@
 "use client"
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { getCurrentProfile } from '@/lib/auth'
 import type { Profile } from '@/lib/supabase'
-
+import { logger } from '@/lib/logger'
 export default function HomePage() {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    loadProfile()
-  }, [])
-
-  const loadProfile = async () => {
+  const loadProfile = useCallback(async () => {
     try {
       const data = await getCurrentProfile()
       setProfile(data)
     } catch (error) {
-      console.error('Failed to load profile:', error)
+      logger.error('Failed to load profile:', { error: error })
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    loadProfile()
+  }, [loadProfile])
 
   // 未登录状态 - 显示欢迎页
   if (!loading && !profile) {

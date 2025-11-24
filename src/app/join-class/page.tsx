@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getCurrentUser } from '@/lib/auth'
+import { logger } from '@/lib/logger'
 
 interface JoinedClass {
   id: string
@@ -71,7 +72,7 @@ export default function JoinClassPage() {
 
       setJoinedClasses(formatted)
     } catch (error) {
-      console.error('加载已加入班级失败:', error)
+      logger.error('加载已加入班级失败:', { error: error })
     } finally {
       setLoadingClasses(false)
     }
@@ -126,7 +127,7 @@ export default function JoinClassPage() {
       setClassCode('')
       loadJoinedClasses(user.id) // 重新加载已加入的班级列表
     } catch (error: any) {
-      console.error('加入班级失败:', error)
+      logger.error('加入班级失败:', { error: error })
       if (error.code === '23505') {
         alert('您已经加入了这个班级')
       } else {
@@ -152,7 +153,7 @@ export default function JoinClassPage() {
       alert('已退出班级')
       loadJoinedClasses(user.id)
     } catch (error) {
-      console.error('退出班级失败:', error)
+      logger.error('退出班级失败:', { error: error })
       alert('退出班级失败')
     }
   }

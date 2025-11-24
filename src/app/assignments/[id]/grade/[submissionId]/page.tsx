@@ -1,14 +1,45 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getCurrentUser } from '@/lib/auth'
 import type { Question, Submission } from '@/lib/supabase'
-
+import { logger } from '@/lib/logger'
 interface SubmissionWithDetails extends Submission {
   student_name: string
   assignment_name: string
+}
+
+// 纯函数：移到组件外部
+function getQuestionTypeName(type: string) {
+  const typeMap: Record<string, string> = {
+    'choice': '选择题',
+    'fill': '填空题',
+    'essay': '解答题'
+  }
+  return typeMap[type] || type
+}
+
+function getDifficultyName(difficulty: string) {
+  const diffMap: Record<string, string> = {
+    'easy': '简单',
+    'medium': '中等',
+    'hard': '困难'
+  }
+  return diffMap[difficulty] || difficulty
+}
+
+function isAnswerCorrect(question: Question, studentAnswer: any) {
+  if (!studentAnswer) return false
+
+  // 对于选择题和填空题，进行简单的字符串比较
+  if (question.type === 'choice' || question.type === 'fill') {
+    return String(studentAnswer).trim().toLowerCase() === String(question.answer).trim().toLowerCase()
+  }
+
+  // 解答题无法自动判断
+  return null
 }
 
 export default function GradeSubmissionPage() {
@@ -23,14 +54,17 @@ export default function GradeSubmissionPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [score, setScore] = useState<number | string>('')
+  const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    checkUserAndLoadData()
-  }, [assignmentId, submissionId])
-
-  const checkUserAndLoadData = async () => {
+  const checkUserAndLoadData = useCallback(async (mounted: { current: boolean }) => {
     try {
+      if (!mounted.current) return
+      setLoading(true)
+      setError(null)
+
       const currentUser = await getCurrentUser()
+      if (!mounted.current) return
+
       if (!currentUser) {
         router.push('/login')
         return
@@ -48,11 +82,15 @@ export default function GradeSubmissionPage() {
         .eq('id', submissionId)
         .single()
 
-      if (subError) throw subError
+      if (!mounted.current) return
+      if (subError) {
+        logger.error('加载提交记录失败:', { error: subError })
+        setError(`加载提交记录失败: ${subError.message}`)
+        return
+      }
 
       if (!subData) {
-        alert('未找到提交记录')
-        router.back()
+        setError('未找到提交记录')
         return
       }
 
@@ -72,7 +110,12 @@ export default function GradeSubmissionPage() {
         .eq('id', assignmentId)
         .single()
 
-      if (assignmentError) throw assignmentError
+      if (!mounted.current) return
+      if (assignmentError) {
+        logger.error('加载作业信息失败:', { error: assignmentError })
+        setError(`加载作业信息失败: ${assignmentError.message}`)
+        return
+      }
 
       const { data: paperData, error: paperError } = await supabase
         .from('papers')
@@ -80,7 +123,12 @@ export default function GradeSubmissionPage() {
         .eq('id', assignmentData.paper_id)
         .single()
 
-      if (paperError) throw paperError
+      if (!mounted.current) return
+      if (paperError) {
+        logger.error('加载试卷信息失败:', { error: paperError })
+        setError(`加载试卷信息失败: ${paperError.message}`)
+        return
+      }
 
       // 获取所有题目
       const { data: questionsData, error: questionsError } = await supabase
@@ -88,7 +136,12 @@ export default function GradeSubmissionPage() {
         .select('*')
         .in('id', paperData.question_ids)
 
-      if (questionsError) throw questionsError
+      if (!mounted.current) return
+      if (questionsError) {
+        logger.error('加载题目失败:', { error: questionsError })
+        setError(`加载题目失败: ${questionsError.message}`)
+        return
+      }
 
       // 按照试卷中的顺序排列题目
       const orderedQuestions = paperData.question_ids
@@ -96,79 +149,97 @@ export default function GradeSubmissionPage() {
         .filter((q: Question | undefined): q is Question => q !== undefined)
 
       setQuestions(orderedQuestions)
-    } catch (error) {
-      console.error('加载数据失败:', error)
-      alert('加载数据失败')
+    } catch (err: any) {
+      if (!mounted.current) return
+      logger.error('加载数据失败:', { error: err })
+      setError('加载数据时发生未知错误')
     } finally {
-      setLoading(false)
+      if (mounted.current) {
+        setLoading(false)
+      }
     }
-  }
+  }, [assignmentId, submissionId, router])
 
-  const handleSaveScore = async () => {
+  useEffect(() => {
+    const mountedRef = { current: true }
+
+    checkUserAndLoadData(mountedRef)
+
+    return () => {
+      mountedRef.current = false
+    }
+  }, [checkUserAndLoadData])
+
+  const handleSaveScore = useCallback(async () => {
     if (score === '' || score === null) {
-      alert('请输入分数')
+      setError('请输入分数')
       return
     }
 
     const numScore = typeof score === 'string' ? parseFloat(score) : score
     if (isNaN(numScore) || numScore < 0 || numScore > 100) {
-      alert('请输入0-100之间的有效分数')
+      setError('请输入0-100之间的有效分数')
       return
     }
 
     setSaving(true)
+    setError(null)
     try {
-      const { error } = await supabase
+      const { error: updateError } = await supabase
         .from('submissions')
         .update({ score: numScore })
         .eq('id', submissionId)
 
-      if (error) throw error
+      if (updateError) {
+        logger.error('保存分数失败:', { error: updateError })
+        setError(`保存失败: ${updateError.message}`)
+        return
+      }
 
-      alert('批改完成！')
       router.push(`/assignments/${assignmentId}`)
-    } catch (error) {
-      console.error('保存失败:', error)
-      alert('保存失败')
+    } catch (err: any) {
+      logger.error('保存分数失败:', { error: err })
+      setError('保存分数时发生未知错误')
     } finally {
       setSaving(false)
     }
-  }
-
-  const getQuestionTypeName = (type: string) => {
-    const typeMap: Record<string, string> = {
-      'choice': '选择题',
-      'fill': '填空题',
-      'essay': '解答题'
-    }
-    return typeMap[type] || type
-  }
-
-  const getDifficultyName = (difficulty: string) => {
-    const diffMap: Record<string, string> = {
-      'easy': '简单',
-      'medium': '中等',
-      'hard': '困难'
-    }
-    return diffMap[difficulty] || difficulty
-  }
-
-  const isAnswerCorrect = (question: Question, studentAnswer: any) => {
-    if (!studentAnswer) return false
-
-    // 对于选择题和填空题，进行简单的字符串比较
-    if (question.type === 'choice' || question.type === 'fill') {
-      return String(studentAnswer).trim().toLowerCase() === String(question.answer).trim().toLowerCase()
-    }
-
-    // 解答题无法自动判断
-    return null
-  }
+  }, [score, submissionId, assignmentId, router])
 
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <p className="text-secondary">加载中...</p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background py-8">
+        <div className="max-w-5xl mx-auto px-4">
+          <div className="bg-error/10 border border-error/50 rounded-lg p-6">
+            <div className="flex justify-between items-start">
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-error mb-2">操作失败</h3>
+                <p className="text-error/80">{error}</p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => window.location.reload()}
+                  className="bg-brand-red text-white px-4 py-2 rounded-lg hover:bg-brand-red-hover transition-colors"
+                >
+                  重试
+                </button>
+                <button
+                  onClick={() => router.push(`/assignments/${assignmentId}`)}
+                  className="bg-secondary text-foreground px-4 py-2 rounded-lg hover:bg-border-medium transition-colors"
+                >
+                  返回
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     )
   }
@@ -184,6 +255,21 @@ export default function GradeSubmissionPage() {
   return (
     <div className="min-h-screen bg-background py-8">
       <div className="max-w-5xl mx-auto px-4">
+        {/* 错误提示（浮动显示） */}
+        {error && (
+          <div className="bg-error/10 border border-error/50 rounded-lg p-4 mb-6">
+            <div className="flex justify-between items-start">
+              <p className="text-error">{error}</p>
+              <button
+                onClick={() => setError(null)}
+                className="text-error hover:text-error/80"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* 头部信息 */}
         <div className="bg-card rounded-lg p-6 mb-6">
           <div className="flex justify-between items-start mb-4">

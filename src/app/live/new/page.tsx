@@ -1,16 +1,22 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { createSession } from "@/lib/mock/sessions";
-import { useState } from "react";
-import { useApiParam } from "@/lib/client/useApiParam";
+import { Suspense, useState } from "react";
+import { logger } from '@/lib/logger';
 
 export default function NewLiveSessionPage() {
+  return (
+    <Suspense fallback={<p className="rx-muted">加载创建课堂表单...</p>}>
+      <NewLiveSessionPageContent />
+    </Suspense>
+  );
+}
+
+function NewLiveSessionPageContent() {
   const router = useRouter();
-  const { useApi, withApi } = useApiParam();
   const [title, setTitle] = useState("");
   const [scheduledAt, setScheduledAt] = useState<string>("");
   const [duration, setDuration] = useState<number>(60);
-  const [provider, setProvider] = useState<"zego" | "livekit">("zego");
+  const [provider, setProvider] = useState<"zego" | "livekit">("livekit");
   const [recordOnStart, setRecordOnStart] = useState(true);
 
   function toISO(dt: string) {
@@ -28,14 +34,28 @@ export default function NewLiveSessionPage() {
       durationMin: duration,
       recordOnStart,
     };
-    if (useApi) {
-      const r = await fetch("/api/live-sessions", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) });
-      if (!r.ok) { alert("创建失败"); return; }
+
+    // 直播功能始终使用真实API，不再使用mock数据
+    try {
+      const r = await fetch("/api/live-sessions", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!r.ok) {
+        const errorData = await r.json().catch(() => ({ error: "Unknown error" }));
+        alert(`创建失败: ${errorData.error || r.statusText}`);
+        logger.error('创建课堂失败:', { error: errorData });
+        return;
+      }
+
       const s = await r.json();
-      router.push(withApi(`/live/${s.id}`));
-    } else {
-      const s = createSession(payload as any);
+      logger.debug("课堂创建成功:", s);
       router.push(`/live/${s.id}`);
+    } catch (error) {
+      logger.error('创建课堂错误:', { error: error });
+      alert("创建失败: 网络错误或服务器无响应");
     }
   }
 
@@ -71,7 +91,7 @@ export default function NewLiveSessionPage() {
           </label>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <a className="rx-btn" href={withApi("/live")}>取消</a>
+          <a className="rx-btn" href="/live">取消</a>
           <button type="submit" className="rx-btn rx-btn-primary">创建并进入</button>
         </div>
       </div>

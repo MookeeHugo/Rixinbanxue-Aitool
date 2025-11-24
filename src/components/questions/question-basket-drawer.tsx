@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { Drawer, Empty, Modal, Tag, Progress } from 'antd'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -44,26 +44,26 @@ export function QuestionBasketDrawer({
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [clearModalOpen, setClearModalOpen] = useState(false)
 
-  const handleClear = () => {
+  const handleClear = useCallback(() => {
     if (!questions.length) return
     setClearModalOpen(true)
-  }
+  }, [questions.length])
 
-  const confirmClear = () => {
+  const confirmClear = useCallback(() => {
     clearBasket()
     deselectAll()
     setClearModalOpen(false)
-  }
+  }, [clearBasket, deselectAll])
 
-  const cancelClear = () => {
+  const cancelClear = useCallback(() => {
     setClearModalOpen(false)
-  }
+  }, [])
 
-  const handleStartBuild = () => {
+  const handleStartBuild = useCallback(() => {
     if (!questions.length) return
     onClose()
     onStartBuild()
-  }
+  }, [questions.length, onClose, onStartBuild])
 
   return (
     <Drawer

@@ -2,7 +2,8 @@
 import Link from "next/link";
 import { listSessions as listMock } from "@/lib/mock/sessions";
 import { useApiParam } from "@/lib/client/useApiParam";
-import { useEffect, useState } from "react";
+import { StorageQuotaBadge } from "@/components/storage/StorageQuotaCard";
+import { Suspense, useEffect, useState } from "react";
 
 function ProviderBadge({ p }: { p: "zego" | "livekit" }) {
   const name = p === "zego" ? "ZEGO" : "LiveKit";
@@ -14,6 +15,14 @@ type Session = {
 };
 
 export default function LiveSessionsPage() {
+  return (
+    <Suspense fallback={<p className="rx-muted">加载直播课堂...</p>}>
+      <LiveSessionsPageContent />
+    </Suspense>
+  );
+}
+
+function LiveSessionsPageContent() {
   const { useApi, withApi } = useApiParam();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,9 +49,12 @@ export default function LiveSessionsPage() {
   }, [useApi]);
   return (
     <div className="rx-list">
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
         <h2>直播课堂列表</h2>
-        <Link className="rx-btn rx-btn-primary" href={withApi("/live/new")}>创建课堂</Link>
+        <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+          <StorageQuotaBadge />
+          <Link className="rx-btn rx-btn-primary" href={withApi("/live/new")}>创建课堂</Link>
+        </div>
       </div>
       {loading && <p className="rx-muted">加载中…</p>}
       {!loading && sessions.length === 0 && <p className="rx-muted">暂无课堂，点击“创建课堂”开始。</p>}

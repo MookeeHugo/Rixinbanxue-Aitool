@@ -1,0 +1,26 @@
+# LiveKit 本地开发配置 (Windows Docker 端口映射模式)
+port: 7880
+
+# RTC 配置
+rtc:
+  port_range_start: 50000
+  port_range_end: 50099
+  use_external_ip: false
+  # Docker 端口映射模式下监听所有接口
+  tcp_port: 7881
+  udp_port: 7882
+
+# API 密钥
+keys:
+  devkey: 1O0xvxk2Ecvwah0GeSQ8xAB2GfmQECgEVRKdf9dASIQ=
+
+# 房间配置
+room:
+  empty_timeout: 600
+  departure_timeout: 20
+  max_participants: 100
+  auto_create: true
+
+# 日志配置
+logging:
+  level: info

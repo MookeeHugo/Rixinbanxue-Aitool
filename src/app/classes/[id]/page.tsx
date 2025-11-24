@@ -1,11 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getCurrentUser } from '@/lib/auth'
 import type { Class } from '@/lib/supabase'
-
+import { logger } from '@/lib/logger'
 interface Student {
   id: string
   name: string
@@ -22,49 +22,68 @@ export default function ClassDetailPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    const mountedRef = { current: true }
+
+    const checkUserAndLoadClass = async () => {
+      try {
+        const currentUser = await getCurrentUser()
+        if (!mountedRef.current) return
+
+        if (!currentUser) {
+          router.push('/login')
+          return
+        }
+        loadClassData(mountedRef)
+      } catch (error) {
+        logger.error('加载班级失败:', { error: error })
+        if (mountedRef.current) {
+          router.push('/login')
+        }
+      }
+    }
+
+    const loadClassData = async (mounted: { current: boolean }) => {
+      try {
+        // 加载班级信息
+        const { data: classInfo, error: classError } = await supabase
+          .from('classes')
+          .select('*')
+          .eq('id', classId)
+          .single()
+
+        if (!mounted.current) return
+        if (classError) throw classError
+        setClassData(classInfo)
+
+        // 这里暂时不加载学生列表，因为还没有实现学生加入班级的功能
+        // 未来可以通过 class_students 关联表查询
+      } catch (error) {
+        if (!mounted.current) return
+        logger.error('加载班级失败:', { error: error })
+        alert('加载班级失败')
+        router.push('/classes')
+      } finally {
+        if (mounted.current) {
+          setLoading(false)
+        }
+      }
+    }
+
     checkUserAndLoadClass()
-  }, [classId])
 
-  const checkUserAndLoadClass = async () => {
-    const currentUser = await getCurrentUser()
-    if (!currentUser) {
-      router.push('/login')
-      return
+    return () => {
+      mountedRef.current = false
     }
-    loadClassData()
-  }
+  }, [classId, router])
 
-  const loadClassData = async () => {
-    try {
-      // 加载班级信息
-      const { data: classInfo, error: classError } = await supabase
-        .from('classes')
-        .select('*')
-        .eq('id', classId)
-        .single()
-
-      if (classError) throw classError
-      setClassData(classInfo)
-
-      // 这里暂时不加载学生列表，因为还没有实现学生加入班级的功能
-      // 未来可以通过 class_students 关联表查询
-    } catch (error) {
-      console.error('加载班级失败:', error)
-      alert('加载班级失败')
-      router.push('/classes')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const copyClassCode = () => {
+  const copyClassCode = useCallback(() => {
     if (classData) {
       navigator.clipboard.writeText(classData.class_code)
       alert('班级代码已复制到剪贴板')
     }
-  }
+  }, [classData])
 
-  const deleteClass = async () => {
+  const deleteClass = useCallback(async () => {
     if (!confirm('确定要删除这个班级吗？班级下的所有作业也会被删除！')) return
 
     try {
@@ -78,10 +97,10 @@ export default function ClassDetailPage() {
       alert('删除成功')
       router.push('/classes')
     } catch (error) {
-      console.error('删除失败:', error)
+      logger.error('删除失败:', { error: error })
       alert('删除失败')
     }
-  }
+  }, [classId, router])
 
   if (loading) {
     return (

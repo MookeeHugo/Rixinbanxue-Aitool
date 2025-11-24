@@ -4,7 +4,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { signIn } from '@/lib/auth'
-
+import { supabase } from '@/lib/supabase'
+import { logger } from '@/lib/logger'
 export default function LoginPage() {
   const router = useRouter()
   const [email, setEmail] = useState('')
@@ -19,8 +20,24 @@ export default function LoginPage() {
 
     try {
       await signIn({ email, password })
+      const session = await supabase.auth.getSession()
+
+      // 将 session 传给后端，写入 HttpOnly cookie，便于 SSR/RSC 读取
+      if (session.data.session) {
+        const { access_token, refresh_token, expires_at } = session.data.session
+        const response = await fetch('/api/auth/set-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ access_token, refresh_token, expires_at }),
+        })
+        if (!response.ok) {
+          console.error('同步服务端 session 失败')
+        }
+      }
+
       router.push('/') // 登录成功后跳转到首页
     } catch (err: any) {
+      logger.error('登录失败', { error: err })
       setError(err.message || '登录失败，请检查邮箱和密码')
     } finally {
       setLoading(false)

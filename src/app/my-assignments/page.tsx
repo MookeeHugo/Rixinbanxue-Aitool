@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getCurrentUser } from '@/lib/auth'
+import { logger } from '@/lib/logger'
 
 interface AssignmentItem {
   id: string
@@ -23,86 +24,114 @@ export default function MyAssignmentsPage() {
   const [user, setUser] = useState<any>(null)
 
   useEffect(() => {
+    const mountedRef = { current: true }
+
+    const checkUser = async () => {
+      try {
+        const currentUser = await getCurrentUser()
+        if (!mountedRef.current) return
+
+        if (!currentUser) {
+          router.push('/login')
+          return
+        }
+        setUser(currentUser)
+        loadAssignments(currentUser.id, mountedRef)
+      } catch (error) {
+        logger.error('用户验证失败:', { error: error })
+        if (mountedRef.current) {
+          router.push('/login')
+        }
+      }
+    }
+
+    const loadAssignments = async (userId: string, mounted: { current: boolean }) => {
+      try {
+        // 1. 查询学生加入的所有班级
+        const { data: classStudents, error: classError } = await supabase
+          .from('class_students')
+          .select('class_id')
+          .eq('student_id', userId)
+
+        if (!mounted.current) return
+        if (classError) throw classError
+
+        // 如果学生没有加入任何班级，返回空列表
+        if (!classStudents || classStudents.length === 0) {
+          setAssignments([])
+          setLoading(false)
+          return
+        }
+
+        const classIds = classStudents.map(cs => cs.class_id)
+
+        // 2. 查询这些班级的已发布作业
+        const { data: assignmentsData, error } = await supabase
+          .from('assignments')
+          .select(`
+            id,
+            deadline,
+            status,
+            papers(name),
+            classes(name)
+          `)
+          .in('class_id', classIds)
+          .eq('status', 'published')
+          .order('deadline', { ascending: true })
+
+        if (!mounted.current) return
+        if (error) throw error
+
+        // 3. 查询学生的提交记录
+        const { data: submissionsData } = await supabase
+          .from('submissions')
+          .select('*')
+          .eq('student_id', userId)
+
+        if (!mounted.current) return
+
+        const formattedAssignments: AssignmentItem[] = (assignmentsData || []).map((a: any) => {
+          const submission = submissionsData?.find(s => s.assignment_id === a.id)
+          return {
+            id: a.id,
+            paper_name: a.papers?.name || '未知试卷',
+            class_name: a.classes?.name || '未知班级',
+            deadline: a.deadline,
+            status: a.status,
+            submission_id: submission?.id,
+            score: submission?.score,
+            submitted_at: submission?.submitted_at
+          }
+        })
+
+        setAssignments(formattedAssignments)
+      } catch (error) {
+        if (!mounted.current) return
+        logger.error('加载作业失败:', { error: error })
+        alert('加载作业失败')
+      } finally {
+        if (mounted.current) {
+          setLoading(false)
+        }
+      }
+    }
+
     checkUser()
+
+    return () => {
+      mountedRef.current = false
+    }
+  }, [router])
+
+  const isOverdue = useCallback((deadline: string) => {
+    return new Date(deadline) < new Date()
   }, [])
 
-  const checkUser = async () => {
-    const currentUser = await getCurrentUser()
-    if (!currentUser) {
-      router.push('/login')
-      return
-    }
-    setUser(currentUser)
-    loadAssignments(currentUser.id)
-  }
-
-  const loadAssignments = async (userId: string) => {
-    try {
-      // 1. 查询学生加入的所有班级
-      const { data: classStudents, error: classError } = await supabase
-        .from('class_students')
-        .select('class_id')
-        .eq('student_id', userId)
-
-      if (classError) throw classError
-
-      // 如果学生没有加入任何班级，返回空列表
-      if (!classStudents || classStudents.length === 0) {
-        setAssignments([])
-        setLoading(false)
-        return
-      }
-
-      const classIds = classStudents.map(cs => cs.class_id)
-
-      // 2. 查询这些班级的已发布作业
-      const { data: assignmentsData, error } = await supabase
-        .from('assignments')
-        .select(`
-          id,
-          deadline,
-          status,
-          papers(name),
-          classes(name)
-        `)
-        .in('class_id', classIds)
-        .eq('status', 'published')
-        .order('deadline', { ascending: true })
-
-      if (error) throw error
-
-      // 3. 查询学生的提交记录
-      const { data: submissionsData } = await supabase
-        .from('submissions')
-        .select('*')
-        .eq('student_id', userId)
-
-      const formattedAssignments: AssignmentItem[] = (assignmentsData || []).map((a: any) => {
-        const submission = submissionsData?.find(s => s.assignment_id === a.id)
-        return {
-          id: a.id,
-          paper_name: a.papers?.name || '未知试卷',
-          class_name: a.classes?.name || '未知班级',
-          deadline: a.deadline,
-          status: a.status,
-          submission_id: submission?.id,
-          score: submission?.score,
-          submitted_at: submission?.submitted_at
-        }
-      })
-
-      setAssignments(formattedAssignments)
-    } catch (error) {
-      console.error('加载作业失败:', error)
-      alert('加载作业失败')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const isOverdue = (deadline: string) => {
-    return new Date(deadline) < new Date()
-  }
+  const categorizedAssignments = useMemo(() => ({
+    pending: assignments.filter(a => !a.submission_id && !isOverdue(a.deadline)),
+    submitted: assignments.filter(a => a.submission_id),
+    overdue: assignments.filter(a => !a.submission_id && isOverdue(a.deadline))
+  }), [assignments, isOverdue])
 
   if (loading) {
     return (
@@ -112,9 +141,9 @@ export default function MyAssignmentsPage() {
     )
   }
 
-  const pendingAssignments = assignments.filter(a => !a.submission_id && !isOverdue(a.deadline))
-  const submittedAssignments = assignments.filter(a => a.submission_id)
-  const overdueAssignments = assignments.filter(a => !a.submission_id && isOverdue(a.deadline))
+  const pendingAssignments = categorizedAssignments.pending
+  const submittedAssignments = categorizedAssignments.submitted
+  const overdueAssignments = categorizedAssignments.overdue
 
   return (
     <div className="min-h-screen bg-background py-8">

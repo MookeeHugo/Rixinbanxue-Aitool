@@ -1,43 +1,67 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getCurrentUser } from '@/lib/auth'
 import type { Assignment } from '@/lib/supabase'
-
+import { logger } from '@/lib/logger'
 interface AssignmentWithDetails extends Assignment {
   class_name?: string
   paper_name?: string
   submission_count?: number
 }
 
+// 纯函数移到组件外部
+function getStatusColor(status: string) {
+  switch (status) {
+    case 'draft':
+      return 'bg-secondary text-foreground-secondary'
+    case 'published':
+      return 'bg-success/10 text-success'
+    case 'closed':
+      return 'bg-error/10 text-error'
+    default:
+      return 'bg-secondary text-foreground-secondary'
+  }
+}
+
+function getStatusText(status: string) {
+  switch (status) {
+    case 'draft':
+      return '草稿'
+    case 'published':
+      return '进行中'
+    case 'closed':
+      return '已结束'
+    default:
+      return status
+  }
+}
+
 export default function AssignmentsPage() {
+  return (
+    <Suspense fallback={<div className="py-10 text-center text-muted-foreground">加载作业列表...</div>}>
+      <AssignmentsPageContent />
+    </Suspense>
+  )
+}
+
+function AssignmentsPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const classId = searchParams.get('classId')
 
   const [assignments, setAssignments] = useState<AssignmentWithDetails[]>([])
   const [loading, setLoading] = useState(true)
-  const [user, setUser] = useState<any>(null)
+  const [error, setError] = useState<string | null>(null)
   const [filterStatus, setFilterStatus] = useState<string>('all')
 
-  useEffect(() => {
-    checkUser()
-  }, [classId, filterStatus])
-
-  const checkUser = async () => {
-    const currentUser = await getCurrentUser()
-    if (!currentUser) {
-      router.push('/login')
-      return
-    }
-    setUser(currentUser)
-    loadAssignments(currentUser.id)
-  }
-
-  const loadAssignments = async (userId: string) => {
+  const loadAssignments = useCallback(async (userId: string) => {
     try {
+      setLoading(true)
+      setError(null)
+
       let query = supabase
         .from('assignments')
         .select(`
@@ -58,9 +82,13 @@ export default function AssignmentsPage() {
         query = query.eq('status', filterStatus)
       }
 
-      const { data, error } = await query
+      const { data, error: fetchError } = await query
 
-      if (error) throw error
+      if (fetchError) {
+        logger.error('加载作业失败:', { error: fetchError })
+        setError(`加载失败: ${fetchError.message}`)
+        return
+      }
 
       // 格式化数据
       const formattedData: AssignmentWithDetails[] = (data || []).map((item: any) => ({
@@ -70,58 +98,54 @@ export default function AssignmentsPage() {
       }))
 
       setAssignments(formattedData)
-    } catch (error) {
-      console.error('加载作业失败:', error)
-      alert('加载作业失败')
+    } catch (err: any) {
+      logger.error('加载作业失败:', { error: err })
+      setError('加载作业列表时发生未知错误')
     } finally {
       setLoading(false)
     }
-  }
+  }, [classId, filterStatus])
 
-  const deleteAssignment = async (id: string) => {
+  const checkUser = useCallback(async () => {
+    try {
+      const currentUser = await getCurrentUser()
+      if (!currentUser) {
+        router.push('/login')
+        return
+      }
+      loadAssignments(currentUser.id)
+    } catch (err: any) {
+      logger.error('获取用户信息失败:', { error: err })
+      setError('获取用户信息失败，请刷新页面重试')
+      setLoading(false)
+    }
+  }, [router, loadAssignments])
+
+  useEffect(() => {
+    checkUser()
+  }, [checkUser])
+
+  const deleteAssignment = useCallback(async (id: string) => {
     if (!confirm('确定要删除这个作业吗？学生的提交记录也会被删除！')) return
 
     try {
-      const { error } = await supabase
+      const { error: deleteError } = await supabase
         .from('assignments')
         .delete()
         .eq('id', id)
 
-      if (error) throw error
+      if (deleteError) {
+        logger.error('删除作业失败:', { error: deleteError })
+        setError(`删除失败: ${deleteError.message}`)
+        return
+      }
 
-      setAssignments(assignments.filter(a => a.id !== id))
-      alert('删除成功')
-    } catch (error) {
-      console.error('删除失败:', error)
-      alert('删除失败')
+      setAssignments(prev => prev.filter(a => a.id !== id))
+    } catch (err: any) {
+      logger.error('删除作业失败:', { error: err })
+      setError('删除作业时发生未知错误')
     }
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'draft':
-        return 'bg-secondary text-foreground-secondary'
-      case 'published':
-        return 'bg-success/10 text-success'
-      case 'closed':
-        return 'bg-error/10 text-error'
-      default:
-        return 'bg-secondary text-foreground-secondary'
-    }
-  }
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'draft':
-        return '草稿'
-      case 'published':
-        return '进行中'
-      case 'closed':
-        return '已结束'
-      default:
-        return status
-    }
-  }
+  }, [])
 
   if (loading) {
     return (
@@ -143,6 +167,32 @@ export default function AssignmentsPage() {
             + 发布作业
           </button>
         </div>
+
+        {/* 错误提示 */}
+        {error && (
+          <div className="bg-error/10 border border-error/50 rounded-lg p-6 mb-6">
+            <div className="flex justify-between items-start">
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-error mb-2">加载失败</h3>
+                <p className="text-error/80">{error}</p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => checkUser()}
+                  className="bg-brand-red text-white px-4 py-2 rounded-lg hover:bg-brand-red-hover transition-colors"
+                >
+                  重试
+                </button>
+                <button
+                  onClick={() => setError(null)}
+                  className="bg-secondary text-foreground px-4 py-2 rounded-lg hover:bg-border-medium transition-colors"
+                >
+                  关闭
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* 筛选器 */}
         <div className="bg-card rounded-lg p-4 mb-6 border border-border">

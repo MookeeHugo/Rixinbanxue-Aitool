@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { getCurrentProfile } from '@/lib/auth'
 import type { Profile, Question } from '@/lib/supabase'
-
+import { logger } from '@/lib/logger'
 // 知识点列表（与create页面相同）
 const KNOWLEDGE_POINTS = [
   '有理数加法', '有理数减法', '有理数乘法', '有理数除法',
@@ -62,7 +62,7 @@ export default function EditQuestionPage() {
       }
       setProfile(data)
     } catch (error) {
-      console.error('Failed to load profile:', error)
+      logger.error('Failed to load profile:', { error: error })
       router.push('/login')
     }
   }
@@ -102,7 +102,7 @@ export default function EditQuestionPage() {
         difficulty: data.difficulty,
       })
     } catch (error) {
-      console.error('Failed to load question:', error)
+      logger.error('Failed to load question:', { error: error })
       alert('加载失败')
       router.push('/questions')
     } finally {
@@ -162,7 +162,7 @@ export default function EditQuestionPage() {
       // 成功后跳转到列表页
       router.push('/questions')
     } catch (error: any) {
-      console.error('Failed to update question:', error)
+      logger.error('Failed to update question:', { error: error })
       alert('更新失败：' + error.message)
     } finally {
       setLoading(false)

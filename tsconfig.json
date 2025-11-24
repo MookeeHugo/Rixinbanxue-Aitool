@@ -38,10 +38,6 @@
   "exclude": [
     "node_modules",
     "**/*.stories.tsx",
-    "**/*.stories.ts",
-    "rixinworksuperdesign/**",
-    "superdesign/**",
-    "design-system/**",
-    "components/**"
+    "**/*.stories.ts"
   ]
 }
