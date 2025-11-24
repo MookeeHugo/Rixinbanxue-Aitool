@@ -1,16 +1,16 @@
 /**
  * 存储服务
  *
- * - 优先使用 Cloudflare R2（公有桶 + 私有桶）
- * - 如果未配置 R2，则退回 Supabase Storage
- * - 统一封装上传、删除、下载、签名地址等工具
+ * - 优先使用 Cloudflare R2（公共桶 + 私有桶）
+ * - 若未配置 R2，则回退到 Supabase Storage
+ * - 统一封装上传、删除、下载、签名地址等操作
  */
 
 import {
   S3Client,
   PutObjectCommand,
   GetObjectCommand,
-  DeleteObjectCommand,
+  DeleteObjectCommand
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { createClient } from '@supabase/supabase-js';
@@ -40,12 +40,12 @@ const isR2Configured = !!(
 let supabaseClient: ReturnType<typeof createClient> | null = null;
 
 if (!isR2Configured && SUPABASE_URL && SUPABASE_SERVICE_KEY) {
-  logger.info('[Storage Init] 使用 Supabase Storage（R2 未配置）');
+  logger.info('[Storage Init] 使用 Supabase Storage（未配置 R2）');
   supabaseClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 } else if (isR2Configured) {
   logger.info('[Storage Init] 使用 Cloudflare R2');
 } else {
-  logger.warn('[Storage Init] 未检测到可用的存储服务配置');
+  logger.warn('[Storage Init] 未检测到可用的存储配置');
 }
 
 const r2Public = new S3Client({
@@ -53,8 +53,8 @@ const r2Public = new S3Client({
   endpoint: R2_ENDPOINT,
   credentials: {
     accessKeyId: R2_ACCESS_KEY_ID,
-    secretAccessKey: R2_SECRET_ACCESS_KEY,
-  },
+    secretAccessKey: R2_SECRET_ACCESS_KEY
+  }
 });
 
 const r2Private = new S3Client({
@@ -62,8 +62,8 @@ const r2Private = new S3Client({
   endpoint: R2_ENDPOINT,
   credentials: {
     accessKeyId: R2_ACCESS_KEY_ID,
-    secretAccessKey: R2_SECRET_ACCESS_KEY,
-  },
+    secretAccessKey: R2_SECRET_ACCESS_KEY
+  }
 });
 
 // ========================================
@@ -72,7 +72,7 @@ const r2Private = new S3Client({
 
 export enum FileAccessLevel {
   PUBLIC = 'public',
-  PRIVATE = 'private',
+  PRIVATE = 'private'
 }
 
 const MIME_TYPES: Record<string, string> = {
@@ -110,10 +110,10 @@ const MIME_TYPES: Record<string, string> = {
   json: 'application/json',
   xml: 'application/xml',
 
-  // 压缩
+  // 压缩包
   zip: 'application/zip',
   rar: 'application/x-rar-compressed',
-  '7z': 'application/x-7z-compressed',
+  '7z': 'application/x-7z-compressed'
 };
 
 export function getMimeType(filename: string): string {
@@ -125,7 +125,7 @@ export function classifyFile(key: string): FileAccessLevel {
   const publicPatterns = [
     /^questions\/images\//, // 题目图片
     /^avatars\//, // 用户头像
-    /^public-attachments\//, // 公共附件
+    /^public-attachments\// // 公开附件
   ];
 
   for (const pattern of publicPatterns) {
@@ -176,7 +176,7 @@ export async function uploadFile(params: UploadParams): Promise<UploadResult> {
             Key: key,
             Body: file,
             ContentType: finalContentType,
-            CacheControl: 'public, max-age=31536000',
+            CacheControl: 'public, max-age=31536000'
           })
         );
 
@@ -185,7 +185,7 @@ export async function uploadFile(params: UploadParams): Promise<UploadResult> {
           key,
           publicUrl: `${R2_PUBLIC_URL}/${key}`,
           cdnUrl: `${CDN_PUBLIC_URL}/public/${key}`,
-          needsSignedUrl: false,
+          needsSignedUrl: false
         };
       }
 
@@ -196,15 +196,15 @@ export async function uploadFile(params: UploadParams): Promise<UploadResult> {
           Body: file,
           ContentType: finalContentType,
           Metadata: {
-            'access-level': 'private',
-          },
+            'access-level': 'private'
+          }
         })
       );
 
       return {
         success: true,
         key,
-        needsSignedUrl: true,
+        needsSignedUrl: true
       };
     }
 
@@ -212,21 +212,21 @@ export async function uploadFile(params: UploadParams): Promise<UploadResult> {
       logger.info('[Storage] 上传到 Supabase Storage', {
         key,
         contentType: finalContentType,
-        fileSize: file.length,
+        fileSize: file.length
       });
 
       const { data, error } = await supabaseClient.storage
         .from('question-files')
         .upload(key, file, {
           contentType: finalContentType,
-          upsert: true,
+          upsert: true
         });
 
       if (error) {
         logger.error('[Storage] Supabase 上传失败', error || undefined, { key });
         return {
           success: false,
-          error: `上传失败：${error.message || '未知错误'}`,
+          error: `上传失败: ${error.message || '未知错误'}`
         };
       }
 
@@ -241,14 +241,14 @@ export async function uploadFile(params: UploadParams): Promise<UploadResult> {
           success: true,
           key,
           publicUrl: urlData.publicUrl,
-          needsSignedUrl: false,
+          needsSignedUrl: false
         };
       }
 
       return {
         success: true,
         key,
-        needsSignedUrl: true,
+        needsSignedUrl: true
       };
     }
 
@@ -256,10 +256,14 @@ export async function uploadFile(params: UploadParams): Promise<UploadResult> {
     logger.error(`[Storage] ${message}`);
     return { success: false, error: message };
   } catch (error) {
-    logger.error('[Storage] uploadFile 异常', error instanceof Error ? error : undefined, { key });
+    logger.error(
+      '[Storage] uploadFile 异常',
+      error instanceof Error ? error : undefined,
+      { key }
+    );
     return {
       success: false,
-      error: error instanceof Error ? error.message : '上传失败',
+      error: error instanceof Error ? error.message : '上传失败'
     };
   }
 }
@@ -279,18 +283,18 @@ export async function generateSignedUrl(
   }
 
   if (!isR2Configured) {
-    throw new Error('尚未配置 Cloudflare R2，无法生成签名 URL');
+    throw new Error('尚未配置 Cloudflare R2，无法生成签名地址');
   }
 
   const command = new GetObjectCommand({
     Bucket: R2_PRIVATE_BUCKET,
-    Key: key,
+    Key: key
   });
   const signedUrl = await getSignedUrl(r2Private, command, { expiresIn });
 
   return {
     url: signedUrl,
-    expiresAt: new Date(Date.now() + expiresIn * 1000),
+    expiresAt: new Date(Date.now() + expiresIn * 1000)
   };
 }
 
@@ -351,7 +355,11 @@ async function checkFilePermission(key: string, userId: string): Promise<boolean
 
     return false;
   } catch (error) {
-    logger.error('[Storage] checkFilePermission 异常', error instanceof Error ? error : undefined, { key });
+    logger.error(
+      '[Storage] checkFilePermission 异常',
+      error instanceof Error ? error : undefined,
+      { key }
+    );
     return false;
   }
 }
@@ -367,7 +375,7 @@ export async function deleteFile(
   const level = accessLevel || classifyFile(key);
 
   if (!isR2Configured) {
-    logger.warn('[Storage] deleteFile 仅支持 R2，当前未配置 R2', { key });
+    logger.warn('[Storage] deleteFile 仅支持 R2，但当前未配置', { key });
     return;
   }
 
@@ -377,7 +385,7 @@ export async function deleteFile(
   await client.send(
     new DeleteObjectCommand({
       Bucket: bucket,
-      Key: key,
+      Key: key
     })
   );
 }
@@ -395,7 +403,7 @@ export async function downloadFile(
     const response = await client.send(
       new GetObjectCommand({
         Bucket: bucket,
-        Key: key,
+        Key: key
       })
     );
 
@@ -415,7 +423,7 @@ export async function downloadFile(
 
     if (error || !data) {
       logger.error('[Storage] Supabase 下载失败', error || undefined, { key });
-      throw new Error(`下载失败：${error?.message || 'Supabase Storage 无法读取文件'}`);
+      throw new Error(`下载失败: ${error?.message || 'Supabase Storage 无法读取文件'}`);
     }
 
     const arrayBuffer = await data.arrayBuffer();
@@ -438,13 +446,13 @@ export const getFile = downloadFile;
  * await uploadFile({
  *   file: imageBuffer,
  *   key: 'questions/images/img123.png',
- *   accessLevel: 'PUBLIC',
+ *   accessLevel: 'PUBLIC'
  * });
  *
  * await uploadFile({
  *   file: pdfBuffer,
  *   key: `papers/${taskId}.pdf`,
- *   accessLevel: 'PRIVATE',
+ *   accessLevel: 'PRIVATE'
  * });
  *
  * await generateSignedUrl('papers/task123.pdf', userId, 3600);

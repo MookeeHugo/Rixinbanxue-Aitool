@@ -1,33 +1,21 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
-
-// Task stage enum for tracking where the user is in the workflow
-export type TaskStage = "uploading" | "parsing" | "editing" | "tagging" | "completed"
-
-interface ParseTask {
-  taskId: string
-  status: "pending" | "processing" | "completed" | "failed"
-  progress: number
-  totalQuestions: number
-  questions?: any[]
-  fileName: string
-  errorMessage?: string
-  createdAt: number
-  stage: TaskStage
-  lastActiveAt: number
-  isIncomplete: boolean
-  isDismissed?: boolean
-}
+import type { ParseTask, ParsedQuestionItem, TaskStage } from "@/types/tasks"
 
 interface AppState {
   currentTask: ParseTask | null
   taskHistory: ParseTask[]
-  questions: any[]
+  questions: ParsedQuestionItem[]
 
-  setQuestions: (questions: any[] | ((prev: any[]) => any[])) => void
+  setQuestions: (questions: ParsedQuestionItem[] | ((prev: ParsedQuestionItem[]) => ParsedQuestionItem[])) => void
   setCurrentTask: (task: ParseTask | null) => void
   addTaskToHistory: (task: ParseTask) => void
-  updateTaskProgress: (taskId: string, progress: number, status: ParseTask["status"], questions?: any[]) => void
+  updateTaskProgress: (
+    taskId: string,
+    progress: number,
+    status: ParseTask["status"],
+    questions?: ParsedQuestionItem[],
+  ) => void
   clearCurrentTask: () => void
   addIngestTask: (task: ParseTask) => void
   setCurrentIngestTask: (task: ParseTask | null) => void
@@ -61,6 +49,7 @@ export const useAppStore = create<AppState>()(
           currentTask: task
             ? {
                 ...task,
+                stage: task.stage ?? "uploading",
                 lastActiveAt: Date.now(),
                 isIncomplete: task.stage !== "completed",
               }
@@ -100,6 +89,7 @@ export const useAppStore = create<AppState>()(
           taskHistory: [task, ...state.taskHistory.slice(0, 9)],
           currentTask: {
             ...task,
+            stage: task.stage ?? "parsing",
             lastActiveAt: Date.now(),
             isIncomplete: true,
           },
@@ -110,6 +100,7 @@ export const useAppStore = create<AppState>()(
           currentTask: task
             ? {
                 ...task,
+                stage: task.stage ?? "uploading",
                 lastActiveAt: Date.now(),
                 isIncomplete: task.stage !== "completed",
               }

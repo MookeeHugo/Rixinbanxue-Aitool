@@ -367,3 +367,85 @@ export async function deleteQuestion(questionId: string): Promise<ActionResult<v
     };
   }
 }
+
+/**
+ * 获取题库中的题目列表（从 questions 表）
+ */
+export interface QuestionInLibrary {
+  id: string
+  type: string
+  content: string
+  options?: string[]
+  answer: string
+  knowledge_points: string[]
+  difficulty: string
+  created_by: string
+  created_at: string
+}
+
+export async function getQuestions(params?: {
+  type?: string
+  difficulty?: string
+  search?: string
+  limit?: number
+  offset?: number
+}): Promise<ActionResult<{ questions: QuestionInLibrary[]; total: number }>> {
+  try {
+    const supabase = createAuthenticatedSupabaseClient();
+    if (!supabase) {
+      return { success: false, error: '未登录' };
+    }
+
+    // 验证用户身份
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return { success: false, error: '未登录' };
+    }
+
+    // 构建查询
+    let query = supabase
+      .from('questions')
+      .select('*', { count: 'exact' })
+      .eq('created_by', user.id)
+      .order('created_at', { ascending: false });
+
+    // 应用过滤条件
+    if (params?.type) {
+      query = query.eq('type', params.type);
+    }
+
+    if (params?.difficulty) {
+      query = query.eq('difficulty', params.difficulty);
+    }
+
+    if (params?.search) {
+      query = query.or(`content.ilike.%${params.search}%,answer.ilike.%${params.search}%`);
+    }
+
+    // 分页
+    const limit = params?.limit || 20;
+    const offset = params?.offset || 0;
+    query = query.range(offset, offset + limit - 1);
+
+    const { data: questions, error, count } = await query;
+
+    if (error) {
+      return { success: false, error: `查询失败: ${error.message}` };
+    }
+
+    return {
+      success: true,
+      data: {
+        questions: (questions || []) as QuestionInLibrary[],
+        total: count || 0
+      }
+    };
+
+  } catch (error) {
+    console.error('getQuestions错误', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : '未知错误'
+    };
+  }
+}

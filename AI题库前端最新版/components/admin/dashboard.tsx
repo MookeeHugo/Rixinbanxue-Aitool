@@ -24,8 +24,9 @@ import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, R
 import { useAppStore } from "@/lib/store"
 import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { PostponedTaskButton } from "@/components/task-recovery-banner"
+import type { AdminTab } from "@/types/admin"
 
-export function AdminDashboard({ onNavigate }: { onNavigate: (tab: string) => void }) {
+export function AdminDashboard({ onNavigate }: { onNavigate: (tab: AdminTab) => void }) {
   const router = useRouter()
   const incompleteTask = useAppStore((state) => state.getIncompleteTask())
   const restoreIncompleteTask = useAppStore((state) => state.restoreIncompleteTask)

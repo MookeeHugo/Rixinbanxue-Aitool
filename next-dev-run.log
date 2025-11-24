@@ -1,0 +1,2352 @@
+  ▲ Next.js 14.2.33
+  - Local:        http://localhost:3014
+  - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 2.6s
+ ○ Compiling /api/inngest ...
+ ✓ Compiled /api/inngest in 744ms (865 modules)
+[2025-11-24T16:38:51.715Z] [INFO] [Storage Init] 使用 Supabase Storage（未配置 R2） {}
+ PUT /api/inngest 200 in 1170ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 22ms
+ PUT /api/inngest 200 in 21ms
+ PUT /api/inngest 200 in 22ms
+ PUT /api/inngest 200 in 19ms
+ PUT /api/inngest 200 in 21ms
+ PUT /api/inngest 200 in 21ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 20ms
+ PUT /api/inngest 200 in 27ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 19ms
+ PUT /api/inngest 200 in 19ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 19ms
+ PUT /api/inngest 200 in 22ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 19ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 20ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 19ms
+ PUT /api/inngest 200 in 19ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 20ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 20ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 20ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 20ms
+ PUT /api/inngest 200 in 21ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 19ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 20ms
+ PUT /api/inngest 200 in 19ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 20ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 19ms
+ PUT /api/inngest 200 in 19ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 20ms
+ PUT /api/inngest 200 in 61ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 21ms
+ PUT /api/inngest 200 in 19ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 19ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 20ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 21ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 20ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 13ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 37ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 19ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 21ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 19ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 20ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 19ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 19ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 12ms
+开始处理上传任务 {
+  taskId: 'b3c4e7a9-10b9-45c7-8327-6d9689b1ae3a',
+  fileName: 'PixPin_2025-11-24_18-58-26.png',
+  traceId: '49862f9c-f47c-47a3-9e1b-83c56772ee01',
+  userId: 'aaaaaaaa-1111-1111-1111-111111111111'
+}
+ POST /api/inngest?fnId=rixin-ai-question-bank-process-pdf-upload&stepId=step 206 in 53ms
+开始处理上传任务 {
+  taskId: 'b3c4e7a9-10b9-45c7-8327-6d9689b1ae3a',
+  fileName: 'PixPin_2025-11-24_18-58-26.png',
+  traceId: '49862f9c-f47c-47a3-9e1b-83c56772ee01',
+  userId: 'aaaaaaaa-1111-1111-1111-111111111111'
+}
+开始下载文件 {
+  fileUrl: 'ai-question-bank/aaaaaaaa-1111-1111-1111-111111111111/1763999867205-kx533a.png'
+}
+文件下载完成 { size: 162232 }
+ POST /api/inngest?fnId=rixin-ai-question-bank-process-pdf-upload&stepId=step 206 in 103ms
+开始处理上传任务 {
+  taskId: 'b3c4e7a9-10b9-45c7-8327-6d9689b1ae3a',
+  fileName: 'PixPin_2025-11-24_18-58-26.png',
+  traceId: '49862f9c-f47c-47a3-9e1b-83c56772ee01',
+  userId: 'aaaaaaaa-1111-1111-1111-111111111111'
+}
+ POST /api/inngest?fnId=rixin-ai-question-bank-process-pdf-upload&stepId=step 206 in 24ms
+开始处理上传任务 {
+  taskId: 'b3c4e7a9-10b9-45c7-8327-6d9689b1ae3a',
+  fileName: 'PixPin_2025-11-24_18-58-26.png',
+  traceId: '49862f9c-f47c-47a3-9e1b-83c56772ee01',
+  userId: 'aaaaaaaa-1111-1111-1111-111111111111'
+}
+调用 Qwen3-VL-Flash 解析 { taskId: 'b3c4e7a9-10b9-45c7-8327-6d9689b1ae3a' }
+Qwen 调用前数据预览 {
+  taskId: 'b3c4e7a9-10b9-45c7-8327-6d9689b1ae3a',
+  mimeType: 'image/png',
+  base64Length: 216312,
+  base64Head: 'iVBORw0KGgoAAAANSUhEUgAAA/AAAAIu',
+  base64Tail: '9X+Av8yZBmO5RAAAAABJRU5ErkJggg=='
+}
+Qwen parse request preview {
+  mimeType: 'image/png',
+  base64Length: 216312,
+  dataUrlLength: 216334,
+  base64Head: 'iVBORw0KGgoAAAANSUhEUgAAA/AAAAIu',
+  base64Tail: '9X+Av8yZBmO5RAAAAABJRU5ErkJggg=='
+}
+(node:46076) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 13ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 13ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 17ms
+解析完成 {
+  taskId: 'b3c4e7a9-10b9-45c7-8327-6d9689b1ae3a',
+  questionCount: 2,
+  avgConfidence: 0.875
+}
+ POST /api/inngest?fnId=rixin-ai-question-bank-process-pdf-upload&stepId=step 206 in 35669ms
+开始处理上传任务 {
+  taskId: 'b3c4e7a9-10b9-45c7-8327-6d9689b1ae3a',
+  fileName: 'PixPin_2025-11-24_18-58-26.png',
+  traceId: '49862f9c-f47c-47a3-9e1b-83c56772ee01',
+  userId: 'aaaaaaaa-1111-1111-1111-111111111111'
+}
+解析结果已保存 { taskId: 'b3c4e7a9-10b9-45c7-8327-6d9689b1ae3a', count: 2 }
+ POST /api/inngest?fnId=rixin-ai-question-bank-process-pdf-upload&stepId=step 206 in 51ms
+ PUT /api/inngest 200 in 17ms
+开始处理上传任务 {
+  taskId: 'b3c4e7a9-10b9-45c7-8327-6d9689b1ae3a',
+  fileName: 'PixPin_2025-11-24_18-58-26.png',
+  traceId: '49862f9c-f47c-47a3-9e1b-83c56772ee01',
+  userId: 'aaaaaaaa-1111-1111-1111-111111111111'
+}
+ POST /api/inngest?fnId=rixin-ai-question-bank-process-pdf-upload&stepId=step 206 in 29ms
+开始处理上传任务 {
+  taskId: 'b3c4e7a9-10b9-45c7-8327-6d9689b1ae3a',
+  fileName: 'PixPin_2025-11-24_18-58-26.png',
+  traceId: '49862f9c-f47c-47a3-9e1b-83c56772ee01',
+  userId: 'aaaaaaaa-1111-1111-1111-111111111111'
+}
+ POST /api/inngest?fnId=rixin-ai-question-bank-process-pdf-upload&stepId=step 206 in 26ms
+开始处理上传任务 {
+  taskId: 'b3c4e7a9-10b9-45c7-8327-6d9689b1ae3a',
+  fileName: 'PixPin_2025-11-24_18-58-26.png',
+  traceId: '49862f9c-f47c-47a3-9e1b-83c56772ee01',
+  userId: 'aaaaaaaa-1111-1111-1111-111111111111'
+}
+ POST /api/inngest?fnId=rixin-ai-question-bank-process-pdf-upload&stepId=step 200 in 21ms
+ PUT /api/inngest 200 in 75ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 19ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 11ms
+ ○ Compiling /tools/ingest ...
+ ✓ Compiled /tools/ingest in 4.5s (2659 modules)
+[2025-11-24T16:57:56.449Z] [INFO] [Storage Init] 使用 Supabase Storage（未配置 R2） {}
+ PUT /api/inngest 200 in 4662ms
+ ✓ Compiled in 446ms (549 modules)
+ GET /tools/ingest 200 in 4995ms
+ ✓ Compiled /api/auth/set-session in 258ms (2143 modules)
+[2025-11-24T16:57:57.016Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764007076,
+  expiresIn: '59 分钟'
+}
+[2025-11-24T16:57:57.017Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T16:57:57.017Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T16:57:57.017Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T16:57:57.017Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 319ms
+[2025-11-24T16:57:57.180Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764007076,
+  expiresIn: '59 分钟'
+}
+[2025-11-24T16:57:57.181Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T16:57:57.181Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T16:57:57.181Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T16:57:57.181Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 15ms
+[2025-11-24T16:57:57.187Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764007076,
+  expiresIn: '59 分钟'
+}
+[2025-11-24T16:57:57.187Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T16:57:57.187Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T16:57:57.187Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T16:57:57.187Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 20ms
+ ✓ Compiled /api/profile in 176ms (2145 modules)
+[2025-11-24T16:57:57.561Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764007076,
+  expiresIn: '59 分钟'
+}
+[2025-11-24T16:57:57.561Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T16:57:57.561Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T16:57:57.562Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T16:57:57.562Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 348ms
+ GET /api/profile 200 in 410ms
+ GET /api/profile 200 in 12ms
+[2025-11-24T16:58:01.649Z] [INFO] [Storage Init] 使用 Supabase Storage（未配置 R2） {}
+ PUT /api/inngest 200 in 78ms
+ ✓ Compiled /_not-found in 455ms (2683 modules)
+ GET /tools/ingest/b3c4e7a9-10b9-45c7-8327-6d9689b1ae3a/review 404 in 120ms
+[2025-11-24T16:58:03.044Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764007076,
+  expiresIn: '59 分钟'
+}
+[2025-11-24T16:58:03.044Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T16:58:03.044Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T16:58:03.044Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T16:58:03.044Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 12ms
+[2025-11-24T16:58:03.050Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764007076,
+  expiresIn: '59 分钟'
+}
+[2025-11-24T16:58:03.050Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T16:58:03.050Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T16:58:03.051Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T16:58:03.051Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 17ms
+[2025-11-24T16:58:03.057Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764007076,
+  expiresIn: '59 分钟'
+}
+[2025-11-24T16:58:03.057Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T16:58:03.057Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T16:58:03.057Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T16:58:03.057Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 11ms
+ GET /tools/ingest 200 in 89ms
+[2025-11-24T16:58:06.337Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764007076,
+  expiresIn: '59 分钟'
+}
+[2025-11-24T16:58:06.337Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T16:58:06.337Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T16:58:06.337Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T16:58:06.337Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+[2025-11-24T16:58:06.337Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764007076,
+  expiresIn: '59 分钟'
+}
+[2025-11-24T16:58:06.337Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T16:58:06.338Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T16:58:06.338Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T16:58:06.338Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 18ms
+ POST /api/auth/set-session 200 in 18ms
+[2025-11-24T16:58:06.352Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764007076,
+  expiresIn: '59 分钟'
+}
+[2025-11-24T16:58:06.352Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T16:58:06.352Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T16:58:06.352Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T16:58:06.352Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 19ms
+ GET /api/profile 200 in 30ms
+ GET /api/profile 200 in 12ms
+[2025-11-24T16:58:06.686Z] [INFO] [Storage Init] 使用 Supabase Storage（未配置 R2） {}
+ PUT /api/inngest 200 in 29ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 12ms
+[2025-11-24T16:58:26.030Z] [INFO] [Storage Init] 使用 Supabase Storage（未配置 R2） {}
+[2025-11-24T16:58:26.124Z] [INFO] [Storage] 上传到 Supabase Storage {
+  key: 'ai-question-bank/aaaaaaaa-1111-1111-1111-111111111111/1764003506124-nwazco.png',
+  contentType: 'image/png',
+  fileSize: 252495
+}
+[2025-11-24T16:58:26.162Z] [INFO] [Storage] Supabase 上传成功 {
+  key: 'ai-question-bank/aaaaaaaa-1111-1111-1111-111111111111/1764003506124-nwazco.png',
+  path: 'ai-question-bank/aaaaaaaa-1111-1111-1111-111111111111/1764003506124-nwazco.png'
+}
+ POST /tools/ingest 200 in 192ms
+开始处理上传任务 {
+  taskId: 'fa0b364c-2e58-430c-af1d-b6a200f12859',
+  fileName: 'PixPin_2025-11-24_01-44-35.png',
+  traceId: '739eac1b-3e13-4263-9c33-bca621d0b3f4',
+  userId: 'aaaaaaaa-1111-1111-1111-111111111111'
+}
+ POST /api/inngest?fnId=rixin-ai-question-bank-process-pdf-upload&stepId=step 206 in 22ms
+开始处理上传任务 {
+  taskId: 'fa0b364c-2e58-430c-af1d-b6a200f12859',
+  fileName: 'PixPin_2025-11-24_01-44-35.png',
+  traceId: '739eac1b-3e13-4263-9c33-bca621d0b3f4',
+  userId: 'aaaaaaaa-1111-1111-1111-111111111111'
+}
+开始下载文件 {
+  fileUrl: 'ai-question-bank/aaaaaaaa-1111-1111-1111-111111111111/1764003506124-nwazco.png'
+}
+文件下载完成 { size: 252495 }
+ POST /api/inngest?fnId=rixin-ai-question-bank-process-pdf-upload&stepId=step 206 in 98ms
+开始处理上传任务 {
+  taskId: 'fa0b364c-2e58-430c-af1d-b6a200f12859',
+  fileName: 'PixPin_2025-11-24_01-44-35.png',
+  traceId: '739eac1b-3e13-4263-9c33-bca621d0b3f4',
+  userId: 'aaaaaaaa-1111-1111-1111-111111111111'
+}
+ POST /api/inngest?fnId=rixin-ai-question-bank-process-pdf-upload&stepId=step 206 in 24ms
+ PUT /api/inngest 200 in 11ms
+开始处理上传任务 {
+  taskId: 'fa0b364c-2e58-430c-af1d-b6a200f12859',
+  fileName: 'PixPin_2025-11-24_01-44-35.png',
+  traceId: '739eac1b-3e13-4263-9c33-bca621d0b3f4',
+  userId: 'aaaaaaaa-1111-1111-1111-111111111111'
+}
+调用 Qwen3-VL-Flash 解析 { taskId: 'fa0b364c-2e58-430c-af1d-b6a200f12859' }
+Qwen 调用前数据预览 {
+  taskId: 'fa0b364c-2e58-430c-af1d-b6a200f12859',
+  mimeType: 'image/png',
+  base64Length: 336660,
+  base64Head: 'iVBORw0KGgoAAAANSUhEUgAAA1UAAAR5',
+  base64Tail: '3+D/AKe/BBhGZXc0AAAAAElFTkSuQmCC'
+}
+Qwen parse request preview {
+  mimeType: 'image/png',
+  base64Length: 336660,
+  dataUrlLength: 336682,
+  base64Head: 'iVBORw0KGgoAAAANSUhEUgAAA1UAAAR5',
+  base64Tail: '3+D/AKe/BBhGZXc0AAAAAElFTkSuQmCC'
+}
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 18ms
+Qwen API 调用失败 {
+  error: 'Unterminated string in JSON at position 7926 (line 136 column 230)',
+  stack: 'SyntaxError: Unterminated string in JSON at position 7926 (line 136 column 230)\n' +
+    '    at JSON.parse (<anonymous>)\n' +
+    '    at parseQuestions (webpack-internal:///(rsc)/./src/lib/ai-question-bank/qwen-flash.ts:103:29)\n' +
+    '    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n' +
+    '    at async eval (webpack-internal:///(rsc)/./inngest/functions/process-pdf-upload.ts:125:28)\n' +
+    '    at async goIntervalTiming (webpack-internal:///(rsc)/../node_modules/.pnpm/inngest@3.46.0_@opentelemet_b2fcdc1f209c814630faba588bf59943/node_modules/inngest/helpers/promises.js:189:3)\n' +
+    '    at async V1InngestExecution.tryExecuteStep (webpack-internal:///(rsc)/../node_modules/.pnpm/inngest@3.46.0_@opentelemet_b2fcdc1f209c814630faba588bf59943/node_modules/inngest/components/execution/v1.js:399:20)\n' +
+    '    at async steps-found (webpack-internal:///(rsc)/../node_modules/.pnpm/inngest@3.46.0_@opentelemet_b2fcdc1f209c814630faba588bf59943/node_modules/inngest/components/execution/v1.js:315:24)\n' +
+    '    at async V1InngestExecution._start (webpack-internal:///(rsc)/../node_modules/.pnpm/inngest@3.46.0_@opentelemet_b2fcdc1f209c814630faba588bf59943/node_modules/inngest/components/execution/v1.js:134:20)\n' +
+    '    at async InngestCommHandler.handleAction (webpack-internal:///(rsc)/../node_modules/.pnpm/inngest@3.46.0_@opentelemet_b2fcdc1f209c814630faba588bf59943/node_modules/inngest/components/InngestCommHandler.js:846:24)\n' +
+    '    at async ServerTiming.wrap (webpack-internal:///(rsc)/../node_modules/.pnpm/inngest@3.46.0_@opentelemet_b2fcdc1f209c814630faba588bf59943/node_modules/inngest/helpers/ServerTiming.js:64:11)\n' +
+    '    at async ServerTiming.wrap (webpack-internal:///(rsc)/../node_modules/.pnpm/inngest@3.46.0_@opentelemet_b2fcdc1f209c814630faba588bf59943/node_modules/inngest/helpers/ServerTiming.js:64:11)\n' +
+    '    at async D:\\rixinwork\\node_modules\\.pnpm\\next@14.2.33_@babel+core@7._f724eccac1e7d02e54faa5620f6cbca2\\node_modules\\next\\dist\\compiled\\next-server\\app-route.runtime.dev.js:6:57228\n' +
+    '    at async eT.execute (D:\\rixinwork\\node_modules\\.pnpm\\next@14.2.33_@babel+core@7._f724eccac1e7d02e54faa5620f6cbca2\\node_modules\\next\\dist\\compiled\\next-server\\app-route.runtime.dev.js:6:46851)\n' +
+    '    at async eT.handle (D:\\rixinwork\\node_modules\\.pnpm\\next@14.2.33_@babel+core@7._f724eccac1e7d02e54faa5620f6cbca2\\node_modules\\next\\dist\\compiled\\next-server\\app-route.runtime.dev.js:6:58760)\n' +
+    '    at async doRender (D:\\rixinwork\\node_modules\\.pnpm\\next@14.2.33_@babel+core@7._f724eccac1e7d02e54faa5620f6cbca2\\node_modules\\next\\dist\\server\\base-server.js:1366:42)\n' +
+    '    at async cacheEntry.responseCache.get.routeKind (D:\\rixinwork\\node_modules\\.pnpm\\next@14.2.33_@babel+core@7._f724eccac1e7d02e54faa5620f6cbca2\\node_modules\\next\\dist\\server\\base-server.js:1588:28)\n' +
+    '    at async DevServer.renderToResponseWithComponentsImpl (D:\\rixinwork\\node_modules\\.pnpm\\next@14.2.33_@babel+core@7._f724eccac1e7d02e54faa5620f6cbca2\\node_modules\\next\\dist\\server\\base-server.js:1496:28)\n' +
+    '    at async DevServer.renderPageComponent (D:\\rixinwork\\node_modules\\.pnpm\\next@14.2.33_@babel+core@7._f724eccac1e7d02e54faa5620f6cbca2\\node_modules\\next\\dist\\server\\base-server.js:1924:24)\n' +
+    '    at async DevServer.renderToResponseImpl (D:\\rixinwork\\node_modules\\.pnpm\\next@14.2.33_@babel+core@7._f724eccac1e7d02e54faa5620f6cbca2\\node_modules\\next\\dist\\server\\base-server.js:1962:32)\n' +
+    '    at async DevServer.pipeImpl (D:\\rixinwork\\node_modules\\.pnpm\\next@14.2.33_@babel+core@7._f724eccac1e7d02e54faa5620f6cbca2\\node_modules\\next\\dist\\server\\base-server.js:922:25)\n' +
+    '    at async NextNodeServer.handleCatchallRenderRequest (D:\\rixinwork\\node_modules\\.pnpm\\next@14.2.33_@babel+core@7._f724eccac1e7d02e54faa5620f6cbca2\\node_modules\\next\\dist\\server\\next-server.js:272:17)\n' +
+    '    at async DevServer.handleRequestImpl (D:\\rixinwork\\node_modules\\.pnpm\\next@14.2.33_@babel+core@7._f724eccac1e7d02e54faa5620f6cbca2\\node_modules\\next\\dist\\server\\base-server.js:818:17)\n' +
+    '    at async D:\\rixinwork\\node_modules\\.pnpm\\next@14.2.33_@babel+core@7._f724eccac1e7d02e54faa5620f6cbca2\\node_modules\\next\\dist\\server\\dev\\next-dev-server.js:339:20\n' +
+    '    at async Span.traceAsyncFn (D:\\rixinwork\\node_modules\\.pnpm\\next@14.2.33_@babel+core@7._f724eccac1e7d02e54faa5620f6cbca2\\node_modules\\next\\dist\\trace\\trace.js:154:20)\n' +
+    '    at async DevServer.handleRequest (D:\\rixinwork\\node_modules\\.pnpm\\next@14.2.33_@babel+core@7._f724eccac1e7d02e54faa5620f6cbca2\\node_modules\\next\\dist\\server\\dev\\next-dev-server.js:336:24)\n' +
+    '    at async invokeRender (D:\\rixinwork\\node_modules\\.pnpm\\next@14.2.33_@babel+core@7._f724eccac1e7d02e54faa5620f6cbca2\\node_modules\\next\\dist\\server\\lib\\router-server.js:179:21)\n' +
+    '    at async handleRequest (D:\\rixinwork\\node_modules\\.pnpm\\next@14.2.33_@babel+core@7._f724eccac1e7d02e54faa5620f6cbca2\\node_modules\\next\\dist\\server\\lib\\router-server.js:359:24)\n' +
+    '    at async requestHandlerImpl (D:\\rixinwork\\node_modules\\.pnpm\\next@14.2.33_@babel+core@7._f724eccac1e7d02e54faa5620f6cbca2\\node_modules\\next\\dist\\server\\lib\\router-server.js:383:13)\n' +
+    '    at async Server.requestListener (D:\\rixinwork\\node_modules\\.pnpm\\next@14.2.33_@babel+core@7._f724eccac1e7d02e54faa5620f6cbca2\\node_modules\\next\\dist\\server\\lib\\start-server.js:141:13)'
+}
+Error: 题目解析失败: Unterminated string in JSON at position 7926 (line 136 column 230)
+    at parseQuestions (webpack-internal:///(rsc)/./src/lib/ai-question-bank/qwen-flash.ts:126:19)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async eval (webpack-internal:///(rsc)/./inngest/functions/process-pdf-upload.ts:125:28)
+    at async goIntervalTiming (webpack-internal:///(rsc)/../node_modules/.pnpm/inngest@3.46.0_@opentelemet_b2fcdc1f209c814630faba588bf59943/node_modules/inngest/helpers/promises.js:189:3)
+    at async V1InngestExecution.tryExecuteStep (webpack-internal:///(rsc)/../node_modules/.pnpm/inngest@3.46.0_@opentelemet_b2fcdc1f209c814630faba588bf59943/node_modules/inngest/components/execution/v1.js:399:20)
+    at async steps-found (webpack-internal:///(rsc)/../node_modules/.pnpm/inngest@3.46.0_@opentelemet_b2fcdc1f209c814630faba588bf59943/node_modules/inngest/components/execution/v1.js:315:24)
+    at async V1InngestExecution._start (webpack-internal:///(rsc)/../node_modules/.pnpm/inngest@3.46.0_@opentelemet_b2fcdc1f209c814630faba588bf59943/node_modules/inngest/components/execution/v1.js:134:20)
+    at async InngestCommHandler.handleAction (webpack-internal:///(rsc)/../node_modules/.pnpm/inngest@3.46.0_@opentelemet_b2fcdc1f209c814630faba588bf59943/node_modules/inngest/components/InngestCommHandler.js:846:24)
+    at async ServerTiming.wrap (webpack-internal:///(rsc)/../node_modules/.pnpm/inngest@3.46.0_@opentelemet_b2fcdc1f209c814630faba588bf59943/node_modules/inngest/helpers/ServerTiming.js:64:11)
+    at async ServerTiming.wrap (webpack-internal:///(rsc)/../node_modules/.pnpm/inngest@3.46.0_@opentelemet_b2fcdc1f209c814630faba588bf59943/node_modules/inngest/helpers/ServerTiming.js:64:11)
+    at async D:\rixinwork\node_modules\.pnpm\next@14.2.33_@babel+core@7._f724eccac1e7d02e54faa5620f6cbca2\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:57228
+    at async eT.execute (D:\rixinwork\node_modules\.pnpm\next@14.2.33_@babel+core@7._f724eccac1e7d02e54faa5620f6cbca2\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:46851)
+    at async eT.handle (D:\rixinwork\node_modules\.pnpm\next@14.2.33_@babel+core@7._f724eccac1e7d02e54faa5620f6cbca2\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:58760)
+    at async doRender (D:\rixinwork\node_modules\.pnpm\next@14.2.33_@babel+core@7._f724eccac1e7d02e54faa5620f6cbca2\node_modules\next\dist\server\base-server.js:1366:42)
+    at async cacheEntry.responseCache.get.routeKind (D:\rixinwork\node_modules\.pnpm\next@14.2.33_@babel+core@7._f724eccac1e7d02e54faa5620f6cbca2\node_modules\next\dist\server\base-server.js:1588:28)
+    at async DevServer.renderToResponseWithComponentsImpl (D:\rixinwork\node_modules\.pnpm\next@14.2.33_@babel+core@7._f724eccac1e7d02e54faa5620f6cbca2\node_modules\next\dist\server\base-server.js:1496:28)
+    at async DevServer.renderPageComponent (D:\rixinwork\node_modules\.pnpm\next@14.2.33_@babel+core@7._f724eccac1e7d02e54faa5620f6cbca2\node_modules\next\dist\server\base-server.js:1924:24)
+    at async DevServer.renderToResponseImpl (D:\rixinwork\node_modules\.pnpm\next@14.2.33_@babel+core@7._f724eccac1e7d02e54faa5620f6cbca2\node_modules\next\dist\server\base-server.js:1962:32)
+    at async DevServer.pipeImpl (D:\rixinwork\node_modules\.pnpm\next@14.2.33_@babel+core@7._f724eccac1e7d02e54faa5620f6cbca2\node_modules\next\dist\server\base-server.js:922:25)
+    at async NextNodeServer.handleCatchallRenderRequest (D:\rixinwork\node_modules\.pnpm\next@14.2.33_@babel+core@7._f724eccac1e7d02e54faa5620f6cbca2\node_modules\next\dist\server\next-server.js:272:17)
+    at async DevServer.handleRequestImpl (D:\rixinwork\node_modules\.pnpm\next@14.2.33_@babel+core@7._f724eccac1e7d02e54faa5620f6cbca2\node_modules\next\dist\server\base-server.js:818:17)
+    at async D:\rixinwork\node_modules\.pnpm\next@14.2.33_@babel+core@7._f724eccac1e7d02e54faa5620f6cbca2\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (D:\rixinwork\node_modules\.pnpm\next@14.2.33_@babel+core@7._f724eccac1e7d02e54faa5620f6cbca2\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (D:\rixinwork\node_modules\.pnpm\next@14.2.33_@babel+core@7._f724eccac1e7d02e54faa5620f6cbca2\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (D:\rixinwork\node_modules\.pnpm\next@14.2.33_@babel+core@7._f724eccac1e7d02e54faa5620f6cbca2\node_modules\next\dist\server\lib\router-server.js:179:21)
+    at async handleRequest (D:\rixinwork\node_modules\.pnpm\next@14.2.33_@babel+core@7._f724eccac1e7d02e54faa5620f6cbca2\node_modules\next\dist\server\lib\router-server.js:359:24)
+    at async requestHandlerImpl (D:\rixinwork\node_modules\.pnpm\next@14.2.33_@babel+core@7._f724eccac1e7d02e54faa5620f6cbca2\node_modules\next\dist\server\lib\router-server.js:383:13)
+    at async Server.requestListener (D:\rixinwork\node_modules\.pnpm\next@14.2.33_@babel+core@7._f724eccac1e7d02e54faa5620f6cbca2\node_modules\next\dist\server\lib\start-server.js:141:13)
+ POST /api/inngest?fnId=rixin-ai-question-bank-process-pdf-upload&stepId=step 206 in 35011ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 24ms
+ PUT /api/inngest 200 in 23ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 23ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 18ms
+开始处理上传任务 {
+  taskId: 'fa0b364c-2e58-430c-af1d-b6a200f12859',
+  fileName: 'PixPin_2025-11-24_01-44-35.png',
+  traceId: '739eac1b-3e13-4263-9c33-bca621d0b3f4',
+  userId: 'aaaaaaaa-1111-1111-1111-111111111111'
+}
+调用 Qwen3-VL-Flash 解析 { taskId: 'fa0b364c-2e58-430c-af1d-b6a200f12859' }
+Qwen 调用前数据预览 {
+  taskId: 'fa0b364c-2e58-430c-af1d-b6a200f12859',
+  mimeType: 'image/png',
+  base64Length: 336660,
+  base64Head: 'iVBORw0KGgoAAAANSUhEUgAAA1UAAAR5',
+  base64Tail: '3+D/AKe/BBhGZXc0AAAAAElFTkSuQmCC'
+}
+Qwen parse request preview {
+  mimeType: 'image/png',
+  base64Length: 336660,
+  dataUrlLength: 336682,
+  base64Head: 'iVBORw0KGgoAAAANSUhEUgAAA1UAAAR5',
+  base64Tail: '3+D/AKe/BBhGZXc0AAAAAElFTkSuQmCC'
+}
+ PUT /api/inngest 200 in 19ms
+ PUT /api/inngest 200 in 19ms
+ PUT /api/inngest 200 in 22ms
+ PUT /api/inngest 200 in 19ms
+ PUT /api/inngest 200 in 18ms
+解析完成 {
+  taskId: 'fa0b364c-2e58-430c-af1d-b6a200f12859',
+  questionCount: 5,
+  avgConfidence: 0.86
+}
+ POST /api/inngest?fnId=rixin-ai-question-bank-process-pdf-upload&stepId=step 206 in 25167ms
+开始处理上传任务 {
+  taskId: 'fa0b364c-2e58-430c-af1d-b6a200f12859',
+  fileName: 'PixPin_2025-11-24_01-44-35.png',
+  traceId: '739eac1b-3e13-4263-9c33-bca621d0b3f4',
+  userId: 'aaaaaaaa-1111-1111-1111-111111111111'
+}
+解析结果已保存 { taskId: 'fa0b364c-2e58-430c-af1d-b6a200f12859', count: 5 }
+ POST /api/inngest?fnId=rixin-ai-question-bank-process-pdf-upload&stepId=step 206 in 45ms
+开始处理上传任务 {
+  taskId: 'fa0b364c-2e58-430c-af1d-b6a200f12859',
+  fileName: 'PixPin_2025-11-24_01-44-35.png',
+  traceId: '739eac1b-3e13-4263-9c33-bca621d0b3f4',
+  userId: 'aaaaaaaa-1111-1111-1111-111111111111'
+}
+ POST /api/inngest?fnId=rixin-ai-question-bank-process-pdf-upload&stepId=step 206 in 30ms
+开始处理上传任务 {
+  taskId: 'fa0b364c-2e58-430c-af1d-b6a200f12859',
+  fileName: 'PixPin_2025-11-24_01-44-35.png',
+  traceId: '739eac1b-3e13-4263-9c33-bca621d0b3f4',
+  userId: 'aaaaaaaa-1111-1111-1111-111111111111'
+}
+ POST /api/inngest?fnId=rixin-ai-question-bank-process-pdf-upload&stepId=step 206 in 28ms
+开始处理上传任务 {
+  taskId: 'fa0b364c-2e58-430c-af1d-b6a200f12859',
+  fileName: 'PixPin_2025-11-24_01-44-35.png',
+  traceId: '739eac1b-3e13-4263-9c33-bca621d0b3f4',
+  userId: 'aaaaaaaa-1111-1111-1111-111111111111'
+}
+ POST /api/inngest?fnId=rixin-ai-question-bank-process-pdf-upload&stepId=step 200 in 25ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 20ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 11ms
+ GET /tools/ingest/fa0b364c-2e58-430c-af1d-b6a200f12859/review 404 in 48ms
+[2025-11-24T17:00:45.121Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764007076,
+  expiresIn: '57 分钟'
+}
+[2025-11-24T17:00:45.121Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T17:00:45.121Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T17:00:45.121Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T17:00:45.121Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 11ms
+[2025-11-24T17:00:45.125Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764007076,
+  expiresIn: '57 分钟'
+}
+[2025-11-24T17:00:45.126Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T17:00:45.126Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T17:00:45.126Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T17:00:45.126Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 14ms
+[2025-11-24T17:00:45.167Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764007076,
+  expiresIn: '57 分钟'
+}
+[2025-11-24T17:00:45.167Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T17:00:45.167Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T17:00:45.167Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T17:00:45.167Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 7ms
+ PUT /api/inngest 200 in 11ms
+ GET /tools/ingest 200 in 69ms
+[2025-11-24T17:00:48.465Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764007076,
+  expiresIn: '57 分钟'
+}
+[2025-11-24T17:00:48.465Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T17:00:48.465Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T17:00:48.466Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T17:00:48.466Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+[2025-11-24T17:00:48.466Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764007076,
+  expiresIn: '57 分钟'
+}
+[2025-11-24T17:00:48.466Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T17:00:48.466Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T17:00:48.466Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T17:00:48.466Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 15ms
+ POST /api/auth/set-session 200 in 14ms
+[2025-11-24T17:00:48.474Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764007076,
+  expiresIn: '57 分钟'
+}
+[2025-11-24T17:00:48.475Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T17:00:48.475Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T17:00:48.475Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T17:00:48.475Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 16ms
+ GET /api/profile 200 in 23ms
+ GET /api/profile 200 in 11ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 13ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 20ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 25ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 12ms
+ GET /tools/ingest/fa0b364c-2e58-430c-af1d-b6a200f12859/review 404 in 53ms
+[2025-11-24T17:04:43.133Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764007076,
+  expiresIn: '53 分钟'
+}
+[2025-11-24T17:04:43.134Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T17:04:43.134Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T17:04:43.134Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T17:04:43.134Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+[2025-11-24T17:04:43.134Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764007076,
+  expiresIn: '53 分钟'
+}
+[2025-11-24T17:04:43.134Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T17:04:43.134Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T17:04:43.134Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T17:04:43.134Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 11ms
+ POST /api/auth/set-session 200 in 11ms
+[2025-11-24T17:04:43.140Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764007076,
+  expiresIn: '53 分钟'
+}
+[2025-11-24T17:04:43.140Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T17:04:43.140Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T17:04:43.140Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T17:04:43.141Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 12ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 14ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 69ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 13ms
+ GET /tools/ingest 200 in 59ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 20ms
+[2025-11-24T17:05:02.834Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764007076,
+  expiresIn: '52 分钟'
+}
+[2025-11-24T17:05:02.835Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T17:05:02.835Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T17:05:02.835Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T17:05:02.835Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+[2025-11-24T17:05:02.835Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764007076,
+  expiresIn: '52 分钟'
+}
+[2025-11-24T17:05:02.835Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T17:05:02.835Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T17:05:02.835Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T17:05:02.835Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 17ms
+ POST /api/auth/set-session 200 in 16ms
+ GET /api/profile 200 in 23ms
+ GET /api/profile 200 in 12ms
+[2025-11-24T17:05:02.878Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764007076,
+  expiresIn: '52 分钟'
+}
+[2025-11-24T17:05:02.878Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T17:05:02.878Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T17:05:02.879Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T17:05:02.879Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 8ms
+ PUT /api/inngest 200 in 10ms
+ GET /tools/ingest/fa0b364c-2e58-430c-af1d-b6a200f12859/review 404 in 52ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 404 in 17ms
+[2025-11-24T17:05:06.567Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764007076,
+  expiresIn: '52 分钟'
+}
+[2025-11-24T17:05:06.567Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T17:05:06.567Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T17:05:06.568Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T17:05:06.568Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 12ms
+[2025-11-24T17:05:06.571Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764007076,
+  expiresIn: '52 分钟'
+}
+[2025-11-24T17:05:06.571Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T17:05:06.571Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T17:05:06.571Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T17:05:06.571Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 16ms
+[2025-11-24T17:05:06.602Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764007076,
+  expiresIn: '52 分钟'
+}
+[2025-11-24T17:05:06.602Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T17:05:06.602Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T17:05:06.602Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T17:05:06.602Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 5ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 13ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 19ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 19ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 20ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 17ms
+[2025-11-24T17:08:12.525Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764007076,
+  expiresIn: '49 分钟'
+}
+[2025-11-24T17:08:12.525Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T17:08:12.525Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T17:08:12.525Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T17:08:12.525Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 23ms
+[2025-11-24T17:08:12.528Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764007076,
+  expiresIn: '49 分钟'
+}
+[2025-11-24T17:08:12.529Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T17:08:12.529Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T17:08:12.529Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T17:08:12.529Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 24ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 13ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 20ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 13ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 11ms
+ ✓ Compiled in 390ms (2645 modules)
+ ○ Compiling /tools/ingest/[taskId]/review ...
+ ✓ Compiled /tools/ingest/[taskId]/review in 819ms (2710 modules)
+[2025-11-24T17:09:59.545Z] [INFO] [Storage Init] 使用 Supabase Storage（未配置 R2） {}
+ PUT /api/inngest 200 in 104ms
+[2025-11-24T17:09:59.861Z] [INFO] [Storage Init] 使用 Supabase Storage（未配置 R2） {}
+[2025-11-24T17:10:00.526Z] [INFO] [Storage Init] 使用 Supabase Storage（未配置 R2） {}
+ PUT /api/inngest 200 in 13ms
+ ✓ Compiled in 882ms (2710 modules)
+[2025-11-24T17:10:08.750Z] [INFO] [Storage Init] 使用 Supabase Storage（未配置 R2） {}
+[2025-11-24T17:10:09.306Z] [INFO] [Storage Init] 使用 Supabase Storage（未配置 R2） {}
+ PUT /api/inngest 200 in 28ms
+ PUT /api/inngest 200 in 20ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 22ms
+ ✓ Compiled in 1078ms (2710 modules)
+[2025-11-24T17:10:26.346Z] [INFO] [Storage Init] 使用 Supabase Storage（未配置 R2） {}
+[2025-11-24T17:10:26.934Z] [INFO] [Storage Init] 使用 Supabase Storage（未配置 R2） {}
+ PUT /api/inngest 200 in 29ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 21ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 22ms
+ PUT /api/inngest 200 in 21ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 19ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 19ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 20ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ GET /tools/ingest 200 in 133ms
+ ✓ Compiled /api/profile in 466ms (2186 modules)
+ ✓ Compiled (2188 modules)
+[2025-11-24T17:19:19.837Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764007076,
+  expiresIn: '38 分钟'
+}
+[2025-11-24T17:19:19.837Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T17:19:19.837Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T17:19:19.837Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T17:19:19.837Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+[2025-11-24T17:19:19.838Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764007076,
+  expiresIn: '38 分钟'
+}
+[2025-11-24T17:19:19.838Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T17:19:19.838Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T17:19:19.838Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T17:19:19.838Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+[2025-11-24T17:19:19.838Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764007076,
+  expiresIn: '38 分钟'
+}
+[2025-11-24T17:19:19.838Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T17:19:19.838Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T17:19:19.838Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T17:19:19.838Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 714ms
+ POST /api/auth/set-session 200 in 584ms
+ POST /api/auth/set-session 200 in 715ms
+ GET /api/profile 200 in 725ms
+ GET /api/profile 200 in 9ms
+[2025-11-24T17:19:22.026Z] [INFO] [Storage Init] 使用 Supabase Storage（未配置 R2） {}
+ PUT /api/inngest 200 in 95ms
+[2025-11-24T17:19:23.041Z] [INFO] [Storage Init] 使用 Supabase Storage（未配置 R2） {}
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 20ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 20ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 20ms
+ PUT /api/inngest 200 in 19ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 10ms
+ GET /api/profile 200 in 20ms
+ GET /api/profile 200 in 12ms
+ PUT /api/inngest 200 in 12ms
+[2025-11-24T17:20:49.709Z] [INFO] [Storage Init] 使用 Supabase Storage（未配置 R2） {}
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 19ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 19ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 20ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 20ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 13ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 24ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 21ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 83ms
+ PUT /api/inngest 200 in 20ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 19ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 19ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 19ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 21ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 19ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 21ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 19ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 19ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 8ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 12ms
+[2025-11-24T18:08:38.322Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764011318,
+  expiresIn: '59 分钟'
+}
+[2025-11-24T18:08:38.322Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T18:08:38.323Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T18:08:38.323Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T18:08:38.323Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+[2025-11-24T18:08:38.323Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764011318,
+  expiresIn: '59 分钟'
+}
+[2025-11-24T18:08:38.323Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T18:08:38.323Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T18:08:38.323Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T18:08:38.323Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 8ms
+ POST /api/auth/set-session 200 in 7ms
+ PUT /api/inngest 200 in 10ms
+ GET /tools/ingest/fa0b364c-2e58-430c-af1d-b6a200f12859/review 200 in 193ms
+[2025-11-24T18:08:39.943Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764011318,
+  expiresIn: '59 分钟'
+}
+[2025-11-24T18:08:39.943Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T18:08:39.943Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T18:08:39.943Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T18:08:39.943Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 10ms
+[2025-11-24T18:08:39.947Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764011318,
+  expiresIn: '59 分钟'
+}
+[2025-11-24T18:08:39.947Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T18:08:39.947Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T18:08:39.947Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T18:08:39.947Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 13ms
+[2025-11-24T18:08:39.958Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764011318,
+  expiresIn: '59 分钟'
+}
+[2025-11-24T18:08:39.958Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T18:08:39.958Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T18:08:39.958Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T18:08:39.958Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 7ms
+[2025-11-24T18:08:40.141Z] [INFO] [Storage Init] 使用 Supabase Storage（未配置 R2） {}
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 19ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 19ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 21ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 13ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 8ms
+ PUT /api/inngest 200 in 11ms
+ ✓ Compiled in 522ms (550 modules)
+[2025-11-24T18:12:27.673Z] [INFO] [Storage Init] 使用 Supabase Storage（未配置 R2） {}
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 11ms
+ ✓ Compiled in 757ms (2708 modules)
+[2025-11-24T18:12:54.395Z] [INFO] [Storage Init] 使用 Supabase Storage（未配置 R2） {}
+ PUT /api/inngest 200 in 49ms
+ ⨯ src\app\tools\ingest\[taskId]\review\page.tsx (44:12) @ Badge
+ ⨯ ReferenceError: Badge is not defined
+    at QuestionCard (./src/app/tools/ingest/[taskId]/review/page.tsx:52:105)
+    at stringify (<anonymous>)
+    at stringify (<anonymous>)
+    at stringify (<anonymous>)
+digest: "3238919633"
+[0m [90m 42 |[39m       [33m<[39m[33mCardHeader[39m className[33m=[39m[32m"flex flex-row items-center justify-between space-y-0 pb-4"[39m[33m>[39m[0m
+[0m [90m 43 |[39m         [33m<[39m[33mdiv[39m className[33m=[39m[32m"flex items-center gap-2"[39m[33m>[39m[0m
+[0m[31m[1m>[22m[39m[90m 44 |[39m           [33m<[39m[33mBadge[39m variant[33m=[39m[32m"secondary"[39m[33m>[39m{[32m`第 ${question.number || index + 1} 题`[39m}[33m<[39m[33m/[39m[33mBadge[39m[33m>[39m[0m
+[0m [90m    |[39m            [31m[1m^[22m[39m[0m
+[0m [90m 45 |[39m           [33m<[39m[33mBadge[39m[33m>[39m{question[33m.[39mtype}[33m<[39m[33m/[39m[33mBadge[39m[33m>[39m[0m
+[0m [90m 46 |[39m           [33m<[39m[33mBadge[39m variant[33m=[39m[32m"outline"[39m[33m>[39m{question[33m.[39mtags[33m?[39m[33m.[39mdifficulty [33m||[39m [32m'unknown'[39m}[33m<[39m[33m/[39m[33mBadge[39m[33m>[39m[0m
+[0m [90m 47 |[39m           [33m<[39m[33mspan[39m className[33m=[39m[32m"text-xs text-muted-foreground"[39m[33m>[39m[0m
+ ⨯ src\app\tools\ingest\[taskId]\review\page.tsx (44:12) @ Badge
+ ⨯ ReferenceError: Badge is not defined
+    at QuestionCard (./src/app/tools/ingest/[taskId]/review/page.tsx:52:105)
+    at stringify (<anonymous>)
+    at stringify (<anonymous>)
+    at stringify (<anonymous>)
+digest: "3238919633"
+[0m [90m 42 |[39m       [33m<[39m[33mCardHeader[39m className[33m=[39m[32m"flex flex-row items-center justify-between space-y-0 pb-4"[39m[33m>[39m[0m
+[0m [90m 43 |[39m         [33m<[39m[33mdiv[39m className[33m=[39m[32m"flex items-center gap-2"[39m[33m>[39m[0m
+[0m[31m[1m>[22m[39m[90m 44 |[39m           [33m<[39m[33mBadge[39m variant[33m=[39m[32m"secondary"[39m[33m>[39m{[32m`第 ${question.number || index + 1} 题`[39m}[33m<[39m[33m/[39m[33mBadge[39m[33m>[39m[0m
+[0m [90m    |[39m            [31m[1m^[22m[39m[0m
+[0m [90m 45 |[39m           [33m<[39m[33mBadge[39m[33m>[39m{question[33m.[39mtype}[33m<[39m[33m/[39m[33mBadge[39m[33m>[39m[0m
+[0m [90m 46 |[39m           [33m<[39m[33mBadge[39m variant[33m=[39m[32m"outline"[39m[33m>[39m{question[33m.[39mtags[33m?[39m[33m.[39mdifficulty [33m||[39m [32m'unknown'[39m}[33m<[39m[33m/[39m[33mBadge[39m[33m>[39m[0m
+[0m [90m 47 |[39m           [33m<[39m[33mspan[39m className[33m=[39m[32m"text-xs text-muted-foreground"[39m[33m>[39m[0m
+ ⨯ src\app\tools\ingest\[taskId]\review\page.tsx (44:12) @ Badge
+ ⨯ ReferenceError: Badge is not defined
+    at QuestionCard (./src/app/tools/ingest/[taskId]/review/page.tsx:52:105)
+    at stringify (<anonymous>)
+    at stringify (<anonymous>)
+    at stringify (<anonymous>)
+digest: "3238919633"
+[0m [90m 42 |[39m       [33m<[39m[33mCardHeader[39m className[33m=[39m[32m"flex flex-row items-center justify-between space-y-0 pb-4"[39m[33m>[39m[0m
+[0m [90m 43 |[39m         [33m<[39m[33mdiv[39m className[33m=[39m[32m"flex items-center gap-2"[39m[33m>[39m[0m
+[0m[31m[1m>[22m[39m[90m 44 |[39m           [33m<[39m[33mBadge[39m variant[33m=[39m[32m"secondary"[39m[33m>[39m{[32m`第 ${question.number || index + 1} 题`[39m}[33m<[39m[33m/[39m[33mBadge[39m[33m>[39m[0m
+[0m [90m    |[39m            [31m[1m^[22m[39m[0m
+[0m [90m 45 |[39m           [33m<[39m[33mBadge[39m[33m>[39m{question[33m.[39mtype}[33m<[39m[33m/[39m[33mBadge[39m[33m>[39m[0m
+[0m [90m 46 |[39m           [33m<[39m[33mBadge[39m variant[33m=[39m[32m"outline"[39m[33m>[39m{question[33m.[39mtags[33m?[39m[33m.[39mdifficulty [33m||[39m [32m'unknown'[39m}[33m<[39m[33m/[39m[33mBadge[39m[33m>[39m[0m
+[0m [90m 47 |[39m           [33m<[39m[33mspan[39m className[33m=[39m[32m"text-xs text-muted-foreground"[39m[33m>[39m[0m
+ ⨯ src\app\tools\ingest\[taskId]\review\page.tsx (44:12) @ Badge
+ ⨯ ReferenceError: Badge is not defined
+    at QuestionCard (./src/app/tools/ingest/[taskId]/review/page.tsx:52:105)
+    at stringify (<anonymous>)
+    at stringify (<anonymous>)
+    at stringify (<anonymous>)
+digest: "3238919633"
+[0m [90m 42 |[39m       [33m<[39m[33mCardHeader[39m className[33m=[39m[32m"flex flex-row items-center justify-between space-y-0 pb-4"[39m[33m>[39m[0m
+[0m [90m 43 |[39m         [33m<[39m[33mdiv[39m className[33m=[39m[32m"flex items-center gap-2"[39m[33m>[39m[0m
+[0m[31m[1m>[22m[39m[90m 44 |[39m           [33m<[39m[33mBadge[39m variant[33m=[39m[32m"secondary"[39m[33m>[39m{[32m`第 ${question.number || index + 1} 题`[39m}[33m<[39m[33m/[39m[33mBadge[39m[33m>[39m[0m
+[0m [90m    |[39m            [31m[1m^[22m[39m[0m
+[0m [90m 45 |[39m           [33m<[39m[33mBadge[39m[33m>[39m{question[33m.[39mtype}[33m<[39m[33m/[39m[33mBadge[39m[33m>[39m[0m
+[0m [90m 46 |[39m           [33m<[39m[33mBadge[39m variant[33m=[39m[32m"outline"[39m[33m>[39m{question[33m.[39mtags[33m?[39m[33m.[39mdifficulty [33m||[39m [32m'unknown'[39m}[33m<[39m[33m/[39m[33mBadge[39m[33m>[39m[0m
+[0m [90m 47 |[39m           [33m<[39m[33mspan[39m className[33m=[39m[32m"text-xs text-muted-foreground"[39m[33m>[39m[0m
+ ⨯ src\app\tools\ingest\[taskId]\review\page.tsx (44:12) @ Badge
+ ⨯ ReferenceError: Badge is not defined
+    at QuestionCard (./src/app/tools/ingest/[taskId]/review/page.tsx:52:105)
+    at stringify (<anonymous>)
+    at stringify (<anonymous>)
+    at stringify (<anonymous>)
+digest: "3238919633"
+[0m [90m 42 |[39m       [33m<[39m[33mCardHeader[39m className[33m=[39m[32m"flex flex-row items-center justify-between space-y-0 pb-4"[39m[33m>[39m[0m
+[0m [90m 43 |[39m         [33m<[39m[33mdiv[39m className[33m=[39m[32m"flex items-center gap-2"[39m[33m>[39m[0m
+[0m[31m[1m>[22m[39m[90m 44 |[39m           [33m<[39m[33mBadge[39m variant[33m=[39m[32m"secondary"[39m[33m>[39m{[32m`第 ${question.number || index + 1} 题`[39m}[33m<[39m[33m/[39m[33mBadge[39m[33m>[39m[0m
+[0m [90m    |[39m            [31m[1m^[22m[39m[0m
+[0m [90m 45 |[39m           [33m<[39m[33mBadge[39m[33m>[39m{question[33m.[39mtype}[33m<[39m[33m/[39m[33mBadge[39m[33m>[39m[0m
+[0m [90m 46 |[39m           [33m<[39m[33mBadge[39m variant[33m=[39m[32m"outline"[39m[33m>[39m{question[33m.[39mtags[33m?[39m[33m.[39mdifficulty [33m||[39m [32m'unknown'[39m}[33m<[39m[33m/[39m[33mBadge[39m[33m>[39m[0m
+[0m [90m 47 |[39m           [33m<[39m[33mspan[39m className[33m=[39m[32m"text-xs text-muted-foreground"[39m[33m>[39m[0m
+[2025-11-24T18:12:54.986Z] [INFO] [Storage Init] 使用 Supabase Storage（未配置 R2） {}
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 584ms (2708 modules)
+[2025-11-24T18:12:59.458Z] [INFO] [Storage Init] 使用 Supabase Storage（未配置 R2） {}
+ ⨯ src\app\tools\ingest\[taskId]\review\page.tsx (87:16) @ QuestionCard
+ ⨯ ReferenceError: QuestionCard is not defined
+    at eval (./src/app/tools/ingest/[taskId]/review/page.tsx:166:145)
+    at Array.map (<anonymous>)
+    at TaskReviewPage (./src/app/tools/ingest/[taskId]/review/page.tsx:166:46)
+digest: "71875982"
+[0m [90m 85 |[39m           ) [33m:[39m ([0m
+[0m [90m 86 |[39m             questions[33m.[39mmap((question[33m,[39m index) [33m=>[39m ([0m
+[0m[31m[1m>[22m[39m[90m 87 |[39m               [33m<[39m[33mQuestionCard[39m question[33m=[39m{question} index[33m=[39m{index} key[33m=[39m{question[33m.[39mid} [33m/[39m[33m>[39m[0m
+[0m [90m    |[39m                [31m[1m^[22m[39m[0m
+[0m [90m 88 |[39m             ))[0m
+[0m [90m 89 |[39m           )}[0m
+[0m [90m 90 |[39m         [33m<[39m[33m/[39m[33mCardContent[39m[33m>[39m[0m
+ ⨯ src\app\tools\ingest\[taskId]\review\page.tsx (87:16) @ QuestionCard
+ ⨯ ReferenceError: QuestionCard is not defined
+    at eval (./src/app/tools/ingest/[taskId]/review/page.tsx:166:145)
+    at Array.map (<anonymous>)
+    at TaskReviewPage (./src/app/tools/ingest/[taskId]/review/page.tsx:166:46)
+digest: "71875982"
+[0m [90m 85 |[39m           ) [33m:[39m ([0m
+[0m [90m 86 |[39m             questions[33m.[39mmap((question[33m,[39m index) [33m=>[39m ([0m
+[0m[31m[1m>[22m[39m[90m 87 |[39m               [33m<[39m[33mQuestionCard[39m question[33m=[39m{question} index[33m=[39m{index} key[33m=[39m{question[33m.[39mid} [33m/[39m[33m>[39m[0m
+[0m [90m    |[39m                [31m[1m^[22m[39m[0m
+[0m [90m 88 |[39m             ))[0m
+[0m [90m 89 |[39m           )}[0m
+[0m [90m 90 |[39m         [33m<[39m[33m/[39m[33mCardContent[39m[33m>[39m[0m
+ PUT /api/inngest 200 in 29ms
+ GET /tools/ingest/fa0b364c-2e58-430c-af1d-b6a200f12859/review 500 in 543ms
+[2025-11-24T18:13:00.058Z] [INFO] [Storage Init] 使用 Supabase Storage（未配置 R2） {}
+ ✓ Compiled /api/auth/set-session in 182ms (2184 modules)
+[2025-11-24T18:13:00.272Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764011318,
+  expiresIn: '55 分钟'
+}
+[2025-11-24T18:13:00.272Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T18:13:00.273Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T18:13:00.273Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T18:13:00.273Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+[2025-11-24T18:13:00.273Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764011318,
+  expiresIn: '55 分钟'
+}
+[2025-11-24T18:13:00.273Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T18:13:00.273Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T18:13:00.273Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T18:13:00.273Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+[2025-11-24T18:13:00.273Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764011318,
+  expiresIn: '55 分钟'
+}
+[2025-11-24T18:13:00.273Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T18:13:00.273Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T18:13:00.273Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T18:13:00.273Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 236ms
+ POST /api/auth/set-session 200 in 162ms
+ POST /api/auth/set-session 200 in 237ms
+ ✓ Compiled in 1658ms (2902 modules)
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[2025-11-24T18:13:04.374Z] [INFO] [Storage Init] 使用 Supabase Storage（未配置 R2） {}
+ GET /tools/ingest/fa0b364c-2e58-430c-af1d-b6a200f12859/review 200 in 249ms
+ PUT /api/inngest 200 in 25ms
+[2025-11-24T18:13:04.965Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764011318,
+  expiresIn: '55 分钟'
+}
+[2025-11-24T18:13:04.966Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T18:13:04.966Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T18:13:04.966Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T18:13:04.966Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 15ms
+[2025-11-24T18:13:04.969Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764011318,
+  expiresIn: '55 分钟'
+}
+[2025-11-24T18:13:04.970Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T18:13:04.970Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T18:13:04.970Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T18:13:04.970Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 17ms
+[2025-11-24T18:13:04.979Z] [INFO] [Storage Init] 使用 Supabase Storage（未配置 R2） {}
+[2025-11-24T18:13:05.023Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764011318,
+  expiresIn: '55 分钟'
+}
+[2025-11-24T18:13:05.024Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T18:13:05.024Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T18:13:05.024Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T18:13:05.024Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 6ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 13ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 17ms
+[2025-11-24T18:13:58.134Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764011318,
+  expiresIn: '54 分钟'
+}
+[2025-11-24T18:13:58.134Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T18:13:58.134Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T18:13:58.134Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T18:13:58.134Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 15ms
+[2025-11-24T18:13:58.138Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764011318,
+  expiresIn: '54 分钟'
+}
+[2025-11-24T18:13:58.138Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T18:13:58.138Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T18:13:58.138Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T18:13:58.138Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 19ms
+ PUT /api/inngest 200 in 12ms
+ GET /tools/ingest/fa0b364c-2e58-430c-af1d-b6a200f12859/review 200 in 130ms
+[2025-11-24T18:14:00.653Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764011318,
+  expiresIn: '54 分钟'
+}
+[2025-11-24T18:14:00.653Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T18:14:00.653Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T18:14:00.653Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T18:14:00.653Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 10ms
+[2025-11-24T18:14:00.656Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764011318,
+  expiresIn: '54 分钟'
+}
+[2025-11-24T18:14:00.656Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T18:14:00.656Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T18:14:00.656Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T18:14:00.656Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 11ms
+[2025-11-24T18:14:00.691Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764011318,
+  expiresIn: '54 分钟'
+}
+[2025-11-24T18:14:00.692Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T18:14:00.692Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T18:14:00.692Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T18:14:00.692Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 6ms
+[2025-11-24T18:14:00.930Z] [INFO] [Storage Init] 使用 Supabase Storage（未配置 R2） {}
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 16ms
+ POST /tools/ingest/fa0b364c-2e58-430c-af1d-b6a200f12859/review 200 in 88ms
+[2025-11-24T18:14:52.535Z] [INFO] [Storage Init] 使用 Supabase Storage（未配置 R2） {}
+ PUT /api/inngest 200 in 19ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 15ms
+[2025-11-24T18:15:10.206Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764011318,
+  expiresIn: '53 分钟'
+}
+[2025-11-24T18:15:10.207Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T18:15:10.207Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T18:15:10.207Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T18:15:10.207Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 12ms
+[2025-11-24T18:15:10.211Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764011318,
+  expiresIn: '53 分钟'
+}
+[2025-11-24T18:15:10.212Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T18:15:10.212Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T18:15:10.212Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T18:15:10.212Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 15ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 20ms
+ PUT /api/inngest 200 in 11ms
+ POST /tools/ingest/fa0b364c-2e58-430c-af1d-b6a200f12859/review 200 in 89ms
+[2025-11-24T18:15:39.197Z] [INFO] [Storage Init] 使用 Supabase Storage（未配置 R2） {}
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 12ms
+ ✓ Compiled /api/profile in 454ms (2267 modules)
+ GET /api/profile 200 in 548ms
+ GET /api/profile 200 in 12ms
+[2025-11-24T18:16:00.302Z] [INFO] [Storage Init] 使用 Supabase Storage（未配置 R2） {}
+ PUT /api/inngest 200 in 88ms
+ GET /tools/ingest 200 in 103ms
+[2025-11-24T18:16:00.744Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764011318,
+  expiresIn: '52 分钟'
+}
+[2025-11-24T18:16:00.745Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T18:16:00.745Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T18:16:00.745Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T18:16:00.745Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 12ms
+[2025-11-24T18:16:00.752Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764011318,
+  expiresIn: '52 分钟'
+}
+[2025-11-24T18:16:00.753Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T18:16:00.753Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T18:16:00.753Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T18:16:00.753Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 20ms
+ GET /api/profile 200 in 16ms
+ GET /api/profile 200 in 10ms
+[2025-11-24T18:16:00.785Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764011318,
+  expiresIn: '52 分钟'
+}
+[2025-11-24T18:16:00.785Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T18:16:00.785Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T18:16:00.785Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T18:16:00.785Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 8ms
+[2025-11-24T18:16:03.873Z] [INFO] [Storage Init] 使用 Supabase Storage（未配置 R2） {}
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 13ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 13ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 13ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 14ms
+ ✓ Compiled in 547ms (637 modules)
+[2025-11-24T18:17:17.625Z] [INFO] [Storage Init] 使用 Supabase Storage（未配置 R2） {}
+ PUT /api/inngest 200 in 14ms
+ ✓ Compiled in 428ms (637 modules)
+[2025-11-24T18:17:21.595Z] [INFO] [Storage Init] 使用 Supabase Storage（未配置 R2） {}
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 17ms
+ ✓ Compiled in 1141ms (2876 modules)
+[2025-11-24T18:17:49.017Z] [INFO] [Storage Init] 使用 Supabase Storage（未配置 R2） {}
+[2025-11-24T18:17:49.623Z] [INFO] [Storage Init] 使用 Supabase Storage（未配置 R2） {}
+ PUT /api/inngest 200 in 27ms
+ PUT /api/inngest 200 in 28ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 13ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 20ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 13ms
+ ✓ Compiled in 1250ms (2876 modules)
+[2025-11-24T18:18:54.962Z] [INFO] [Storage Init] 使用 Supabase Storage（未配置 R2） {}
+[2025-11-24T18:18:55.560Z] [INFO] [Storage Init] 使用 Supabase Storage（未配置 R2） {}
+ PUT /api/inngest 200 in 29ms
+ PUT /api/inngest 200 in 31ms
+ ✓ Compiled /api/auth/set-session in 192ms (2256 modules)
+[2025-11-24T18:19:05.510Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764011318,
+  expiresIn: '49 分钟'
+}
+[2025-11-24T18:19:05.511Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T18:19:05.511Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T18:19:05.511Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T18:19:05.511Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+[2025-11-24T18:19:05.511Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764011318,
+  expiresIn: '49 分钟'
+}
+[2025-11-24T18:19:05.511Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T18:19:05.511Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T18:19:05.511Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T18:19:05.511Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 240ms
+ POST /api/auth/set-session 200 in 241ms
+[2025-11-24T18:19:06.055Z] [INFO] [Storage Init] 使用 Supabase Storage（未配置 R2） {}
+ PUT /api/inngest 200 in 34ms
+ GET /tools/ingest/fa0b364c-2e58-430c-af1d-b6a200f12859/review 200 in 205ms
+[2025-11-24T18:19:08.674Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764011318,
+  expiresIn: '49 分钟'
+}
+[2025-11-24T18:19:08.674Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T18:19:08.674Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T18:19:08.674Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T18:19:08.674Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 9ms
+[2025-11-24T18:19:08.680Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764011318,
+  expiresIn: '49 分钟'
+}
+[2025-11-24T18:19:08.681Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T18:19:08.681Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T18:19:08.681Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T18:19:08.681Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 15ms
+[2025-11-24T18:19:08.719Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764011318,
+  expiresIn: '49 分钟'
+}
+[2025-11-24T18:19:08.719Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T18:19:08.720Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T18:19:08.720Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T18:19:08.720Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 7ms
+[2025-11-24T18:19:08.835Z] [INFO] [Storage Init] 使用 Supabase Storage（未配置 R2） {}
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 15ms
+ PUT /api/inngest 200 in 13ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 13ms
+ GET /tools/ingest/fa0b364c-2e58-430c-af1d-b6a200f12859/review 200 in 116ms
+ PUT /api/inngest 200 in 27ms
+[2025-11-24T18:20:41.657Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764011318,
+  expiresIn: '47 分钟'
+}
+[2025-11-24T18:20:41.657Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T18:20:41.657Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T18:20:41.657Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T18:20:41.657Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 9ms
+[2025-11-24T18:20:41.661Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764011318,
+  expiresIn: '47 分钟'
+}
+[2025-11-24T18:20:41.662Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T18:20:41.662Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T18:20:41.662Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T18:20:41.662Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 12ms
+[2025-11-24T18:20:41.682Z] [DEBUG] [set-session] 📥 接收 payload: {
+  hasAccess: true,
+  hasRefresh: true,
+  expires_at: 1764011318,
+  expiresIn: '47 分钟'
+}
+[2025-11-24T18:20:41.683Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-127-auth-token {}
+[2025-11-24T18:20:41.683Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-Rixindemo-codex-m1-auth-token {}
+[2025-11-24T18:20:41.683Z] [DEBUG] [set-session] ✅ 设置 cookie: sb-auth-token {}
+[2025-11-24T18:20:41.683Z] [DEBUG] [set-session] ✅ Cookie 设置成功，已验证 {}
+ POST /api/auth/set-session 200 in 7ms
+[2025-11-24T18:20:41.961Z] [INFO] [Storage Init] 使用 Supabase Storage（未配置 R2） {}
+ PUT /api/inngest 200 in 18ms
+ ✓ Compiled in 630ms (2902 modules)
+[2025-11-24T18:20:49.227Z] [INFO] [Storage Init] 使用 Supabase Storage（未配置 R2） {}
+[2025-11-24T18:20:49.387Z] [INFO] [Storage Init] 使用 Supabase Storage（未配置 R2） {}
+ PUT /api/inngest 200 in 35ms
+ ✓ Compiled in 438ms (646 modules)
+[2025-11-24T18:20:53.668Z] [INFO] [Storage Init] 使用 Supabase Storage（未配置 R2） {}
+ PUT /api/inngest 200 in 13ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 18ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 13ms
+ PUT /api/inngest 200 in 17ms
+ PUT /api/inngest 200 in 16ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 11ms
+ PUT /api/inngest 200 in 40ms
+ PUT /api/inngest 200 in 10ms
+ PUT /api/inngest 200 in 13ms
+ PUT /api/inngest 200 in 12ms
+ PUT /api/inngest 200 in 14ms
+ PUT /api/inngest 200 in 9ms
+ PUT /api/inngest 200 in 11ms

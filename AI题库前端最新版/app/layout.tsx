@@ -1,13 +1,13 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
+import { Inter, Roboto_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import "../styles/globals.css"
 import { Toaster } from "@/components/ui/toaster"
 import DebugPanel from "@/components/debug-panel"
 
-const _geist = Geist({ subsets: ["latin"] })
-const _geistMono = Geist_Mono({ subsets: ["latin"] })
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans" })
+const mono = Roboto_Mono({ subsets: ["latin"], variable: "--font-mono" })
 
 export const metadata: Metadata = {
   title: "v0 App",
@@ -40,8 +40,8 @@ export default function RootLayout({
   const isDev = process.env.NODE_ENV === "development"
 
   return (
-    <html lang="en">
-      <body className={`font-sans antialiased`}>
+    <html lang="en" className={`${inter.variable} ${mono.variable}`}>
+      <body className="font-sans antialiased">
         {children}
         <Analytics />
         <Toaster />

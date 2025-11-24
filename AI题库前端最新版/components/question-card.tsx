@@ -7,21 +7,10 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { ChevronDown, ChevronUp, ImageIcon, Edit, RefreshCw, Loader2, CheckCircle2 } from "lucide-react"
 import { cn } from "@/lib/utils"
-
-interface Question {
-  id: string
-  type: "choice" | "fill" | "solve"
-  content: string
-  options?: string[]
-  answer: string
-  difficulty: "easy" | "medium" | "hard"
-  hasImage: boolean
-  imageUrl?: string
-  reparseCount?: number
-}
+import type { ParsedQuestionItem } from "@/types/tasks"
 
 interface QuestionCardProps {
-  question: Question
+  question: ParsedQuestionItem
   index: number
   isSelected: boolean
   onToggle: () => void
@@ -32,19 +21,19 @@ interface QuestionCardProps {
   isAnyParsing?: boolean
 }
 
-const typeLabels = {
+const typeLabels: Record<ParsedQuestionItem["type"], string> = {
   choice: "选择题",
   fill: "填空题",
   solve: "解答题",
 }
 
-const difficultyLabels = {
+const difficultyLabels: Record<NonNullable<ParsedQuestionItem["difficulty"]>, string> = {
   easy: "简单",
   medium: "中等",
   hard: "困难",
 }
 
-const difficultyColors = {
+const difficultyColors: Record<NonNullable<ParsedQuestionItem["difficulty"]>, string> = {
   easy: "bg-success/10 text-success border-success/20",
   medium: "bg-warning/10 text-warning border-warning/20",
   hard: "bg-error/10 text-error border-error/20",
@@ -93,8 +82,11 @@ export function QuestionCard({
                 <Badge variant="outline" className="text-xs">
                   {typeLabels[question.type]}
                 </Badge>
-                <Badge variant="outline" className={cn("text-xs border", difficultyColors[question.difficulty])}>
-                  {difficultyLabels[question.difficulty]}
+                <Badge
+                  variant="outline"
+                  className={cn("text-xs border", difficultyColors[question.difficulty ?? "medium"])}
+                >
+                  {difficultyLabels[question.difficulty ?? "medium"]}
                 </Badge>
                 {question.hasImage && (
                   <Badge variant="outline" className="text-xs">

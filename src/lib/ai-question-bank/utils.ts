@@ -21,10 +21,22 @@ export async function fileToBase64(file: File): Promise<string> {
 }
 
 /**
- * 将Buffer转换为Base64
+ * 将 Buffer/TypedArray/ArrayBuffer 转换为 Base64
  */
-export function bufferToBase64(buffer: Buffer): string {
-  return buffer.toString('base64');
+export function bufferToBase64(buffer: Buffer | ArrayBuffer | ArrayBufferView): string {
+  let nodeBuffer: Buffer;
+
+  if (Buffer.isBuffer(buffer)) {
+    nodeBuffer = buffer;
+  } else if (ArrayBuffer.isView(buffer)) {
+    nodeBuffer = Buffer.from(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+  } else if (buffer instanceof ArrayBuffer) {
+    nodeBuffer = Buffer.from(buffer);
+  } else {
+    nodeBuffer = Buffer.from(buffer as any);
+  }
+
+  return nodeBuffer.toString('base64');
 }
 
 /**

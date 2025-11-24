@@ -19,7 +19,8 @@
     "baseUrl": ".",
     "paths": {
       "@/*": [
-        "src/*"
+        "src/*",
+        "AI题库前端最新版/*"
       ]
     },
     "incremental": true,

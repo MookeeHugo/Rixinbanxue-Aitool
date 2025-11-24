@@ -37,26 +37,11 @@ import { AdminExportCenter } from "@/components/admin/export-center"
 import { AdminTaskRecoveryManager } from "@/components/admin/task-recovery-manager" // Import AdminTaskRecoveryManager component
 import { BreadcrumbNav } from "@/components/breadcrumb-nav"
 import { TaskRecoveryBanner } from "@/components/task-recovery-banner"
-
-type TabType =
-  | "dashboard"
-  | "upload"
-  | "questions"
-  | "tags"
-  | "provider"
-  | "pipeline"
-  | "membership"
-  | "invite"
-  | "usage"
-  | "branding"
-  | "audit"
-  | "alerts"
-  | "export"
-  | "recovery" // Add recovery tab
+import type { AdminTab } from "@/types/admin"
 
 export default function AdminPage() {
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState<TabType>("dashboard")
+  const [activeTab, setActiveTab] = useState<AdminTab>("dashboard")
   const [sidebarOpen, setSidebarOpen] = useState(true)
 
   const menuItems = [
@@ -139,7 +124,7 @@ export default function AdminPage() {
           {menuItems.map((item) => (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id as TabType)}
+              onClick={() => setActiveTab(item.id as AdminTab)}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-all ${
                 activeTab === item.id ? "bg-blue-50 text-blue-600 font-medium" : "text-gray-700 hover:bg-gray-50"
               }`}
