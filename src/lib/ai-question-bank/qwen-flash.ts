@@ -81,6 +81,7 @@ export async function parseQuestions(
   }
 
   const { mimeType, ...restConfig } = config || {};
+  const sanitizedBase64 = imageBase64.replace(/\s+/g, '');
   const finalConfig = { ...DEFAULT_CONFIG, ...restConfig, apiKey };
   const imageMime = mimeType || 'image/jpeg';
   const apiUrl = `${finalConfig.apiUrl}/chat/completions`;
@@ -95,7 +96,7 @@ export async function parseQuestions(
       },
       body: JSON.stringify({
         model: finalConfig.model,
-        messages: getQwenPromptMessages(imageBase64, imageMime),
+        messages: getQwenPromptMessages(sanitizedBase64, imageMime),
         temperature: finalConfig.temperature,
         max_tokens: finalConfig.maxTokens
       })

@@ -100,8 +100,7 @@ export function getQwenPromptMessages(imageBase64: string, mimeType: string = 'i
         {
           type: 'image_url',
           image_url: {
-            url: imageBase64,
-            mime_type: mimeType
+            url: `data:${mimeType};base64,${imageBase64}`
           }
         }
       ]
