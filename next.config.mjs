@@ -22,6 +22,9 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: '2mb',
     },
+
+    // 指定仅在服务端使用的包（不打包到客户端）
+    serverComponentsExternalPackages: ['sharp'],
   },
 
   // 4. 图片优化配置
