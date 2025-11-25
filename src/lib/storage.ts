@@ -12,7 +12,7 @@ import {
   GetObjectCommand,
   DeleteObjectCommand
 } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { getSignedUrl as getS3SignedUrl } from '@aws-sdk/s3-request-presigner';
 import { createClient } from '@supabase/supabase-js';
 import { logger } from '@/lib/logger';
 
@@ -290,7 +290,7 @@ export async function generateSignedUrl(
     Bucket: R2_PRIVATE_BUCKET,
     Key: key
   });
-  const signedUrl = await getSignedUrl(r2Private, command, { expiresIn });
+  const signedUrl = await getS3SignedUrl(r2Private, command, { expiresIn });
 
   return {
     url: signedUrl,
@@ -434,6 +434,59 @@ export async function downloadFile(
 }
 
 export const getFile = downloadFile;
+
+// ========================================
+// 简化的签名 URL（用于 AI 题库，不需要权限检查）
+// ========================================
+
+/**
+ * 为私有文件生成签名URL（简化版，用于AI题库系统）
+ * 不进行权限检查，假设调用方已验证权限
+ */
+export async function getSignedUrl(
+  key: string,
+  accessLevel?: FileAccessLevel,
+  expiresIn: number = 3600
+): Promise<string> {
+  const level = accessLevel || classifyFile(key);
+
+  // 公共文件直接返回公共URL
+  if (level === FileAccessLevel.PUBLIC) {
+    if (isR2Configured) {
+      return `${R2_PUBLIC_URL}/${key}`;
+    }
+    if (supabaseClient) {
+      const { data } = supabaseClient.storage
+        .from('question-files')
+        .getPublicUrl(key);
+      return data.publicUrl;
+    }
+  }
+
+  // 私有文件生成签名URL
+  if (isR2Configured) {
+    const command = new GetObjectCommand({
+      Bucket: R2_PRIVATE_BUCKET,
+      Key: key
+    });
+    return await getS3SignedUrl(r2Private, command, { expiresIn });
+  }
+
+  if (supabaseClient) {
+    const { data, error } = await supabaseClient.storage
+      .from('question-files')
+      .createSignedUrl(key, expiresIn);
+
+    if (error || !data) {
+      logger.error('[Storage] 生成签名URL失败', error || undefined, { key });
+      throw new Error(`生成签名URL失败: ${error?.message || '未知错误'}`);
+    }
+
+    return data.signedUrl;
+  }
+
+  throw new Error('存储服务未配置，无法生成签名URL');
+}
 
 // ========================================
 // 使用示例

@@ -14,6 +14,7 @@ import { submitQuestions } from '@/app/actions/question-upload'
 interface ClientPageProps {
   task: UploadTask
   initialQuestions: ParsedQuestionRecord[]
+  imageUrls: Record<string, string>
 }
 
 function formatDate(dateString: string) {
@@ -27,10 +28,27 @@ function formatDate(dateString: string) {
   })
 }
 
-export function ClientReviewPage({ task, initialQuestions }: ClientPageProps) {
+export function ClientReviewPage({ task, initialQuestions, imageUrls }: ClientPageProps) {
   const router = useRouter()
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // 调试：检查传入的数据
+  console.log('[ClientReviewPage] 接收到的props:', {
+    taskId: task.id,
+    questionCount: initialQuestions.length,
+    imageUrlsCount: Object.keys(imageUrls).length,
+    imageUrls: Object.entries(imageUrls).map(([key, url]) => ({
+      key,
+      url: url.substring(0, 100) + '...'
+    })),
+    questionsWithImages: initialQuestions.filter(q => q.original_image_url).map(q => ({
+      id: q.id,
+      number: q.number,
+      original_image_url: q.original_image_url,
+      hasSignedUrl: q.original_image_url ? !!imageUrls[q.original_image_url] : false
+    }))
+  })
 
   // 未提交的题目
   const unsubmittedQuestions = initialQuestions.filter(q => !q.is_submitted)
@@ -188,6 +206,7 @@ export function ClientReviewPage({ task, initialQuestions }: ClientPageProps) {
                     <QuestionReviewCard
                       question={question}
                       index={index}
+                      imageUrl={question.original_image_url ? imageUrls[question.original_image_url] : undefined}
                     />
                   </div>
                 </div>

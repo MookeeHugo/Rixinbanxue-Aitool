@@ -86,6 +86,8 @@ export interface ParsedQuestionRecord extends ParsedQuestion {
   is_selected: boolean;
   /** 是否已提交到题库 */
   is_submitted: boolean;
+  /** 原始上传图片的URL（用于显示题目原图） */
+  original_image_url?: string;
   created_at: string;
 }
 

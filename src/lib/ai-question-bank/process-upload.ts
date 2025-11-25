@@ -96,7 +96,8 @@ export async function processUploadTask(data: {
       tags: q.tags,
       confidence_score: q.confidence,
       is_selected: true,
-      is_submitted: false
+      is_submitted: false,
+      original_image_url: fileUrl // 保存原始图片URL，用于在题目卡片中显示
     }));
 
     await supabase.from('parsed_questions').insert(records);

@@ -5,7 +5,7 @@
 
 'use server';
 
-import { uploadFile } from '@/lib/storage';
+import { uploadFile, getSignedUrl, FileAccessLevel } from '@/lib/storage';
 import { inngest } from '../../../inngest/client';
 import { generateFileKey, formatFileSize } from '@/lib/ai-question-bank/utils';
 import { BatchSubmitSchema } from '@/lib/ai-question-bank/schemas';
@@ -385,6 +385,59 @@ export async function deleteQuestion(questionId: string): Promise<ActionResult<v
     return {
       success: false,
       error: error instanceof Error ? error.message : '未知错误'
+    };
+  }
+}
+
+/**
+ * 生成图片签名URL（用于显示私有存储中的图片）
+ */
+export async function generateImageSignedUrl(fileKey: string): Promise<ActionResult<string>> {
+  try {
+    if (!fileKey) {
+      return { success: false, error: '文件路径为空' };
+    }
+
+    const signedUrl = await getSignedUrl(fileKey, FileAccessLevel.PRIVATE, 3600); // 1小时有效期
+    return { success: true, data: signedUrl };
+
+  } catch (error) {
+    console.error('generateImageSignedUrl错误', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : '生成签名URL失败'
+    };
+  }
+}
+
+/**
+ * 批量生成图片签名URL
+ */
+export async function generateImageSignedUrls(fileKeys: string[]): Promise<ActionResult<Record<string, string>>> {
+  try {
+    const urls: Record<string, string> = {};
+
+    await Promise.all(
+      fileKeys.map(async (key) => {
+        if (key) {
+          try {
+            const signedUrl = await getSignedUrl(key, FileAccessLevel.PRIVATE, 3600);
+            urls[key] = signedUrl;
+          } catch (error) {
+            console.error(`生成签名URL失败: ${key}`, error);
+            urls[key] = ''; // 失败时返回空字符串
+          }
+        }
+      })
+    );
+
+    return { success: true, data: urls };
+
+  } catch (error) {
+    console.error('generateImageSignedUrls错误', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : '批量生成签名URL失败'
     };
   }
 }

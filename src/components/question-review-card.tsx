@@ -9,26 +9,26 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { CheckCircle2, Edit, Trash2, AlertCircle } from 'lucide-react'
-import type { ParsedQuestionRecord } from '@/lib/ai-question-bank'
+import { CheckCircle2, Edit, Trash2, AlertCircle, Plus, X } from 'lucide-react'
+import type { ParsedQuestionRecord, DifficultyLevel } from '@/lib/ai-question-bank'
 import { updateQuestion, deleteQuestion } from '@/app/actions/question-upload'
 import { useRouter } from 'next/navigation'
+import { QuestionContentRenderer } from './question-content-renderer'
+import {
+  getQuestionTypeLabel,
+  getDifficultyLabel,
+  getDifficultyColor,
+  formatConfidence,
+  isLowConfidence
+} from '@/lib/ai-question-bank/display-helpers'
 
 interface QuestionReviewCardProps {
   question: ParsedQuestionRecord
   index: number
+  imageUrl?: string
 }
 
-function renderQuestionContent(content: string) {
-  return (
-    <div
-      className="prose prose-sm prose-slate dark:prose-invert max-w-none"
-      dangerouslySetInnerHTML={{ __html: content.replace(/\n/g, '<br/>') }}
-    />
-  )
-}
-
-export function QuestionReviewCard({ question, index }: QuestionReviewCardProps) {
+export function QuestionReviewCard({ question, index, imageUrl }: QuestionReviewCardProps) {
   const router = useRouter()
   const [isEditing, setIsEditing] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -39,10 +39,12 @@ export function QuestionReviewCard({ question, index }: QuestionReviewCardProps)
     type: question.type,
     content: question.content,
     options: question.options || [],
-    answer: question.answer
+    answer: question.answer,
+    tags: question.tags
   })
 
-  const isLowConfidence = question.confidence < 0.8
+  const lowConfidence = isLowConfidence(question.confidence)
+  const difficultyColor = getDifficultyColor(question.tags?.difficulty || 'medium')
 
   const handleSave = async () => {
     setIsSaving(true)
@@ -106,18 +108,52 @@ export function QuestionReviewCard({ question, index }: QuestionReviewCardProps)
     })
   }
 
+  const handleAddKnowledgePoint = () => {
+    setEditedData({
+      ...editedData,
+      tags: {
+        ...editedData.tags,
+        knowledge: [...(editedData.tags.knowledge || []), '']
+      }
+    })
+  }
+
+  const handleRemoveKnowledgePoint = (idx: number) => {
+    setEditedData({
+      ...editedData,
+      tags: {
+        ...editedData.tags,
+        knowledge: editedData.tags.knowledge.filter((_, i) => i !== idx)
+      }
+    })
+  }
+
+  const handleKnowledgePointChange = (idx: number, value: string) => {
+    const newKnowledge = [...editedData.tags.knowledge]
+    newKnowledge[idx] = value
+    setEditedData({
+      ...editedData,
+      tags: {
+        ...editedData.tags,
+        knowledge: newKnowledge
+      }
+    })
+  }
+
   return (
     <>
-      <Card className={`border rounded-xl ${isLowConfidence ? 'border-yellow-400 bg-yellow-50/50' : ''}`}>
+      <Card className={`border rounded-xl ${lowConfidence ? 'border-yellow-400 bg-yellow-50/50' : ''}`}>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <div className="flex items-center gap-2 flex-wrap">
             <Badge variant="secondary">{`第 ${question.number || index + 1} 题`}</Badge>
-            <Badge>{question.type}</Badge>
-            <Badge variant="outline">{question.tags?.difficulty || 'unknown'}</Badge>
-            <span className={`text-xs ${isLowConfidence ? 'text-yellow-700 font-medium' : 'text-muted-foreground'}`}>
-              置信度 {(question.confidence * 100).toFixed(0)}%
+            <Badge>{getQuestionTypeLabel(question.type)}</Badge>
+            <Badge variant="outline" className={difficultyColor}>
+              {getDifficultyLabel(question.tags?.difficulty || 'medium')}
+            </Badge>
+            <span className={`text-xs ${lowConfidence ? 'text-yellow-700 font-medium' : 'text-muted-foreground'}`}>
+              置信度 {formatConfidence(question.confidence)}
             </span>
-            {isLowConfidence && (
+            {lowConfidence && (
               <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-300">
                 <AlertCircle className="w-3 h-3 mr-1" />
                 需人工复核
@@ -151,7 +187,11 @@ export function QuestionReviewCard({ question, index }: QuestionReviewCardProps)
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          {renderQuestionContent(question.content)}
+          {/* 使用 QuestionContentRenderer 显示题目内容和图片 */}
+          <QuestionContentRenderer
+            content={question.content}
+            imageUrl={imageUrl}
+          />
 
           {question.options && question.options.length > 0 && (
             <div className="space-y-2">
@@ -184,8 +224,8 @@ export function QuestionReviewCard({ question, index }: QuestionReviewCardProps)
             <div className="space-y-1 text-sm">
               <p className="font-medium">知识点：</p>
               <div className="flex flex-wrap gap-2">
-                {question.tags.knowledge.map(tag => (
-                  <Badge variant="outline" key={tag}>
+                {question.tags.knowledge.map((tag, i) => (
+                  <Badge variant="outline" key={i}>
                     {tag}
                   </Badge>
                 ))}
@@ -208,18 +248,16 @@ export function QuestionReviewCard({ question, index }: QuestionReviewCardProps)
               <Label htmlFor="type">题目类型</Label>
               <Select
                 value={editedData.type}
-                onValueChange={(value) => setEditedData({ ...editedData, type: value })}
+                onValueChange={(value) => setEditedData({ ...editedData, type: value as any })}
               >
                 <SelectTrigger id="type">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="single">单选题</SelectItem>
-                  <SelectItem value="multiple">多选题</SelectItem>
-                  <SelectItem value="judge">判断题</SelectItem>
+                  <SelectItem value="choice">选择题</SelectItem>
                   <SelectItem value="fill">填空题</SelectItem>
-                  <SelectItem value="short">简答题</SelectItem>
-                  <SelectItem value="essay">论述题</SelectItem>
+                  <SelectItem value="essay">简答题</SelectItem>
+                  <SelectItem value="proof">证明题</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -232,12 +270,15 @@ export function QuestionReviewCard({ question, index }: QuestionReviewCardProps)
                 value={editedData.content}
                 onChange={(e) => setEditedData({ ...editedData, content: e.target.value })}
                 className="min-h-[150px] font-mono text-sm"
-                placeholder="输入题目内容..."
+                placeholder="输入题目内容... 支持LaTeX公式，如 $x^2 + 1$"
               />
+              <p className="text-xs text-muted-foreground">
+                提示：LaTeX公式使用 $公式$ (行内) 或 $$公式$$ (块级)
+              </p>
             </div>
 
-            {/* 选项（单选/多选题） */}
-            {(editedData.type === 'single' || editedData.type === 'multiple') && (
+            {/* 选项（选择题） */}
+            {editedData.type === 'choice' && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label>选项</Label>
@@ -247,6 +288,7 @@ export function QuestionReviewCard({ question, index }: QuestionReviewCardProps)
                     size="sm"
                     onClick={handleAddOption}
                   >
+                    <Plus className="w-4 h-4 mr-1" />
                     添加选项
                   </Button>
                 </div>
@@ -265,7 +307,7 @@ export function QuestionReviewCard({ question, index }: QuestionReviewCardProps)
                         onClick={() => handleRemoveOption(idx)}
                         disabled={editedData.options.length <= 2}
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <X className="w-4 h-4" />
                       </Button>
                     </div>
                   ))}
@@ -283,6 +325,65 @@ export function QuestionReviewCard({ question, index }: QuestionReviewCardProps)
                 className="min-h-[100px]"
                 placeholder="输入参考答案..."
               />
+            </div>
+
+            {/* 难度 */}
+            <div className="space-y-2">
+              <Label htmlFor="difficulty">难度</Label>
+              <Select
+                value={editedData.tags.difficulty}
+                onValueChange={(value) =>
+                  setEditedData({
+                    ...editedData,
+                    tags: { ...editedData.tags, difficulty: value as DifficultyLevel }
+                  })
+                }
+              >
+                <SelectTrigger id="difficulty">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="easy">简单</SelectItem>
+                  <SelectItem value="medium">中等</SelectItem>
+                  <SelectItem value="hard">困难</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* 知识点标签 */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label>知识点</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAddKnowledgePoint}
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  添加知识点
+                </Button>
+              </div>
+              <div className="space-y-2">
+                {editedData.tags.knowledge.map((kp, idx) => (
+                  <div key={idx} className="flex gap-2">
+                    <Input
+                      value={kp}
+                      onChange={(e) => handleKnowledgePointChange(idx, e.target.value)}
+                      placeholder="输入知识点，如：二次函数"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleRemoveKnowledgePoint(idx)}
+                      disabled={editedData.tags.knowledge.length <= 1}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
