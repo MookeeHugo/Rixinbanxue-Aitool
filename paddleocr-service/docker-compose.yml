@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  paddleocr:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: paddleocr-service
+    ports:
+      - "8000:8000"
+    environment:
+      - LOG_LEVEL=info
+      - PYTHONUNBUFFERED=1
+    volumes:
+      # 挂载测试图片目录（可选）
+      - ./test_images:/app/test_images:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - paddleocr-network
+
+networks:
+  paddleocr-network:
+    driver: bridge
