@@ -3,9 +3,16 @@
  * @description 根据AI识别的配图区域坐标，从原图中裁剪出单独的配图
  */
 
-import sharp from 'sharp';
 import { uploadFile, FileAccessLevel } from '@/lib/storage';
 import type { ImageRegion } from './types';
+
+/**
+ * 动态导入Sharp（避免在action-browser环境中加载native模块）
+ */
+async function loadSharp() {
+  const sharpModule = await import('sharp');
+  return sharpModule.default;
+}
 
 /**
  * 裁剪图片并上传到存储
@@ -24,6 +31,9 @@ export async function cropAndUploadImage(
       targetPath,
       region: `(${region.x}, ${region.y}) ${region.width}x${region.height}`
     });
+
+    // 动态加载sharp
+    const sharp = await loadSharp();
 
     // 使用sharp裁剪图片
     const croppedBuffer = await sharp(originalBuffer)
