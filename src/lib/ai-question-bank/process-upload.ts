@@ -6,7 +6,6 @@
 import { parseQuestions } from './qwen-flash';
 import { bufferToBase64, calculateAverageConfidence, guessImageMimeType } from './utils';
 import { downloadFile, FileAccessLevel } from '@/lib/storage';
-import { cropQuestionImages } from './image-cropper';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database';
 
@@ -79,37 +78,8 @@ export async function processUploadTask(data: {
     console.log('解析完成', {
       taskId,
       questionCount: questions.length,
-      avgConfidence: calculateAverageConfidence(questions.map(q => q.confidence)),
-      questionsWithImages: questions.filter(q => q.image_region).length
+      avgConfidence: calculateAverageConfidence(questions.map(q => q.confidence))
     });
-
-    // Step 4.5: 裁剪题目配图（如果有）
-    await supabase
-      .from('upload_tasks')
-      .update({ progress: 60, updated_at: new Date().toISOString() })
-      .eq('id', taskId);
-
-    let questionImageUrls: Record<string, string> = {};
-    const questionsWithImages = questions.filter(q => q.image_region);
-
-    if (questionsWithImages.length > 0) {
-      console.log('开始裁剪题目配图', {
-        taskId,
-        questionCount: questionsWithImages.length
-      });
-
-      questionImageUrls = await cropQuestionImages(
-        fileBuffer,
-        questions,
-        data.userId,
-        taskId
-      );
-
-      console.log('题目配图裁剪完成', {
-        taskId,
-        croppedCount: Object.keys(questionImageUrls).length
-      });
-    }
 
     // Step 5: 保存到数据库
     await supabase
@@ -127,9 +97,7 @@ export async function processUploadTask(data: {
       confidence_score: q.confidence,
       is_selected: true,
       is_submitted: false,
-      original_image_url: fileUrl, // 保存原始图片URL（完整大图）
-      question_image_url: questionImageUrls[q.number] || null, // 保存裁剪后的配图URL
-      image_region: q.image_region || null // 保存配图区域坐标
+      original_image_url: fileUrl // 保存原始图片URL
     }));
 
     await supabase.from('parsed_questions').insert(records);
