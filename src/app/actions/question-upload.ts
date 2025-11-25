@@ -89,17 +89,38 @@ export async function uploadQuestionFile(formData: FormData): Promise<ActionResu
       };
     }
 
-    // 6. 触发Inngest异步处理
-    await inngest.send({
-      name: 'question/upload.started',
-      data: {
-        taskId: task.id,
-        userId: user.id,
-        fileName: file.name,
-        fileUrl: fileKey,
-        traceId: task.trace_id
-      }
-    });
+    // 6. 触发处理（开发环境直接执行，生产环境使用 Inngest）
+    const isDev = process.env.NODE_ENV === 'development';
+
+    if (isDev) {
+      // 开发环境：直接调用处理逻辑（不需要运行 Inngest CLI）
+      console.log('开发环境：直接处理上传任务', { taskId: task.id });
+      // 使用动态导入避免影响构建
+      import('@/lib/ai-question-bank/process-upload').then(({ processUploadTask }) => {
+        processUploadTask({
+          taskId: task.id,
+          userId: user.id,
+          fileName: file.name,
+          fileUrl: fileKey,
+          traceId: task.trace_id
+        }).catch(err => {
+          console.error('后台处理失败', err);
+        });
+      });
+    } else {
+      // 生产环境：使用 Inngest 异步处理
+      console.log('生产环境：发送 Inngest 事件', { taskId: task.id });
+      await inngest.send({
+        name: 'question/upload.started',
+        data: {
+          taskId: task.id,
+          userId: user.id,
+          fileName: file.name,
+          fileUrl: fileKey,
+          traceId: task.trace_id
+        }
+      });
+    }
 
     return {
       success: true,
