@@ -8,8 +8,31 @@ import { Image as ImageIcon, ExternalLink } from 'lucide-react'
 
 interface QuestionContentRendererProps {
   content: string
-  imageUrl?: string | null
+  imageUrl?: string | null  // 原始完整大图URL（用于Dialog查看）
+  questionImageUrl?: string | null  // 题目配图URL（裁剪后的配图，嵌入content）
   className?: string
+}
+
+/**
+ * 在content中嵌入配图（Markdown格式）
+ */
+function embedImageInContent(content: string, imageUrl: string): string {
+  // 策略1：如果content中包含"如图"关键词，在其后插入图片
+  const keywords = ['如图', '如下图', '如图所示', '见图', '下图'];
+
+  for (const keyword of keywords) {
+    if (content.includes(keyword)) {
+      const index = content.indexOf(keyword);
+      const insertPosition = index + keyword.length;
+      const before = content.substring(0, insertPosition);
+      const after = content.substring(insertPosition);
+
+      return `${before}\n\n![配图](${imageUrl})\n\n${after}`;
+    }
+  }
+
+  // 策略2：如果没有"如图"关键词，在题目内容开头插入（几何题通常先看图）
+  return `![题目配图](${imageUrl})\n\n${content}`;
 }
 
 /**
@@ -19,11 +42,13 @@ interface QuestionContentRendererProps {
  * - 使用 KaTeX 进行专业的 LaTeX 数学公式渲染
  * - 支持行内公式 $...$  和块级公式 $$...$$
  * - 支持 Markdown 格式
+ * - 题目配图自动嵌入content中（如几何图形）
  * - 原始图片弹窗查看（解决浏览器安全策略限制）
  */
 export function QuestionContentRenderer({
   content,
   imageUrl,
+  questionImageUrl,
   className = ''
 }: QuestionContentRendererProps) {
   const isDev = process.env.NODE_ENV !== 'production'
@@ -34,20 +59,33 @@ export function QuestionContentRenderer({
     ? `/api/image-proxy?url=${encodeURIComponent(imageUrl)}`
     : null
 
+  // 题目配图（裁剪后的）也使用代理
+  const proxyQuestionImageUrl = questionImageUrl
+    ? `/api/image-proxy?url=${encodeURIComponent(questionImageUrl)}`
+    : null
+
+  // 如果有题目配图，嵌入到content中
+  const contentWithImage = proxyQuestionImageUrl
+    ? embedImageInContent(content, proxyQuestionImageUrl)
+    : content
+
   useEffect(() => {
     if (isDev) {
       console.log('[QuestionContentRenderer] 渲染内容:', {
         content: content.substring(0, 100) + '...',
         originalImageUrl: imageUrl,
-        proxyImageUrl
+        questionImageUrl,
+        hasQuestionImage: !!questionImageUrl,
+        proxyImageUrl,
+        proxyQuestionImageUrl
       })
     }
-  }, [content, imageUrl, proxyImageUrl, isDev])
+  }, [content, imageUrl, questionImageUrl, proxyImageUrl, proxyQuestionImageUrl, isDev])
 
   return (
     <div className={`space-y-3 ${className}`}>
-      {/* 题目内容（使用 KaTeX 渲染 LaTeX 公式） */}
-      <MarkdownRenderer content={content} className="min-h-[50px]" />
+      {/* 题目内容（使用 KaTeX 渲染 LaTeX 公式，如有配图则已嵌入） */}
+      <MarkdownRenderer content={contentWithImage} className="min-h-[50px]" />
 
       {/* 查看原图按钮（Dialog弹窗） */}
       {proxyImageUrl && (

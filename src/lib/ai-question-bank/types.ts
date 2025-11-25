@@ -31,6 +31,20 @@ export interface QuestionTag {
 }
 
 /**
+ * 图片区域坐标（题目配图在原图中的位置）
+ */
+export interface ImageRegion {
+  /** 左上角X坐标（像素） */
+  x: number;
+  /** 左上角Y坐标（像素） */
+  y: number;
+  /** 宽度（像素） */
+  width: number;
+  /** 高度（像素） */
+  height: number;
+}
+
+/**
  * AI解析的题目（来自Qwen3-VL-Flash）
  */
 export interface ParsedQuestion {
@@ -50,6 +64,8 @@ export interface ParsedQuestion {
   confidence: number;
   /** 解题步骤（可选） */
   steps?: string[];
+  /** 配图区域（如果题目有配图，AI会输出其在原图中的位置） */
+  image_region?: ImageRegion;
 }
 
 /**
@@ -86,8 +102,10 @@ export interface ParsedQuestionRecord extends ParsedQuestion {
   is_selected: boolean;
   /** 是否已提交到题库 */
   is_submitted: boolean;
-  /** 原始上传图片的URL（用于显示题目原图） */
+  /** 原始上传图片的URL（完整大图） */
   original_image_url?: string;
+  /** 题目配图URL（从原图裁剪后的单独配图） */
+  question_image_url?: string;
   created_at: string;
 }
 

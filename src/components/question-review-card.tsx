@@ -191,6 +191,7 @@ export function QuestionReviewCard({ question, index, imageUrl }: QuestionReview
           <QuestionContentRenderer
             content={question.content}
             imageUrl={imageUrl}
+            questionImageUrl={question.question_image_url}
           />
 
           {question.options && question.options.length > 0 && (

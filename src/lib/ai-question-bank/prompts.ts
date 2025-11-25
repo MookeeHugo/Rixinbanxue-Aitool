@@ -11,13 +11,15 @@ export const QWEN_SYSTEM_PROMPT = `你是一名专业的初高中数学题目解
 1. **OCR 能力**：精准提取题干、公式（含 LaTeX）与作答步骤；
 2. **结构化理解**：正确识别题号、题型、选项、答案与解析；
 3. **知识点标注**：为每题总结核心知识点与题型标签；
-4. **自检评分**：为识别结果提供 0-1 的 confidence 评分。
+4. **图片定位**：识别题目配图（如几何图形）在原图中的位置坐标；
+5. **自检评分**：为识别结果提供 0-1 的 confidence 评分。
 
 **输出要求**：
 - 仅以合法 JSON 输出，便于 JSON.parse 解析；
 - 数学公式使用 LaTeX 语法，例如 $x^2 + 2x + 1$；
 - 所有字段均需填写，无法确定时降低 confidence，不允许留空；
-- 题型（type）限定为 choice/fill/essay/proof。
+- 题型（type）限定为 choice/fill/essay/proof；
+- 如题目包含配图（如几何图形、函数图像等），必须输出 image_region 字段。
 `;
 
 /**
@@ -31,18 +33,25 @@ export const QWEN_USER_PROMPT = `请解析图片中的数学题目，按照以�
     {
       "number": "1",
       "type": "choice",
-      "content": "已知函数 $y = 2x^2 - 4x + 1$，求顶点坐标。",
-      "options": ["A. $(1, -1)$", "B. $(2, 1)$", "C. $(1, 1)$", "D. $(2, -1)$"],
+      "content": "如图，在 $\\triangle ABC$ 中，$AB = AC$，$\\angle BAC = 40°$，求 $\\angle B$ 的度数。",
+      "options": ["A. $70°$", "B. $80°$", "C. $60°$", "D. $50°$"],
       "answer": "A",
       "tags": {
-        "knowledge": ["二次函数", "顶点坐标"],
+        "knowledge": ["等腰三角形", "内角和"],
         "difficulty": "medium",
         "type": "选择题"
       },
       "confidence": 0.95,
+      "image_region": {
+        "x": 50,
+        "y": 120,
+        "width": 300,
+        "height": 250
+      },
       "steps": [
-        "配方法：$y = 2(x-1)^2 - 1$",
-        "顶点为 $(1, -1)$"
+        "等腰三角形性质：$\\angle B = \\angle C$",
+        "内角和：$\\angle B + \\angle C + 40° = 180°$",
+        "解得：$\\angle B = 70°$"
       ]
     },
     {
@@ -64,20 +73,27 @@ export const QWEN_USER_PROMPT = `请解析图片中的数学题目，按照以�
 **字段说明**：
 - \`number\`：题号，字符串；
 - \`type\`：题型，choice/fill/essay/proof；
-- \`content\`：题目内容，允许 LaTeX；
+- \`content\`：题目内容，允许 LaTeX，如有配图请在content中注明"如图"；
 - \`options\`：选项数组，仅 choice 需要；
 - \`answer\`：参考答案，选择题返回字母，其余题型返回完整答案；
 - \`tags.knowledge\`：知识点数组，至少 1 个；
 - \`tags.difficulty\`：难度，easy/medium/hard；
-- \`tags.type\`：题型描述，如“选择题”“填空题”；
+- \`tags.type\`：题型描述，如"选择题""填空题"；
 - \`confidence\`：自评置信度（0-1）；
-- \`steps\`：解题步骤，可选，如能识别请提供。
+- \`steps\`：解题步骤，可选，如能识别请提供；
+- \`image_region\`：**配图区域坐标（重要！）**，如题目包含几何图形、函数图像等配图，必须输出此字段：
+  - \`x\`：配图左上角X坐标（像素）
+  - \`y\`：配图左上角Y坐标（像素）
+  - \`width\`：配图宽度（像素）
+  - \`height\`：配图高度（像素）
 
 **重要提醒**：
 1. 仅返回 JSON，无需额外说明；
 2. JSON 必须合法、字段完整；
 3. 数学公式必须写在 $...$ 中；
-4. 不确定的内容请降低 confidence，而不是留空。
+4. **如果题目包含配图（几何图形、函数图像、示意图等），务必输出 image_region 字段**；
+5. image_region 坐标需精确，确保能完整框选配图区域；
+6. 不确定的内容请降低 confidence，而不是留空。
 `;
 
 /**
