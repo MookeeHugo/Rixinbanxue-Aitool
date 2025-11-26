@@ -52,20 +52,29 @@ export async function cropAndUploadImage(
       reduction: `${((1 - croppedBuffer.length / originalBuffer.length) * 100).toFixed(1)}%`
     });
 
-    // 上传到存储
+    // 上传到存储（使用PUBLIC访问级别，题目配图无需保密）
     const uploadResult = await uploadFile({
       file: croppedBuffer,
       key: targetPath,
-      accessLevel: FileAccessLevel.PRIVATE,
+      accessLevel: FileAccessLevel.PUBLIC,
       contentType: 'image/png'
     });
 
+    if (!uploadResult.success) {
+      throw new Error(uploadResult.error || '上传裁剪图片失败');
+    }
+
+    const publicUrl = uploadResult.publicUrl ?? uploadResult.cdnUrl;
+    if (!publicUrl) {
+      throw new Error('裁剪图片缺少可公开访问的URL');
+    }
+
     console.log('[图片裁剪] 上传成功', {
       path: uploadResult.key,
-      url: uploadResult.url
+      url: publicUrl
     });
 
-    return uploadResult.key; // 返回相对路径，用于存储在数据库
+    return publicUrl; // 返回可直接访问的URL，用于写入数据库
 
   } catch (error) {
     console.error('[图片裁剪] 失败', {

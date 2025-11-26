@@ -47,7 +47,12 @@ export async function POST(request: NextRequest) {
     const fileName = `${prefix}/${user.id}/${timestamp}.${fileExtension}`
 
     // 上传文件
-    const result = await uploadFile(buffer, fileName, accessLevel, file.type)
+    const result = await uploadFile({
+      file: buffer,
+      key: fileName,
+      accessLevel,
+      contentType: file.type
+    })
 
     logger.info('File uploaded successfully', {
       userId: user.id,
@@ -58,7 +63,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      url: result.url,
+      url: result.publicUrl || result.cdnUrl || null,
       key: result.key,
     })
   } catch (error) {

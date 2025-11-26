@@ -144,7 +144,7 @@ export function classifyFile(key: string): FileAccessLevel {
 interface UploadParams {
   file: Buffer;
   key: string;
-  accessLevel?: 'PUBLIC' | 'PRIVATE';
+  accessLevel?: FileAccessLevel;
   contentType?: string;
 }
 
@@ -159,12 +159,7 @@ interface UploadResult {
 
 export async function uploadFile(params: UploadParams): Promise<UploadResult> {
   const { file, key, contentType } = params;
-  const accessLevel =
-    params.accessLevel === 'PUBLIC'
-      ? FileAccessLevel.PUBLIC
-      : params.accessLevel === 'PRIVATE'
-        ? FileAccessLevel.PRIVATE
-        : classifyFile(key);
+  const accessLevel = params.accessLevel ?? classifyFile(key);
   const finalContentType = contentType || getMimeType(key);
 
   try {

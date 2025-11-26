@@ -58,7 +58,7 @@ export async function uploadQuestionFile(formData: FormData): Promise<ActionResu
     const uploadResult = await uploadFile({
       file: fileBuffer,
       key: fileKey,
-      accessLevel: 'PRIVATE',
+      accessLevel: FileAccessLevel.PRIVATE,
       contentType: file.type
     });
 
