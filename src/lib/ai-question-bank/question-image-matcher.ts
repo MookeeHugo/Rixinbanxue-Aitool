@@ -39,7 +39,9 @@ export function matchQuestionImages(
   questions: Question[],
   imageRegions: ImageRegion[],
   questionRegions: QuestionRegion[],
-  ocrWords: OCRWordInfo[]
+  ocrWords: OCRWordInfo[],
+  imageWidth: number,
+  imageHeight: number
 ): ImageMapping {
   console.log('[智能匹配] 开始匹配题目与配图', {
     questionCount: questions.length,
@@ -49,14 +51,25 @@ export function matchQuestionImages(
 
   const mapping: ImageMapping = {};
   const usedRegions = new Set<number>();  // 已使用的图像区域索引
+  const questionRegionMap = new Map(
+    questionRegions.map(region => [region.questionNumber, region])
+  );
 
   for (const question of questions) {
+    console.log(`[智能匹配] 开始匹配题${question.number}`, {
+      hasQuestionRegion: questionRegionMap.has(question.number),
+      questionRegionKeys: Array.from(questionRegionMap.keys()),
+      imageRegionsAvailable: imageRegions.length - usedRegions.size
+    });
+
     // 方法1: 基于题号区域边界匹配
     const boundaryMatch = matchByQuestionBoundary(
       question,
       imageRegions,
-      questionRegions,
-      usedRegions
+      questionRegionMap,
+      usedRegions,
+      imageWidth,
+      imageHeight
     );
 
     if (boundaryMatch) {
@@ -69,7 +82,10 @@ export function matchQuestionImages(
       question,
       imageRegions,
       ocrWords,
-      usedRegions
+      usedRegions,
+      questionRegionMap.get(question.number),
+      imageWidth,
+      imageHeight
     );
 
     if (nearestMatch) {
@@ -93,19 +109,19 @@ export function matchQuestionImages(
 function matchByQuestionBoundary(
   question: Question,
   imageRegions: ImageRegion[],
-  questionRegions: QuestionRegion[],
-  usedRegions: Set<number>
+  questionRegionMap: Map<string, QuestionRegion>,
+  usedRegions: Set<number>,
+  imageWidth: number,
+  imageHeight: number
 ): ImageMapping[string] | null {
   // 找到对应题号的区域边界
-  const questionRegion = questionRegions.find(
-    r => r.questionNumber === question.number
-  );
+  const questionRegion = questionRegionMap.get(question.number);
 
   if (!questionRegion) {
     return null;
   }
 
-  const { bbox } = questionRegion;
+  const expandedBBox = expandQuestionBBox(questionRegion.bbox, imageWidth, imageHeight);
 
   // 在该题的边界内查找图像区域
   for (let i = 0; i < imageRegions.length; i++) {
@@ -115,10 +131,10 @@ function matchByQuestionBoundary(
 
     // 检查图像区域是否在题号边界内
     const isInside =
-      region.x >= bbox.x &&
-      region.y >= bbox.y &&
-      region.x + region.width <= bbox.x + bbox.width &&
-      region.y + region.height <= bbox.y + bbox.height;
+      region.x >= expandedBBox.x &&
+      region.y >= expandedBBox.y &&
+      region.x + region.width <= expandedBBox.x + expandedBBox.width &&
+      region.y + region.height <= expandedBBox.y + expandedBBox.height;
 
     if (isInside) {
       usedRegions.add(i);
@@ -128,11 +144,13 @@ function matchByQuestionBoundary(
         confidence: region.confidence
       });
 
+      const trimmed = trimRegionForQuestion(region, questionRegion.bbox, imageWidth);
+
       return {
-        x: region.x,
-        y: region.y,
-        width: region.width,
-        height: region.height,
+        x: trimmed.x,
+        y: trimmed.y,
+        width: trimmed.width,
+        height: trimmed.height,
         confidence: region.confidence,
         matchMethod: 'boundary'
       };
@@ -150,7 +168,10 @@ function matchByNearestImage(
   question: Question,
   imageRegions: ImageRegion[],
   ocrWords: OCRWordInfo[],
-  usedRegions: Set<number>
+  usedRegions: Set<number>,
+  questionRegion: QuestionRegion | undefined,
+  imageWidth: number,
+  imageHeight: number
 ): ImageMapping[string] | null {
   // 查找题号对应的文字块
   const questionNumberWord = ocrWords.find(word =>
@@ -205,7 +226,7 @@ function matchByNearestImage(
     }
 
     // 距离阈值: 300px内认为是同题配图
-    if (distance < 300 && (!bestMatch || distance < bestMatch.distance)) {
+    if (distance < 420 && (!bestMatch || distance < bestMatch.distance)) {
       bestMatch = { index: i, distance, region };
     }
   }
@@ -219,12 +240,16 @@ function matchByNearestImage(
       confidence: bestMatch.region.confidence
     });
 
+    const trimmed = questionRegion
+      ? trimRegionForQuestion(bestMatch.region, questionRegion.bbox, imageWidth)
+      : bestMatch.region;
+
     return {
-      x: bestMatch.region.x,
-      y: bestMatch.region.y,
-      width: bestMatch.region.width,
-      height: bestMatch.region.height,
-      confidence: bestMatch.region.confidence * (1 - bestMatch.distance / 300 * 0.3), // 距离衰减
+      x: trimmed.x,
+      y: trimmed.y,
+      width: trimmed.width,
+      height: trimmed.height,
+      confidence: bestMatch.region.confidence * (1 - bestMatch.distance / 420 * 0.35), // 距离衰减
       matchMethod: 'nearest'
     };
   }
@@ -248,38 +273,26 @@ export function validateImageMapping(
   const validated: ImageMapping = {};
 
   for (const [questionNumber, region] of Object.entries(mapping)) {
-    // 检查坐标是否在图片范围内
-    if (
-      region.x < 0 ||
-      region.y < 0 ||
-      region.x + region.width > imageWidth ||
-      region.y + region.height > imageHeight
-    ) {
-      console.warn(`[匹配验证] 题${questionNumber}: 坐标超出图片范围，已忽略`, {
-        region: `${region.x},${region.y} ${region.width}x${region.height}`,
-        imageSize: `${imageWidth}x${imageHeight}`
-      });
-      continue;
-    }
+    const clamped = clampRegion(region, imageWidth, imageHeight);
 
     // 检查区域尺寸是否合理
-    if (region.width < 50 || region.height < 50) {
+    if (clamped.width < 50 || clamped.height < 50) {
       console.warn(`[匹配验证] 题${questionNumber}: 区域太小，已忽略`, {
-        size: `${region.width}x${region.height}`
+        size: `${clamped.width}x${clamped.height}`
       });
       continue;
     }
 
-    if (region.width > imageWidth * 0.9 || region.height > imageHeight * 0.9) {
+    if (clamped.width > imageWidth * 0.95 || clamped.height > imageHeight * 0.95) {
       console.warn(`[匹配验证] 题${questionNumber}: 区域太大，已忽略`, {
-        size: `${region.width}x${region.height}`,
+        size: `${clamped.width}x${clamped.height}`,
         imageSize: `${imageWidth}x${imageHeight}`
       });
       continue;
     }
 
     // 通过验证
-    validated[questionNumber] = region;
+    validated[questionNumber] = clamped;
   }
 
   console.log('[匹配验证] 验证完成', {
@@ -289,4 +302,75 @@ export function validateImageMapping(
   });
 
   return validated;
+}
+
+function expandQuestionBBox(
+  bbox: { x: number; y: number; width: number; height: number },
+  imageWidth: number,
+  imageHeight: number
+) {
+  const paddingX = Math.max(150, bbox.width * 0.35);
+  const paddingY = Math.max(30, bbox.height * 0.15);
+
+  const expandedX = Math.max(0, Math.floor(bbox.x - paddingX * 0.2));
+  const expandedY = Math.max(0, Math.floor(bbox.y - paddingY));
+  const expandedWidth = Math.min(
+    imageWidth - expandedX,
+    Math.ceil(bbox.width + paddingX)
+  );
+  const expandedHeight = Math.min(
+    imageHeight - expandedY,
+    Math.ceil(bbox.height + paddingY * 2)
+  );
+
+  return {
+    x: expandedX,
+    y: expandedY,
+    width: expandedWidth,
+    height: expandedHeight
+  };
+}
+
+function clampRegion(
+  region: ImageMapping[string],
+  imageWidth: number,
+  imageHeight: number
+) {
+  const x = Math.max(0, Math.min(region.x, imageWidth));
+  const y = Math.max(0, Math.min(region.y, imageHeight));
+  const maxWidth = Math.max(1, imageWidth - x);
+  const maxHeight = Math.max(1, imageHeight - y);
+
+  return {
+    ...region,
+    x,
+    y,
+    width: Math.min(region.width, maxWidth),
+    height: Math.min(region.height, maxHeight)
+  };
+}
+
+function trimRegionForQuestion(
+  region: { x: number; y: number; width: number; height: number },
+  questionBBox: { x: number; y: number; width: number; height: number },
+  imageWidth: number
+) {
+  const questionRight = questionBBox.x + questionBBox.width;
+  const regionRight = region.x + region.width;
+  const overlapLeft = Math.max(region.x, questionBBox.x);
+  const overlapRight = Math.min(regionRight, questionRight);
+  const overlapWidth = overlapRight - overlapLeft;
+
+  if (overlapWidth > 0 && overlapWidth / region.width > 0.6) {
+    const newX = Math.min(
+      imageWidth - 50,
+      Math.max(questionRight + 8, region.x)
+    );
+    const newWidth = Math.max(50, regionRight - newX);
+    if (newWidth < region.width) {
+      return { ...region, x: newX, width: newWidth };
+    }
+  }
+
+  return region;
 }
