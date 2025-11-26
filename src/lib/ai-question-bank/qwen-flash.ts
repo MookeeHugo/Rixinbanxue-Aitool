@@ -15,7 +15,7 @@ const DEFAULT_CONFIG: Omit<QwenFlashConfig, 'apiKey'> = {
   apiUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
   model: 'qwen3-vl-flash',
   temperature: 0.1, // 低温度确保输出更稳定
-  maxTokens: 4096
+  maxTokens: 8000  // 增加到8000以避免长题目被截断
 };
 
 /**
@@ -58,6 +58,129 @@ function extractJSON(content: string): string {
   }
 
   throw new Error('无法从模型响应中提取 JSON');
+}
+
+/**
+ * 尝试修复常见的JSON格式错误
+ */
+function escapeInlineNewlines(jsonString: string): string {
+  let result = '';
+  let inString = false;
+  let escapeNext = false;
+
+  for (const char of jsonString) {
+    if (char === '\\') {
+      result += char;
+      escapeNext = !escapeNext;
+      continue;
+    }
+
+    if (escapeNext) {
+      result += char;
+      escapeNext = false;
+      continue;
+    }
+
+    if (char === '"') {
+      inString = !inString;
+      result += char;
+      continue;
+    }
+
+    if (inString && (char === '\n' || char === '\r')) {
+      result += '\\n';
+      continue;
+    }
+
+    result += char;
+  }
+
+  return result;
+}
+
+function tryFixJSON(jsonString: string): string {
+  // 移除BOM和零宽字符
+  let fixed = jsonString.replace(/^\uFEFF/, '').replace(/[\u200B-\u200D\uFEFF]/g, '');
+
+  // 移除控制字符（保留换行符和制表符）
+  fixed = fixed.replace(/[\x00-\x08\x0B-\x0C\x0E-\x1F]/g, '');
+
+  // 转义字符串中的裸换行符
+  fixed = escapeInlineNewlines(fixed);
+
+  // 尝试修复未闭合的JSON结构
+  // 1. 检查是否有未闭合的字符串（最后一个引号后没有闭合）
+  const lastQuoteIndex = fixed.lastIndexOf('"');
+  if (lastQuoteIndex !== -1) {
+    // 计算引号数量是否为偶数
+    const quoteCount = (fixed.match(/(?<!\\)"/g) || []).length;
+    if (quoteCount % 2 !== 0) {
+      // 奇数个引号，添加闭合引号
+      console.log('[JSON修复] 检测到未闭合的字符串，尝试添加引号');
+      fixed = fixed + '"';
+    }
+  }
+
+  // 2. 检查并补全缺失的结束大括号和方括号
+  let openBraces = 0;
+  let openBrackets = 0;
+  let inString = false;
+  let escapeNext = false;
+
+  for (let i = 0; i < fixed.length; i++) {
+    const char = fixed[i];
+
+    if (escapeNext) {
+      escapeNext = false;
+      continue;
+    }
+
+    if (char === '\\') {
+      escapeNext = true;
+      continue;
+    }
+
+    if (char === '"') {
+      inString = !inString;
+      continue;
+    }
+
+    if (!inString) {
+      if (char === '{') openBraces++;
+      if (char === '}') openBraces--;
+      if (char === '[') openBrackets++;
+      if (char === ']') openBrackets--;
+    }
+  }
+
+  // 补全缺失的闭合符号
+  if (openBraces > 0 || openBrackets > 0) {
+    console.log(`[JSON修复] 检测到未闭合的结构: ${openBraces}个大括号, ${openBrackets}个方括号`);
+
+    // 补全方括号
+    for (let i = 0; i < openBrackets; i++) {
+      fixed += ']';
+    }
+
+    // 补全大括号
+    for (let i = 0; i < openBraces; i++) {
+      fixed += '}';
+    }
+  }
+
+  return fixed;
+}
+
+/**
+ * 获取JSON解析错误的上下文信息
+ */
+function getJSONErrorContext(jsonString: string, position: number): string {
+  const start = Math.max(0, position - 100);
+  const end = Math.min(jsonString.length, position + 100);
+  const context = jsonString.substring(start, end);
+  const relativePosition = position - start;
+
+  return `...${context}...\n${' '.repeat(relativePosition + 3)}^ 错误位置`;
 }
 
 /**
@@ -140,15 +263,52 @@ export async function parseQuestions(
       throw new Error('Qwen API 返回为空');
     }
 
-    const jsonString = extractJSON(content);
-    const parsed = JSON.parse(jsonString);
+    console.log('[Qwen] 原始响应长度:', content.length);
+    console.log('[Qwen] 响应预览:', content.substring(0, 500));
+
+    let jsonString: string;
+    try {
+      jsonString = extractJSON(content);
+      console.log('[Qwen] 提取的JSON长度:', jsonString.length);
+    } catch (error) {
+      console.error('[Qwen] JSON提取失败，完整响应:', content);
+      throw error;
+    }
+
+    // 尝试修复常见的JSON格式问题
+    const fixedJSON = tryFixJSON(jsonString);
+
+    let parsed: any;
+    try {
+      parsed = JSON.parse(fixedJSON);
+    } catch (parseError) {
+      // 解析失败，记录详细信息
+      console.error('[Qwen] JSON解析失败');
+      console.error('[Qwen] 原始JSON长度:', jsonString.length);
+      console.error('[Qwen] 修复后JSON长度:', fixedJSON.length);
+      console.error('[Qwen] JSON前500字符:', fixedJSON.substring(0, 500));
+      console.error('[Qwen] JSON后500字符:', fixedJSON.substring(Math.max(0, fixedJSON.length - 500)));
+
+      if (parseError instanceof SyntaxError && parseError.message.includes('position')) {
+        // 提取错误位置
+        const positionMatch = parseError.message.match(/position (\d+)/);
+        if (positionMatch) {
+          const position = parseInt(positionMatch[1], 10);
+          const errorContext = getJSONErrorContext(fixedJSON, position);
+          console.error('[Qwen] 错误上下文:\n', errorContext);
+        }
+      }
+
+      throw new Error(`JSON解析失败: ${parseError instanceof Error ? parseError.message : String(parseError)}`);
+    }
 
     const validationResult = QwenParseResultSchema.safeParse(parsed);
     if (!validationResult.success) {
-      console.error('Qwen 返回格式不合法', validationResult.error.format());
+      console.error('Qwen 返回格式不合法', JSON.stringify(validationResult.error.issues, null, 2));
       throw new Error(`AI 返回格式不正确: ${validationResult.error.message}`);
     }
 
+    console.log('[Qwen] 成功解析题目数量:', validationResult.data.questions.length);
     return validationResult.data.questions;
   } catch (error) {
     if (axios.isAxiosError(error)) {

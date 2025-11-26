@@ -14,28 +14,6 @@ interface QuestionContentRendererProps {
 }
 
 /**
- * 在content中嵌入配图（Markdown格式）
- */
-function embedImageInContent(content: string, imageUrl: string): string {
-  // 策略1：如果content中包含"如图"关键词，在其后插入图片
-  const keywords = ['如图', '如下图', '如图所示', '见图', '下图'];
-
-  for (const keyword of keywords) {
-    if (content.includes(keyword)) {
-      const index = content.indexOf(keyword);
-      const insertPosition = index + keyword.length;
-      const before = content.substring(0, insertPosition);
-      const after = content.substring(insertPosition);
-
-      return `${before}\n\n![配图](${imageUrl})\n\n${after}`;
-    }
-  }
-
-  // 策略2：如果没有"如图"关键词，在题目内容开头插入（几何题通常先看图）
-  return `![题目配图](${imageUrl})\n\n${content}`;
-}
-
-/**
  * 题目内容渲染器 - KaTeX专业版
  *
  * 特性：
@@ -52,7 +30,8 @@ export function QuestionContentRenderer({
   className = ''
 }: QuestionContentRendererProps) {
   const isDev = process.env.NODE_ENV !== 'production'
-  const [imageLoadError, setImageLoadError] = useState(false)
+  const [originalImageLoadError, setOriginalImageLoadError] = useState(false)
+  const [questionImageLoadError, setQuestionImageLoadError] = useState(false)
 
   // 使用API代理绕过CORS问题
   const proxyImageUrl = imageUrl
@@ -65,10 +44,6 @@ export function QuestionContentRenderer({
     : null
 
   // 如果有题目配图，嵌入到content中
-  const contentWithImage = proxyQuestionImageUrl
-    ? embedImageInContent(content, proxyQuestionImageUrl)
-    : content
-
   useEffect(() => {
     if (isDev) {
       console.log('[QuestionContentRenderer] 渲染内容:', {
@@ -84,8 +59,38 @@ export function QuestionContentRenderer({
 
   return (
     <div className={`space-y-3 ${className}`}>
-      {/* 题目内容（使用 KaTeX 渲染 LaTeX 公式，如有配图则已嵌入） */}
-      <MarkdownRenderer content={contentWithImage} className="min-h-[50px]" />
+      {/* 题目内容（使用 KaTeX 渲染 LaTeX 公式） */}
+      <MarkdownRenderer content={content} className="min-h-[50px]" />
+
+      {/* 题目配图：固定放在右下角区域 */}
+      {proxyQuestionImageUrl && (
+        <div className="pt-2 flex justify-end">
+          <figure className="inline-flex flex-col items-center gap-1 text-xs text-muted-foreground">
+            <div className="relative rounded-xl border border-dashed border-gray-300 dark:border-gray-600 bg-muted/20 w-[220px] h-[160px] overflow-hidden flex items-center justify-center">
+              {!questionImageLoadError ? (
+                <img
+                  src={proxyQuestionImageUrl}
+                  alt="题目配图"
+                  loading="lazy"
+                  className="w-full h-full object-contain"
+                  onLoad={() => setQuestionImageLoadError(false)}
+                  onError={() => {
+                    setQuestionImageLoadError(true)
+                    console.error('❌ [QuestionContentRenderer] 题目配图加载失败', {
+                      proxyQuestionImageUrl,
+                      questionImageUrl,
+                      timestamp: new Date().toISOString()
+                    })
+                  }}
+                />
+              ) : (
+                <span className="text-red-500 text-xs font-medium">配图加载失败</span>
+              )}
+            </div>
+            <figcaption>题目配图</figcaption>
+          </figure>
+        </div>
+      )}
 
       {/* 查看原图按钮（Dialog弹窗） */}
       {proxyImageUrl && (
@@ -108,7 +113,7 @@ export function QuestionContentRenderer({
                   className="w-full h-auto rounded-lg border border-gray-200 dark:border-gray-700"
                   loading="lazy"
                   onLoad={() => {
-                    setImageLoadError(false)
+                    setOriginalImageLoadError(false)
                     if (isDev) {
                       console.log('[QuestionContentRenderer] ✅ Dialog图片加载成功', {
                         proxyUrl: proxyImageUrl,
@@ -117,7 +122,7 @@ export function QuestionContentRenderer({
                     }
                   }}
                   onError={(e) => {
-                    setImageLoadError(true)
+                    setOriginalImageLoadError(true)
                     console.error('❌ [QuestionContentRenderer] Dialog图片加载失败', {
                       proxyUrl: proxyImageUrl,
                       originalUrl: imageUrl,
@@ -126,7 +131,7 @@ export function QuestionContentRenderer({
                     })
                   }}
                 />
-                {imageLoadError && (
+                {originalImageLoadError && (
                   <div className="absolute inset-0 flex flex-col items-center justify-center bg-red-50 dark:bg-red-900/20 rounded-lg">
                     <svg className="w-12 h-12 text-red-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
