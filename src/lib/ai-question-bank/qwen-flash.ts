@@ -309,7 +309,49 @@ export async function parseQuestions(
     }
 
     console.log('[Qwen] 成功解析题目数量:', validationResult.data.questions.length);
-    return validationResult.data.questions;
+
+    // 兜底逻辑：如果题目有image_region但没有占位符，自动生成
+    const enrichedQuestions = validationResult.data.questions.map(q => {
+      if (q.image_region && (!q.images || q.images.length === 0)) {
+        const placeholder = `<<IMG_${q.number}_1>>`;
+        console.warn(`[Qwen兜底] 题${q.number}有配图区域但缺少占位符，自动注入:`, placeholder);
+
+        // 在"如图"等关键词后插入占位符
+        let enrichedContent = q.content;
+        const keywords = ['如图', '如下图', '图中', '见图'];
+        let inserted = false;
+
+        for (const keyword of keywords) {
+          if (enrichedContent.includes(keyword)) {
+            const index = enrichedContent.indexOf(keyword) + keyword.length;
+            enrichedContent =
+              enrichedContent.slice(0, index) +
+              placeholder +
+              enrichedContent.slice(index);
+            inserted = true;
+            break;
+          }
+        }
+
+        // 如果没有关键词，追加到题目开头
+        if (!inserted) {
+          enrichedContent = placeholder + ' ' + enrichedContent;
+        }
+
+        return {
+          ...q,
+          content: enrichedContent,
+          images: [{
+            placeholder,
+            description: '题目配图（自动识别）',
+            position: '题干中'
+          }]
+        };
+      }
+      return q;
+    });
+
+    return enrichedQuestions;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const status = error.response?.status ?? 'unknown';

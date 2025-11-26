@@ -10,76 +10,63 @@ export const QWEN_SYSTEM_PROMPT = `你是一名专业的初高中数学题目解
 
 1. **OCR 能力**：精准提取题干、公式（含 LaTeX）与作答步骤；
 2. **结构化理解**：正确识别题号、题型、选项、答案与解析；
-3. **知识点标注**：为每题总结核心知识点与题型标签；
-4. **自检评分**：为识别结果提供 0-1 的 confidence 评分。
+3. **配图标注**：当题目包含配图（如几何图形、函数图像等）时，必须在content字段中使用 \`<<IMG_题号_序号>>\` 占位符标记配图位置，例如 \`<<IMG_8_1>>\` 表示第8题的第1张配图；
+4. **知识点标注**：为每题总结核心知识点与题型标签；
+5. **自检评分**：为识别结果提供 0-1 的 confidence 评分。
 
 **输出要求**：
 - 仅以合法 JSON 输出，便于 JSON.parse 解析；
 - 数学公式使用 LaTeX 语法，例如 $x^2 + 2x + 1$；
+- 如果题目有配图，必须在 content 中插入占位符（如 <<IMG_1_1>>），同时在 question.images 数组中提供对应的元数据（placeholder/description/position）；
 - 所有字段均需填写，无法确定时降低 confidence，不允许留空；
 - 题型（type）限定为 choice/fill/essay/proof。
 `;
 
+
 /**
  * User Prompt：具体任务指令
  */
-export const QWEN_USER_PROMPT = `请解析图片中的数学题目，按照以下 JSON 结构输出：
+export const QWEN_USER_PROMPT = `请分析这张试卷图片，返回以下 JSON 格式：
 
 \`\`\`json
 {
   "questions": [
     {
-      "number": "1",
+      "number": "14",
       "type": "choice",
-      "content": "如图，在 $\\triangle ABC$ 中，$AB = AC$，$\\angle BAC = 40°$，求 $\\angle B$ 的度数。",
-      "options": ["A. $70°$", "B. $80°$", "C. $60°$", "D. $50°$"],
+      "content": "如图，在 $\\triangle ABC$ 中，点D，E分别在边 AB 和 AC 上，<<IMG_14_1>> 连接 DE，若 DE 平行于 BC，<<IMG_14_2>>",
+      "options": ["A. $70^{\\circ}$", "B. $80^{\\circ}$", "C. $60^{\\circ}$", "D. $50^{\\circ}$"],
       "answer": "A",
       "tags": {
-        "knowledge": ["等腰三角形", "内角和"],
+        "knowledge": ["平行线的性质"],
         "difficulty": "medium",
-        "type": "选择题"
+        "type": "几何题"
       },
-      "confidence": 0.95,
-      "steps": [
-        "等腰三角形性质：$\\angle B = \\angle C$",
-        "内角和：$\\angle B + \\angle C + 40° = 180°$",
-        "解得：$\\angle B = 70°$"
+      "confidence": 0.94,
+      "steps": ["识别平行线的性质定理"],
+      "images": [
+        {
+          "placeholder": "<<IMG_14_1>>",
+          "description": "三角形主体结构示意图",
+          "position": "题干中 "如图" 关键词后"
+        },
+        {
+          "placeholder": "<<IMG_14_2>>",
+          "description": "线段 DE 的位置",
+          "position": "题干描述连接关系后"
+        }
       ]
-    },
-    {
-      "number": "2",
-      "type": "fill",
-      "content": "化简并填空：$x^2 - 4 = $ _____",
-      "answer": "$(x+2)(x-2)$",
-      "tags": {
-        "knowledge": ["平方差公式"],
-        "difficulty": "easy",
-        "type": "填空题"
-      },
-      "confidence": 0.9
     }
   ]
 }
 \`\`\`
 
-**字段说明**：
-- \`number\`：题号，字符串；
-- \`type\`：题型，choice/fill/essay/proof；
-- \`content\`：题目内容，允许 LaTeX，如有配图请在content中注明"如图"；
-- \`options\`：选项数组，仅 choice 需要；
-- \`answer\`：参考答案，选择题返回字母，其余题型返回完整答案；
-- \`tags.knowledge\`：知识点数组，至少 1 个；
-- \`tags.difficulty\`：难度，easy/medium/hard；
-- \`tags.type\`：题型描述，如"选择题""填空题"；
-- \`confidence\`：自评置信度（0-1）；
-- \`steps\`：解题步骤，可选，如能识别请提供。
+**关键规则**：
+- \`number\`: 题号，必须与试卷原始编号一致（不要补零，例如应该是"8"而不是"08"）
+- \`content\`: 题目内容，如有配图必须使用 <<IMG_题号_序号>> 占位符标记位置（与 OCR 系统对接）
+- \`images\`: 配图元数据数组，每个元素包含 placeholder/description/position 字段
+- 不要使用 HTML 标签，数学公式使用 LaTeX 语法`;
 
-**重要提醒**：
-1. 仅返回 JSON，无需额外说明；
-2. JSON 必须合法、字段完整；
-3. 数学公式必须写在 $...$ 中；
-4. 不确定的内容请降低 confidence，而不是留空。
-`;
 
 /**
  * 获取完整 Prompt，支持 Base64 或图片 URL

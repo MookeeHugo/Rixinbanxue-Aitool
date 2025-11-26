@@ -10,8 +10,10 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database';
 import { recognizeImage, buildMarkdownFromOCR, checkOCRConfig } from './aliyun-ocr-client';
 import { detectImageRegions } from './image-region-detector';
+import type { QuestionImageAsset } from './types';
 import { matchQuestionImages, validateImageMapping } from './question-image-matcher';
 import { cropQuestionImages } from './image-cropper';
+import { mergeQuestionsWithImages } from './image-placeholder-merger';
 
 function createServiceClient() {
   return createClient<Database>(
@@ -138,7 +140,9 @@ export async function processUploadTask(data: {
           questions,
           imageRegions,
           questionRegions,
-          ocrResult.PrismWordsInfo
+          ocrResult.PrismWordsInfo,
+          ocrResult.Width,
+          ocrResult.Height
         );
 
         // 验证匹配结果
@@ -176,7 +180,7 @@ export async function processUploadTask(data: {
     }
 
     // Step 4.6: 裁剪题目配图
-    let questionImageUrls: Record<string, string> = {};
+    let questionImageAssets: Record<string, QuestionImageAsset[]> = {};
     const questionsWithImages = questions.filter(q => q.image_region);
 
     if (questionsWithImages.length > 0) {
@@ -191,16 +195,20 @@ export async function processUploadTask(data: {
           .update({ progress: 70, updated_at: new Date().toISOString() })
           .eq('id', taskId);
 
-        questionImageUrls = await cropQuestionImages(
+        questionImageAssets = await cropQuestionImages(
           fileBuffer,
           questions,
           data.userId,
           taskId
         );
 
+        const croppedCount = Object.values(questionImageAssets).reduce(
+          (sum, list) => sum + list.length,
+          0
+        );
         console.log('[图片裁剪] 裁剪完成', {
           taskId,
-          croppedCount: Object.keys(questionImageUrls).length
+          croppedCount
         });
       } catch (error) {
         console.error('[图片裁剪] 裁剪失败', {
@@ -215,29 +223,64 @@ export async function processUploadTask(data: {
       });
     }
 
-    // Step 5: 保存到数据库
+        const mergedResults = mergeQuestionsWithImages(questions, questionImageAssets);
+
+    mergedResults.forEach(result => {
+      if (result.missingPlaceholders.length > 0 || result.appendedAssetIds.length > 0) {
+        console.warn('[占位符合并] 发现问题', {
+          taskId,
+          number: result.question.number,
+          missing: result.missingPlaceholders,
+          appended: result.appendedAssetIds
+        });
+      }
+    });
+
+    // 验证配图数量
+    mergedResults.forEach(result => {
+      const expectedCount = result.imagePlaceholders.length;
+      const actualCount = result.imageAssets.length;
+
+      if (expectedCount > 0 && actualCount === 0) {
+        console.error(`[配图缺失] 题${result.question.number}: 预期${expectedCount}张配图，但未检测到图片区域`);
+      } else if (expectedCount !== actualCount) {
+        console.warn(`[配图数量不匹配] 题${result.question.number}: 预期${expectedCount}张，实际${actualCount}张`);
+      }
+    });
+
+// Step 5: 保存到数据库
     await supabase
       .from('upload_tasks')
       .update({ progress: 80, updated_at: new Date().toISOString() })
       .eq('id', taskId);
 
-    const records = questions.map(q => ({
-      upload_task_id: taskId,
-      type: q.type,
-      content: q.content,
-      options: q.options || null,
-      answer: q.answer,
-      tags: q.tags,
-      confidence_score: q.confidence,
-      is_selected: true,
-      is_submitted: false,
-      original_image_url: fileUrl, // 保存原始图片URL
-      question_image_url: questionImageUrls[q.number] || null, // 保存裁剪后的配图URL
-      image_region: q.image_region ? JSON.stringify(q.image_region) : null // 保存配图区域坐标
-    }));
+    const records = mergedResults.map(result => {
+      const question = result.question;
+      const primaryAsset =
+        result.imageAssets.find(asset => asset.used) || result.imageAssets[0];
+
+      return {
+        upload_task_id: taskId,
+        type: question.type,
+        content: question.content,
+        raw_content: result.rawContent,
+        options: question.options || null,
+        answer: question.answer,
+        tags: question.tags,
+        confidence_score: question.confidence,
+        is_selected: true,
+        is_submitted: false,
+        original_image_url: fileUrl,
+        question_image_url: primaryAsset?.url || null,
+        image_region: question.image_region ? JSON.stringify(question.image_region) : null,
+        image_placeholders: result.imagePlaceholders.length ? result.imagePlaceholders : null,
+        image_assets: result.imageAssets.length ? result.imageAssets : null
+      };
+    });
 
     await supabase.from('parsed_questions').insert(records);
-    console.log('解析结果已保存', { taskId, count: questions.length, withImages: Object.keys(questionImageUrls).length });
+    const totalImageAssets = Object.values(questionImageAssets).reduce((sum, list) => sum + list.length, 0);
+    console.log('保存题目到数据库完成', { taskId, count: questions.length, withImages: totalImageAssets });
 
     // Step 6: 更新任务为完成
     await supabase
