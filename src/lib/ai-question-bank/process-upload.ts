@@ -261,6 +261,7 @@ export async function processUploadTask(data: {
 
       return {
         upload_task_id: taskId,
+        number: question.number,
         type: question.type,
         content: question.content,
         raw_content: result.rawContent,
@@ -278,9 +279,32 @@ export async function processUploadTask(data: {
       };
     });
 
-    await supabase.from('parsed_questions').insert(records);
+    // 保存题目到数据库，并检查错误
+    const { data: insertedQuestions, error: insertError } = await supabase
+      .from('parsed_questions')
+      .insert(records)
+      .select();
+
+    if (insertError) {
+      console.error('[数据库保存失败]', {
+        taskId,
+        error: insertError.message,
+        code: insertError.code,
+        details: insertError.details,
+        hint: insertError.hint,
+        recordCount: records.length,
+        sampleRecord: records[0]
+      });
+      throw new Error(`数据库保存失败: ${insertError.message}`);
+    }
+
     const totalImageAssets = Object.values(questionImageAssets).reduce((sum, list) => sum + list.length, 0);
-    console.log('保存题目到数据库完成', { taskId, count: questions.length, withImages: totalImageAssets });
+    console.log('保存题目到数据库完成', {
+      taskId,
+      count: questions.length,
+      withImages: totalImageAssets,
+      insertedCount: insertedQuestions?.length || 0
+    });
 
     // Step 6: 更新任务为完成
     await supabase
