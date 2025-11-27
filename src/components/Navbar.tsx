@@ -75,6 +75,7 @@ export default function Navbar() {
               <>
                 {profile.role === 'teacher' && (
                   <>
+                    <Link href="/tools/ingest">开始录题</Link>
                     <Link href="/questions">题库管理</Link>
                     <Link href="/papers">智能组卷</Link>
                     <Link href="/assignments">作业管理</Link>

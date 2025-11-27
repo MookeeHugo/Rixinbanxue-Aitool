@@ -1,5 +1,3 @@
-import { logger } from '@/lib/logger'
-
 "use client";
 
 import { useEffect, useState } from "react";

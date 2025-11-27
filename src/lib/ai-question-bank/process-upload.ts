@@ -1,19 +1,20 @@
 /**
  * PDF/图片上传处理核心逻辑
  * @description 可以被 Inngest Worker 或直接调用
+ *
+ * 【重要】已切换到 Gemini Flash + Pro 级联架构
+ * - 使用 Gemini Vision 直接输出题目内容和图像坐标
+ * - 不再依赖 OCR + 空白区域检测 + 智能匹配的复杂流程
  */
 
-import { parseQuestions } from './qwen-flash';
-import { bufferToBase64, calculateAverageConfidence, guessImageMimeType } from './utils';
 import { downloadFile, FileAccessLevel } from '@/lib/storage';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database';
-import { recognizeImage, buildMarkdownFromOCR, checkOCRConfig } from './aliyun-ocr-client';
-import { detectImageRegions } from './image-region-detector';
-import type { QuestionImageAsset } from './types';
-import { matchQuestionImages, validateImageMapping } from './question-image-matcher';
-import { cropQuestionImages } from './image-cropper';
-import { mergeQuestionsWithImages } from './image-placeholder-merger';
+import sharp from 'sharp';
+
+import type { GeminiQuestion } from './gemini-vision-client';
+import { cropAndUploadQuestionImages, type QuestionWithRegions } from './crop-question-images';
+import type { ImageRegion } from './types';
 
 function createServiceClient() {
   return createClient<Database>(
@@ -28,10 +29,90 @@ function createServiceClient() {
   );
 }
 
-/**
- * 处理上传任务的核心逻辑
- * @description 开发环境直接调用，生产环境通过 Inngest Worker 调用
- */
+function inferQuestionType(question: any): 'choice' | 'fill' | 'essay' {
+  if (question.options?.length >= 4) return 'choice';
+  if (question.content.includes('填空') || question.content.includes('_______')) return 'fill';
+  return 'essay';
+}
+
+function getCropRect(
+  box2d: [number, number, number, number],
+  imgWidth: number,
+  imgHeight: number
+) {
+  const [ymin, xmin, ymax, xmax] = box2d;
+
+  let top = Math.floor((ymin / 1000) * imgHeight);
+  let left = Math.floor((xmin / 1000) * imgWidth);
+  let bottom = Math.ceil((ymax / 1000) * imgHeight);
+  let right = Math.ceil((xmax / 1000) * imgWidth);
+
+  const PADDING = 10;
+  top = Math.max(0, top - PADDING);
+  left = Math.max(0, left - PADDING);
+  bottom = Math.min(imgHeight, bottom + PADDING);
+  right = Math.min(imgWidth, right + PADDING);
+
+  const width = right - left;
+  const height = bottom - top;
+
+  if (width <= 0 || height <= 0) {
+    console.error('无效的裁剪区域', { box2d, left, top, width, height });
+    return null;
+  }
+
+  return { left, top, width, height };
+}
+
+function normalizeRegion(
+  region: GeminiQuestion['image_regions'][number],
+  imageWidth: number | null,
+  imageHeight: number | null
+): ImageRegion | null {
+  if (
+    typeof region?.x === 'number' &&
+    typeof region?.y === 'number' &&
+    typeof region?.width === 'number' &&
+    typeof region?.height === 'number'
+  ) {
+    return {
+      x: Math.round(region.x),
+      y: Math.round(region.y),
+      width: Math.round(region.width),
+      height: Math.round(region.height)
+    };
+  }
+
+  if (region?.box_2d && imageWidth && imageHeight) {
+    const rect = getCropRect(region.box_2d, imageWidth, imageHeight);
+    if (rect) {
+      return {
+        x: rect.left,
+        y: rect.top,
+        width: rect.width,
+        height: rect.height
+      };
+    }
+  }
+
+  return null;
+}
+
+type ProcessedQuestion = {
+  number: string;
+  type: 'choice' | 'fill' | 'essay';
+  content: string;
+  options: string[];
+  answer: string;
+  tags: {
+    knowledge: string[];
+    difficulty: 'easy' | 'medium' | 'hard';
+    type: string;
+  };
+  confidence: number;
+  image_regions: ImageRegion[];
+};
+
 export async function processUploadTask(data: {
   taskId: string;
   userId: string;
@@ -45,241 +126,133 @@ export async function processUploadTask(data: {
   console.log('开始处理上传任务', { taskId, fileName, fileUrl });
 
   try {
-    // Step 1: 更新状态为 processing
     await supabase
       .from('upload_tasks')
       .update({ status: 'processing', progress: 10, updated_at: new Date().toISOString() })
       .eq('id', taskId);
 
-    // Step 2: 下载文件
     console.log('开始下载文件', { fileUrl });
     const fileBuffer = await downloadFile(fileUrl, FileAccessLevel.PRIVATE);
     console.log('文件下载完成', { size: fileBuffer.length });
 
-    // Step 2.5: 阿里云OCR识别（检测配图区域）
-    let ocrResult = null;
-    let imageRegions = [];
-    let questionRegions = [];
-    const enableOCR = checkOCRConfig();
+    let imageWidth: number | null = null;
+    let imageHeight: number | null = null;
 
-    if (enableOCR) {
-      try {
-        console.log('[阿里云OCR] 开始识别图片布局', { taskId });
-        await supabase
-          .from('upload_tasks')
-          .update({ progress: 20, updated_at: new Date().toISOString() })
-          .eq('id', taskId);
-
-        ocrResult = await recognizeImage(fileBuffer);
-        console.log('[阿里云OCR] 识别完成', {
-          taskId,
-          wordCount: ocrResult.PrismWordsInfo.length,
-          imageSize: `${ocrResult.Width}x${ocrResult.Height}`
-        });
-
-        // 检测图像区域
-        const detectionResult = detectImageRegions(ocrResult);
-        imageRegions = detectionResult.imageRegions;
-        questionRegions = detectionResult.questionRegions;
-
-        console.log('[图像区域检测] 检测完成', {
-          taskId,
-          imageRegionCount: imageRegions.length,
-          questionRegionCount: questionRegions.length
-        });
-      } catch (error) {
-        console.error('[阿里云OCR] 识别失败，跳过配图裁剪', {
-          taskId,
-          error: error instanceof Error ? error.message : String(error),
-          stack: error instanceof Error ? error.stack : undefined
-        });
-        // 打印完整错误对象便于调试
-        console.error('[阿里云OCR] 完整错误信息:', error);
-      }
-    } else {
-      console.log('[阿里云OCR] 未配置，跳过OCR识别');
+    try {
+      const metadata = await sharp(fileBuffer).metadata();
+      imageWidth = metadata.width ?? null;
+      imageHeight = metadata.height ?? null;
+    } catch (error) {
+      console.warn('[数据转换] 读取原图尺寸失败', {
+        error: error instanceof Error ? error.message : String(error)
+      });
     }
 
-    // Step 3: 转换为 Base64
+    const { parseQuestionWithCascadingFromBuffer } = await import('./gemini-vision-client');
+    console.log('[Gemini级联] 开始解析试卷（从Buffer）', { taskId, fileUrl });
     await supabase
       .from('upload_tasks')
       .update({ progress: 30, updated_at: new Date().toISOString() })
       .eq('id', taskId);
 
-    const imageBase64 = bufferToBase64(fileBuffer);
+    const geminiResult = await parseQuestionWithCascadingFromBuffer(fileBuffer);
 
-    // Step 4: 调用 Qwen3-VL-Flash 解析
-    console.log('调用 Qwen3-VL-Flash 解析', { taskId });
+    if (!geminiResult.validation?.passed) {
+      throw new Error(`Gemini 数据校验失败: ${geminiResult.validation?.reasons?.join('；') ?? '未知原因'}`);
+    }
+
+    if (!geminiResult.questions.length) {
+      throw new Error('Gemini 未识别到任何题目');
+    }
+
+    const invalidRegionQuestions: string[] = [];
+
+    const processedQuestions: ProcessedQuestion[] = geminiResult.questions.map((question) => {
+      const normalizedRegions = (question.image_regions ?? [])
+        .map(region => normalizeRegion(region, imageWidth, imageHeight))
+        .filter((region): region is ImageRegion => Boolean(region));
+
+      if ((question.image_regions?.length ?? 0) > 0 && normalizedRegions.length === 0) {
+        invalidRegionQuestions.push(question.number);
+      }
+
+      return {
+        number: question.number,
+        type: inferQuestionType(question),
+        content: question.content,
+        options: question.options || [],
+        answer: question.answer || '',
+        tags: {
+          knowledge: [],
+          difficulty: 'medium',
+          type: inferQuestionType(question)
+        },
+        confidence: 0.95,
+        image_regions: normalizedRegions
+      };
+    });
+
+    if (invalidRegionQuestions.length > 0) {
+      throw new Error(`部分题目配图坐标无效: ${invalidRegionQuestions.slice(0, 5).join(', ')}`);
+    }
+
     await supabase
       .from('upload_tasks')
       .update({ progress: 50, updated_at: new Date().toISOString() })
       .eq('id', taskId);
 
-    const imageMimeType = guessImageMimeType(fileName || fileUrl);
-    console.log('Qwen 调用前数据预览', {
-      taskId,
-      mimeType: imageMimeType,
-      base64Length: imageBase64?.length,
-      base64Head: imageBase64?.slice(0, 32),
-      base64Tail: imageBase64?.slice(-32)
-    });
+    const cropInput: QuestionWithRegions[] = processedQuestions.map(q => ({
+      number: q.number,
+      image_regions: q.image_regions
+    }));
 
-    const questions = await parseQuestions(imageBase64, { mimeType: imageMimeType });
-    console.log('解析完成', {
-      taskId,
-      questionCount: questions.length,
-      avgConfidence: calculateAverageConfidence(questions.map(q => q.confidence))
-    });
+    await supabase
+      .from('upload_tasks')
+      .update({ progress: 70, updated_at: new Date().toISOString() })
+      .eq('id', taskId);
 
-    // Step 4.5: 智能匹配题目与配图
-    if (ocrResult && imageRegions.length > 0 && questions.length > 0) {
-      try {
-        console.log('[智能匹配] 开始匹配题目与配图', { taskId });
+    const cropSummary = await cropAndUploadQuestionImages(taskId, fileBuffer, cropInput);
+    const questionsWithImages = processedQuestions.filter(q => q.image_regions.length > 0);
+    const questionsWithAssets = questionsWithImages.filter(q => (cropSummary.assetsByQuestion[q.number]?.length ?? 0) > 0);
 
-        const imageMapping = matchQuestionImages(
-          questions,
-          imageRegions,
-          questionRegions,
-          ocrResult.PrismWordsInfo,
-          ocrResult.Width,
-          ocrResult.Height
-        );
-
-        // 验证匹配结果
-        const validatedMapping = validateImageMapping(
-          imageMapping,
-          ocrResult.Width,
-          ocrResult.Height
-        );
-
-        // 将匹配的区域附加到题目上
-        questions.forEach(q => {
-          if (validatedMapping[q.number]) {
-            const region = validatedMapping[q.number];
-            q.image_region = {
-              x: region.x,
-              y: region.y,
-              width: region.width,
-              height: region.height
-            };
-          }
-        });
-
-        console.log('[智能匹配] 匹配完成', {
-          taskId,
-          totalQuestions: questions.length,
-          matchedCount: Object.keys(validatedMapping).length,
-          matchRate: `${Math.round(Object.keys(validatedMapping).length / questions.length * 100)}%`
-        });
-      } catch (error) {
-        console.error('[智能匹配] 匹配失败', {
-          taskId,
-          error: error instanceof Error ? error.message : String(error)
-        });
-      }
+    if (questionsWithImages.length > 0 && questionsWithAssets.length === 0) {
+      throw new Error('检测到配图题目，但裁剪结果全部为空');
     }
 
-    // Step 4.6: 裁剪题目配图
-    let questionImageAssets: Record<string, QuestionImageAsset[]> = {};
-    const questionsWithImages = questions.filter(q => q.image_region);
-
-    if (questionsWithImages.length > 0) {
-      try {
-        console.log('[图片裁剪] 开始裁剪题目配图', {
-          taskId,
-          count: questionsWithImages.length
-        });
-
-        await supabase
-          .from('upload_tasks')
-          .update({ progress: 70, updated_at: new Date().toISOString() })
-          .eq('id', taskId);
-
-        questionImageAssets = await cropQuestionImages(
-          fileBuffer,
-          questions,
-          data.userId,
-          taskId
-        );
-
-        const croppedCount = Object.values(questionImageAssets).reduce(
-          (sum, list) => sum + list.length,
-          0
-        );
-        console.log('[图片裁剪] 裁剪完成', {
-          taskId,
-          croppedCount
-        });
-      } catch (error) {
-        console.error('[图片裁剪] 裁剪失败', {
-          taskId,
-          error: error instanceof Error ? error.message : String(error)
-        });
-      }
-    } else {
-      console.log('[图片裁剪] 无需裁剪（未检测到配图）', {
-        taskId,
-        questionsWithImages: questionsWithImages.length
-      });
+    const missingAssets = questionsWithImages.filter(q => !(cropSummary.assetsByQuestion[q.number]?.length));
+    if (missingAssets.length > 0) {
+      throw new Error(`部分配图裁剪失败: ${missingAssets.map(q => q.number).slice(0, 5).join(', ')}`);
     }
 
-        const mergedResults = mergeQuestionsWithImages(questions, questionImageAssets);
-
-    mergedResults.forEach(result => {
-      if (result.missingPlaceholders.length > 0 || result.appendedAssetIds.length > 0) {
-        console.warn('[占位符合并] 发现问题', {
-          taskId,
-          number: result.question.number,
-          missing: result.missingPlaceholders,
-          appended: result.appendedAssetIds
-        });
-      }
-    });
-
-    // 验证配图数量
-    mergedResults.forEach(result => {
-      const expectedCount = result.imagePlaceholders.length;
-      const actualCount = result.imageAssets.length;
-
-      if (expectedCount > 0 && actualCount === 0) {
-        console.error(`[配图缺失] 题${result.question.number}: 预期${expectedCount}张配图，但未检测到图片区域`);
-      } else if (expectedCount !== actualCount) {
-        console.warn(`[配图数量不匹配] 题${result.question.number}: 预期${expectedCount}张，实际${actualCount}张`);
-      }
-    });
-
-// Step 5: 保存到数据库
     await supabase
       .from('upload_tasks')
       .update({ progress: 80, updated_at: new Date().toISOString() })
       .eq('id', taskId);
 
-    const records = mergedResults.map(result => {
-      const question = result.question;
-      const primaryAsset =
-        result.imageAssets.find(asset => asset.used) || result.imageAssets[0];
+    const records = processedQuestions.map(question => {
+      const assets = cropSummary.assetsByQuestion[question.number] ?? [];
+      const primaryAsset = assets[0] ?? null;
 
       return {
         upload_task_id: taskId,
         number: question.number,
         type: question.type,
         content: question.content,
-        raw_content: result.rawContent,
-        options: question.options || null,
+        raw_content: question.content,
+        options: question.options.length > 0 ? question.options : null,
         answer: question.answer,
         tags: question.tags,
         confidence_score: question.confidence,
         is_selected: true,
         is_submitted: false,
         original_image_url: fileUrl,
-        question_image_url: primaryAsset?.url || null,
-        image_region: question.image_region ? JSON.stringify(question.image_region) : null,
-        image_placeholders: result.imagePlaceholders.length ? result.imagePlaceholders : null,
-        image_assets: result.imageAssets.length ? result.imageAssets : null
+        question_image_url: primaryAsset?.url ?? null,
+        image_region: question.image_regions[0] ? JSON.stringify(question.image_regions[0]) : null,
+        image_placeholders: null,
+        image_assets: assets.length ? assets : null
       };
     });
 
-    // 保存题目到数据库，并检查错误
     const { data: insertedQuestions, error: insertError } = await supabase
       .from('parsed_questions')
       .insert(records)
@@ -291,48 +264,53 @@ export async function processUploadTask(data: {
         error: insertError.message,
         code: insertError.code,
         details: insertError.details,
-        hint: insertError.hint,
-        recordCount: records.length,
-        sampleRecord: records[0]
+        hint: insertError.hint
       });
       throw new Error(`数据库保存失败: ${insertError.message}`);
     }
 
-    const totalImageAssets = Object.values(questionImageAssets).reduce((sum, list) => sum + list.length, 0);
-    console.log('保存题目到数据库完成', {
-      taskId,
-      count: questions.length,
-      withImages: totalImageAssets,
-      insertedCount: insertedQuestions?.length || 0
-    });
+    const totalQuestions = processedQuestions.length;
+    const imageQuestionCount = questionsWithImages.length;
+    const imageSuccessRate = imageQuestionCount
+      ? Math.round((questionsWithAssets.length / imageQuestionCount) * 100)
+      : 100;
 
-    // Step 6: 更新任务为完成
+    const updatePayload: Record<string, unknown> = {
+      status: 'completed',
+      progress: 100,
+      total_questions: totalQuestions,
+      image_questions: imageQuestionCount,
+      image_success_rate: imageSuccessRate,
+      updated_at: new Date().toISOString()
+    };
+
     await supabase
       .from('upload_tasks')
-      .update({
-        status: 'completed',
-        progress: 100,
-        total_questions: questions.length,
-        updated_at: new Date().toISOString()
-      })
+      .update(updatePayload)
       .eq('id', taskId);
 
-    console.log('任务处理完成', { taskId, questionCount: questions.length });
+    console.log('任务处理完成', {
+      taskId,
+      questionCount: totalQuestions,
+      insertedCount: insertedQuestions?.length || 0,
+      imageQuestions: imageQuestionCount,
+      imageSuccessRate
+    });
 
     return {
       success: true,
       taskId,
-      questionCount: questions.length
+      questionCount: totalQuestions
     };
   } catch (error) {
     console.error('处理上传任务失败', { taskId, error });
 
-    // 更新任务状态为失败
     await supabase
       .from('upload_tasks')
       .update({
         status: 'failed',
         error_message: error instanceof Error ? error.message : '未知错误',
+        image_success_rate: 0,
         updated_at: new Date().toISOString()
       })
       .eq('id', taskId);

@@ -4,12 +4,15 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, CheckSquare, Square, Upload } from 'lucide-react'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import type { ParsedQuestionRecord, UploadTask } from '@/lib/ai-question-bank'
+import { normalizeFileName } from '@/lib/ai-question-bank/utils'
 import { QuestionReviewCard } from '@/components/question-review-card'
 import { submitQuestions } from '@/app/actions/question-upload'
+import { useToast } from '@/hooks/use-toast'
 
 interface ClientPageProps {
   task: UploadTask
@@ -30,41 +33,35 @@ function formatDate(dateString: string) {
 
 export function ClientReviewPage({ task, initialQuestions, imageUrls }: ClientPageProps) {
   const router = useRouter()
+  const { toast } = useToast()
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitDialogOpen, setSubmitDialogOpen] = useState(false)
+  const displayFileName = normalizeFileName(task.file_name)
 
-  // 调试：检查传入的数据
-  console.log('[ClientReviewPage] 接收到的props:', {
+  console.log('[ClientReviewPage] props 快照', {
     taskId: task.id,
-    questionCount: initialQuestions.length,
-    imageUrlsCount: Object.keys(imageUrls).length,
-    imageUrls: Object.entries(imageUrls).map(([key, url]) => ({
-      key,
-      url: url.substring(0, 100) + '...'
-    })),
-    questionsWithImages: initialQuestions.filter(q => q.original_image_url).map(q => ({
-      id: q.id,
-      number: q.number,
-      original_image_url: q.original_image_url,
-      hasSignedUrl: q.original_image_url ? !!imageUrls[q.original_image_url] : false
-    }))
+    totalQuestions: initialQuestions.length,
+    imageUrlCount: Object.keys(imageUrls).length
   })
 
-  // 未提交的题目
-  const unsubmittedQuestions = initialQuestions.filter(q => !q.is_submitted)
+  const unsubmittedQuestions = initialQuestions.filter((q) => !q.is_submitted)
+  const submittedCount = initialQuestions.filter((q) => q.is_submitted).length
 
   const handleToggleSelect = (id: string) => {
-    const newSet = new Set(selectedIds)
-    if (newSet.has(id)) {
-      newSet.delete(id)
-    } else {
-      newSet.add(id)
-    }
-    setSelectedIds(newSet)
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+      return next
+    })
   }
 
   const handleSelectAll = () => {
-    setSelectedIds(new Set(unsubmittedQuestions.map(q => q.id)))
+    setSelectedIds(new Set(unsubmittedQuestions.map((q) => q.id)))
   }
 
   const handleDeselectAll = () => {
@@ -72,38 +69,48 @@ export function ClientReviewPage({ task, initialQuestions, imageUrls }: ClientPa
   }
 
   const handleInvertSelection = () => {
-    const newSet = new Set<string>()
-    unsubmittedQuestions.forEach(q => {
+    const next = new Set<string>()
+    unsubmittedQuestions.forEach((q) => {
       if (!selectedIds.has(q.id)) {
-        newSet.add(q.id)
+        next.add(q.id)
       }
     })
-    setSelectedIds(newSet)
+    setSelectedIds(next)
+  }
+
+  const openSubmitDialog = () => {
+    if (selectedIds.size === 0) {
+      toast({
+        title: '请选择题目',
+        description: '请先勾选至少一道题目再提交',
+        variant: 'destructive'
+      })
+      return
+    }
+    setSubmitDialogOpen(true)
   }
 
   const handleBatchSubmit = async () => {
-    if (selectedIds.size === 0) {
-      alert('请至少选择一道题目')
-      return
-    }
-
-    if (!confirm(`确定要提交选中的 ${selectedIds.size} 道题目到题库吗？`)) {
-      return
-    }
-
     setIsSubmitting(true)
     try {
       const result = await submitQuestions(task.id, Array.from(selectedIds))
-
-      if (result.success) {
-        alert(`成功提交 ${result.data?.submittedCount} 道题目！`)
-        setSelectedIds(new Set())
-        router.refresh() // 刷新数据
-      } else {
-        alert(`提交失败: ${result.error}`)
+      if (!result.success) {
+        throw new Error(result.error || '未知错误')
       }
+
+      toast({
+        title: '提交成功',
+        description: `已提交 ${result.data?.submittedCount ?? selectedIds.size} 道题目`
+      })
+      setSelectedIds(new Set())
+      setSubmitDialogOpen(false)
+      router.refresh()
     } catch (error) {
-      alert(`提交失败: ${error instanceof Error ? error.message : '未知错误'}`)
+      toast({
+        title: '提交失败',
+        description: error instanceof Error ? error.message : '请稍后重试',
+        variant: 'destructive'
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -114,10 +121,8 @@ export function ClientReviewPage({ task, initialQuestions, imageUrls }: ClientPa
       <div className="flex items-center justify-between">
         <div className="space-y-1">
           <p className="text-sm text-muted-foreground">解析任务详情</p>
-          <h1 className="text-3xl font-bold">{task.file_name}</h1>
-          <p className="text-sm text-muted-foreground">
-            创建于 {formatDate(task.created_at)}
-          </p>
+          <h1 className="text-3xl font-bold">{displayFileName}</h1>
+          <p className="text-sm text-muted-foreground">创建于 {formatDate(task.created_at)}</p>
         </div>
         <Button asChild variant="outline">
           <Link href="/tools/ingest">
@@ -131,49 +136,34 @@ export function ClientReviewPage({ task, initialQuestions, imageUrls }: ClientPa
         <CardHeader>
           <CardTitle>解析结果</CardTitle>
           <CardDescription>
-            共识别 {initialQuestions.length} 道题目，已提交 {initialQuestions.filter(q => q.is_submitted).length} 道，
-            还有 {unsubmittedQuestions.length} 道待提交。
+            共识别 {initialQuestions.length} 道题，已提交 {submittedCount} 道，剩余 {unsubmittedQuestions.length} 道待处理
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* 批量操作栏 */}
           {unsubmittedQuestions.length > 0 && (
             <Card className="bg-slate-50 border-slate-200">
               <CardContent className="py-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
+                <div className="flex items-center justify-between gap-4 flex-wrap">
+                  <div className="flex items-center gap-4 flex-wrap">
                     <span className="text-sm font-medium">
-                      已选择 {selectedIds.size} / {unsubmittedQuestions.length} 道题目
+                      已选 {selectedIds.size} / {unsubmittedQuestions.length} 道题
                     </span>
                     <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleSelectAll}
-                      >
+                      <Button variant="outline" size="sm" onClick={handleSelectAll}>
                         <CheckSquare className="w-4 h-4 mr-1" />
                         全选
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleDeselectAll}
-                        disabled={selectedIds.size === 0}
-                      >
+                      <Button variant="outline" size="sm" onClick={handleDeselectAll} disabled={selectedIds.size === 0}>
                         <Square className="w-4 h-4 mr-1" />
-                        取消
+                        清空
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleInvertSelection}
-                      >
+                      <Button variant="outline" size="sm" onClick={handleInvertSelection}>
                         反选
                       </Button>
                     </div>
                   </div>
                   <Button
-                    onClick={handleBatchSubmit}
+                    onClick={openSubmitDialog}
                     disabled={selectedIds.size === 0 || isSubmitting}
                     className="bg-blue-600 hover:bg-blue-700 text-white"
                   >
@@ -185,14 +175,12 @@ export function ClientReviewPage({ task, initialQuestions, imageUrls }: ClientPa
             </Card>
           )}
 
-          {/* 题目列表 */}
           {initialQuestions.length === 0 ? (
-            <div className="text-muted-foreground">暂无解析结果，请稍后重试。</div>
+            <div className="text-muted-foreground">暂未得到解析结果，请稍后重试。</div>
           ) : (
             <div className="space-y-6">
               {initialQuestions.map((question, index) => (
                 <div key={question.id} className="flex gap-3 items-start">
-                  {/* 选择框 */}
                   {!question.is_submitted && (
                     <div className="pt-6">
                       <Checkbox
@@ -215,6 +203,25 @@ export function ClientReviewPage({ task, initialQuestions, imageUrls }: ClientPa
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={submitDialogOpen} onOpenChange={setSubmitDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>确认提交选中的题目？</DialogTitle>
+            <DialogDescription>
+              即将提交 {selectedIds.size} 道题至题库，提交后不可撤销，请确保题目内容准确无误。
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSubmitDialogOpen(false)} disabled={isSubmitting}>
+              取消
+            </Button>
+            <Button onClick={handleBatchSubmit} disabled={isSubmitting} className="bg-blue-600 hover:bg-blue-700 text-white">
+              {isSubmitting ? '提交中...' : '确认提交'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

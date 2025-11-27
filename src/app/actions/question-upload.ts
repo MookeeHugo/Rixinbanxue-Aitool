@@ -7,7 +7,7 @@
 
 import { uploadFile, getSignedUrl, FileAccessLevel } from '@/lib/storage';
 import { inngest } from '../../../inngest/client';
-import { generateFileKey, formatFileSize } from '@/lib/ai-question-bank/utils';
+import { generateFileKey, formatFileSize, normalizeFileName } from '@/lib/ai-question-bank/utils';
 import { BatchSubmitSchema } from '@/lib/ai-question-bank/schemas';
 import type { ActionResult, UploadResult, UploadTask, ParsedQuestionRecord } from '@/lib/ai-question-bank/types';
 import { createAuthenticatedSupabaseClient, getAccessTokenFromCookies } from '@/lib/server/auth';
@@ -34,6 +34,7 @@ export async function uploadQuestionFile(formData: FormData): Promise<ActionResu
       return { success: false, error: '未选择文件' };
     }
 
+    const normalizedFileName = normalizeFileName(file.name) || file.name;
     // 3. 验证文件大小和类型
     const MAX_SIZE = 20 * 1024 * 1024; // 20MB
     if (file.size > MAX_SIZE) {
@@ -53,7 +54,7 @@ export async function uploadQuestionFile(formData: FormData): Promise<ActionResu
 
     // 4. 上传到R2
     const fileBuffer = Buffer.from(await file.arrayBuffer());
-    const fileKey = generateFileKey(user.id, file.name);
+    const fileKey = generateFileKey(user.id, normalizedFileName);
 
     const uploadResult = await uploadFile({
       file: fileBuffer,
@@ -74,7 +75,7 @@ export async function uploadQuestionFile(formData: FormData): Promise<ActionResu
       .from('upload_tasks')
       .insert({
         user_id: user.id,
-        file_name: file.name,
+        file_name: normalizedFileName,
         file_url: fileKey,
         status: 'pending',
         progress: 0
@@ -100,7 +101,7 @@ export async function uploadQuestionFile(formData: FormData): Promise<ActionResu
         processUploadTask({
           taskId: task.id,
           userId: user.id,
-          fileName: file.name,
+          fileName: normalizedFileName,
           fileUrl: fileKey,
           traceId: task.trace_id
         }).catch(err => {
@@ -115,7 +116,7 @@ export async function uploadQuestionFile(formData: FormData): Promise<ActionResu
         data: {
           taskId: task.id,
           userId: user.id,
-          fileName: file.name,
+          fileName: normalizedFileName,
           fileUrl: fileKey,
           traceId: task.trace_id
         }

@@ -1,0 +1,637 @@
+{
+  "width": 853,
+  "height": 1145,
+  "wordCount": 67,
+  "questionRegions": [
+    {
+      "questionNumber": "8",
+      "bbox": {
+        "x": 50,
+        "y": 122,
+        "width": 748,
+        "height": 199
+      },
+      "words": [
+        {
+          "Word": "8.(2025勤学早)如图，AB为⊙O的直径，AC，AD 为⊙O 的弦，且AC=CD.若AB=10，AC=",
+          "X": 50,
+          "Y": 122,
+          "Width": 746,
+          "Height": 19,
+          "Prob": 98
+        },
+        {
+          "Word": "√10，则AD的长是(",
+          "X": 70,
+          "Y": 155,
+          "Width": 164,
+          "Height": 19,
+          "Prob": 99
+        },
+        {
+          "Word": ")",
+          "X": 275,
+          "Y": 157,
+          "Width": 11,
+          "Height": 15,
+          "Prob": 99
+        },
+        {
+          "Word": "D",
+          "X": 718,
+          "Y": 183,
+          "Width": 8,
+          "Height": 10,
+          "Prob": 98
+        },
+        {
+          "Word": "A.6",
+          "X": 69,
+          "Y": 190,
+          "Width": 32,
+          "Height": 16,
+          "Prob": 99
+        },
+        {
+          "Word": "B.8",
+          "X": 211,
+          "Y": 190,
+          "Width": 31,
+          "Height": 15,
+          "Prob": 99
+        },
+        {
+          "Word": "C.2/6",
+          "X": 345,
+          "Y": 188,
+          "Width": 57,
+          "Height": 18,
+          "Prob": 99
+        },
+        {
+          "Word": "D.4.6",
+          "X": 507,
+          "Y": 188,
+          "Width": 57,
+          "Height": 18,
+          "Prob": 99
+        },
+        {
+          "Word": "B",
+          "X": 787,
+          "Y": 240,
+          "Width": 11,
+          "Height": 11,
+          "Prob": 99
+        }
+      ],
+      "textContent": "8.(2025勤学早)如图，AB为⊙O的直径，AC，AD 为⊙O 的弦，且AC=CD.若AB=10，AC=√10，则AD的长是()DA.6B.8C.2/6D.4.6B"
+    },
+    {
+      "questionNumber": "9",
+      "bbox": {
+        "x": 50,
+        "y": 321,
+        "width": 747,
+        "height": 240
+      },
+      "words": [
+        {
+          "Word": "9.(2025勤学早)如图，已知⊙O的半径为5，弦AB与弦CD位于圆心○的异侧，AB/CD，CD=",
+          "X": 50,
+          "Y": 321,
+          "Width": 745,
+          "Height": 22,
+          "Prob": 97
+        },
+        {
+          "Word": "6，AB=2√21.在AB 上取点E，连接 EO 并延长交CＤ于点Ｆ，则",
+          "X": 68,
+          "Y": 362,
+          "Width": 509,
+          "Height": 21,
+          "Prob": 94
+        },
+        {
+          "Word": "g",
+          "X": 573,
+          "Y": 358,
+          "Width": 19,
+          "Height": 21,
+          "Prob": 63
+        },
+        {
+          "Word": "的值为(",
+          "X": 606,
+          "Y": 363,
+          "Width": 66,
+          "Height": 20,
+          "Prob": 99
+        },
+        {
+          "Word": ")",
+          "X": 714,
+          "Y": 364,
+          "Width": 11,
+          "Height": 17,
+          "Prob": 99
+        },
+        {
+          "Word": "A.",
+          "X": 70,
+          "Y": 416,
+          "Width": 22,
+          "Height": 22,
+          "Prob": 99
+        },
+        {
+          "Word": "B.",
+          "X": 215,
+          "Y": 420,
+          "Width": 20,
+          "Height": 16,
+          "Prob": 99
+        },
+        {
+          "Word": "C.",
+          "X": 360,
+          "Y": 415,
+          "Width": 20,
+          "Height": 22,
+          "Prob": 99
+        },
+        {
+          "Word": "/2",
+          "X": 381,
+          "Y": 409,
+          "Width": 25,
+          "Height": 21,
+          "Prob": 78
+        },
+        {
+          "Word": "2",
+          "X": 377,
+          "Y": 422,
+          "Width": 21,
+          "Height": 22,
+          "Prob": 99
+        },
+        {
+          "Word": "D.",
+          "X": 510,
+          "Y": 418,
+          "Width": 21,
+          "Height": 19,
+          "Prob": 99
+        },
+        {
+          "Word": "2",
+          "X": 238,
+          "Y": 431,
+          "Width": 15,
+          "Height": 15,
+          "Prob": 99
+        },
+        {
+          "Word": "E",
+          "X": 745,
+          "Y": 442,
+          "Width": 11,
+          "Height": 10,
+          "Prob": 99
+        },
+        {
+          "Word": "B",
+          "X": 786,
+          "Y": 446,
+          "Width": 11,
+          "Height": 11,
+          "Prob": 99
+        },
+        {
+          "Word": "上",
+          "X": 705,
+          "Y": 499,
+          "Width": 13,
+          "Height": 15,
+          "Prob": 89
+        },
+        {
+          "Word": "C",
+          "X": 695,
+          "Y": 515,
+          "Width": 12,
+          "Height": 13,
+          "Prob": 99
+        },
+        {
+          "Word": "D",
+          "X": 766,
+          "Y": 514,
+          "Width": 11,
+          "Height": 13,
+          "Prob": 99
+        }
+      ],
+      "textContent": "9.(2025勤学早)如图，已知⊙O的半径为5，弦AB与弦CD位于圆心○的异侧，AB/CD，CD=6，AB=2√21.在AB 上取点E，连接 EO 并延长交CＤ于点Ｆ，则g的值为()A.B.C./22D.2EB上CD"
+    },
+    {
+      "questionNumber": "10",
+      "bbox": {
+        "x": 53,
+        "y": 561,
+        "width": 744,
+        "height": 171
+      },
+      "words": [
+        {
+          "Word": "10.(2025勤学早)如图，四边形 ABCD 内接于⊙O，AELCB交CB的延长线于点E.若BA平分",
+          "X": 53,
+          "Y": 561,
+          "Width": 744,
+          "Height": 21,
+          "Prob": 98
+        },
+        {
+          "Word": "/DBE，AD=7，CE=5，则AE 的长为(",
+          "X": 79,
+          "Y": 590,
+          "Width": 314,
+          "Height": 19,
+          "Prob": 97
+        },
+        {
+          "Word": ")",
+          "X": 435,
+          "Y": 592,
+          "Width": 11,
+          "Height": 15,
+          "Prob": 99
+        },
+        {
+          "Word": "A.3",
+          "X": 78,
+          "Y": 624,
+          "Width": 33,
+          "Height": 16,
+          "Prob": 99
+        },
+        {
+          "Word": "B.2./3",
+          "X": 218,
+          "Y": 622,
+          "Width": 54,
+          "Height": 19,
+          "Prob": 92
+        },
+        {
+          "Word": "C.2.6",
+          "X": 377,
+          "Y": 622,
+          "Width": 56,
+          "Height": 19,
+          "Prob": 98
+        },
+        {
+          "Word": "D.4.3",
+          "X": 539,
+          "Y": 622,
+          "Width": 56,
+          "Height": 19,
+          "Prob": 97
+        },
+        {
+          "Word": "*0",
+          "X": 731,
+          "Y": 664,
+          "Width": 16,
+          "Height": 11,
+          "Prob": 85
+        },
+        {
+          "Word": "D",
+          "X": 785,
+          "Y": 660,
+          "Width": 12,
+          "Height": 11,
+          "Prob": 99
+        },
+        {
+          "Word": "EB",
+          "X": 685,
+          "Y": 707,
+          "Width": 28,
+          "Height": 13,
+          "Prob": 99
+        },
+        {
+          "Word": "c",
+          "X": 758,
+          "Y": 704,
+          "Width": 13,
+          "Height": 14,
+          "Prob": 65
+        }
+      ],
+      "textContent": "10.(2025勤学早)如图，四边形 ABCD 内接于⊙O，AELCB交CB的延长线于点E.若BA平分/DBE，AD=7，CE=5，则AE 的长为()A.3B.2./3C.2.6D.4.3*0DEBc"
+    },
+    {
+      "questionNumber": "11",
+      "bbox": {
+        "x": 52,
+        "y": 732,
+        "width": 746,
+        "height": 234
+      },
+      "words": [
+        {
+          "Word": "11.(2025勤学早)如图，AB是半圆O的直径，C是AB的中点，E是AC 的中点，连接EB，CA交",
+          "X": 52,
+          "Y": 732,
+          "Width": 746,
+          "Height": 22,
+          "Prob": 97
+        },
+        {
+          "Word": "EF",
+          "X": 158,
+          "Y": 763,
+          "Width": 29,
+          "Height": 17,
+          "Prob": 99
+        },
+        {
+          "Word": "于点F，则",
+          "X": 78,
+          "Y": 774,
+          "Width": 81,
+          "Height": 18,
+          "Prob": 96
+        },
+        {
+          "Word": "FB",
+          "X": 162,
+          "Y": 772,
+          "Width": 21,
+          "Height": 31,
+          "Prob": 99
+        },
+        {
+          "Word": "的值为(",
+          "X": 180,
+          "Y": 773,
+          "Width": 69,
+          "Height": 19,
+          "Prob": 99
+        },
+        {
+          "Word": ")",
+          "X": 292,
+          "Y": 775,
+          "Width": 10,
+          "Height": 15,
+          "Prob": 99
+        },
+        {
+          "Word": "2-1",
+          "X": 516,
+          "Y": 816,
+          "Width": 49,
+          "Height": 21,
+          "Prob": 95
+        },
+        {
+          "Word": "A.-",
+          "X": 86,
+          "Y": 825,
+          "Width": 24,
+          "Height": 22,
+          "Prob": 99
+        },
+        {
+          "Word": "E",
+          "X": 207,
+          "Y": 830,
+          "Width": 10,
+          "Height": 17,
+          "Prob": 63
+        },
+        {
+          "Word": "B.-",
+          "X": 212,
+          "Y": 826,
+          "Width": 22,
+          "Height": 22,
+          "Prob": 99
+        },
+        {
+          "Word": "1",
+          "X": 228,
+          "Y": 823,
+          "Width": 18,
+          "Height": 26,
+          "Prob": 79
+        },
+        {
+          "Word": "C.1-",
+          "X": 332,
+          "Y": 829,
+          "Width": 37,
+          "Height": 17,
+          "Prob": 97
+        },
+        {
+          "Word": "D.",
+          "X": 497,
+          "Y": 823,
+          "Width": 22,
+          "Height": 21,
+          "Prob": 99
+        },
+        {
+          "Word": "4",
+          "X": 232,
+          "Y": 842,
+          "Width": 10,
+          "Height": 15,
+          "Prob": 99
+        },
+        {
+          "Word": "2",
+          "X": 534,
+          "Y": 841,
+          "Width": 12,
+          "Height": 15,
+          "Prob": 99
+        },
+        {
+          "Word": "B",
+          "X": 788,
+          "Y": 875,
+          "Width": 10,
+          "Height": 11,
+          "Prob": 99
+        }
+      ],
+      "textContent": "11.(2025勤学早)如图，AB是半圆O的直径，C是AB的中点，E是AC 的中点，连接EB，CA交EF于点F，则FB的值为()2-1A.-EB.-1C.1-D.42B"
+    },
+    {
+      "questionNumber": "12",
+      "bbox": {
+        "x": 52,
+        "y": 966,
+        "width": 746,
+        "height": 179
+      },
+      "words": [
+        {
+          "Word": "12.(2025勤学早)如图，AB是⊙O的直径，弦 AC=4，H为AC的中点，M为BC的中点，连接",
+          "X": 52,
+          "Y": 966,
+          "Width": 745,
+          "Height": 22,
+          "Prob": 98
+        },
+        {
+          "Word": "MH.若ZCHM=30°，则MH 的长为(",
+          "X": 78,
+          "Y": 995,
+          "Width": 294,
+          "Height": 19,
+          "Prob": 97
+        },
+        {
+          "Word": ")",
+          "X": 411,
+          "Y": 997,
+          "Width": 15,
+          "Height": 18,
+          "Prob": 99
+        },
+        {
+          "Word": "A.2",
+          "X": 78,
+          "Y": 1030,
+          "Width": 32,
+          "Height": 16,
+          "Prob": 99
+        },
+        {
+          "Word": "B.2/2",
+          "X": 219,
+          "Y": 1028,
+          "Width": 53,
+          "Height": 19,
+          "Prob": 95
+        },
+        {
+          "Word": "C./5",
+          "X": 380,
+          "Y": 1027,
+          "Width": 43,
+          "Height": 20,
+          "Prob": 99
+        },
+        {
+          "Word": "D.2/3",
+          "X": 527,
+          "Y": 1027,
+          "Width": 57,
+          "Height": 20,
+          "Prob": 96
+        },
+        {
+          "Word": "H",
+          "X": 715,
+          "Y": 1043,
+          "Width": 12,
+          "Height": 14,
+          "Prob": 99
+        },
+        {
+          "Word": "M",
+          "X": 780,
+          "Y": 1042,
+          "Width": 15,
+          "Height": 13,
+          "Prob": 99
+        },
+        {
+          "Word": "HB",
+          "X": 787,
+          "Y": 1072,
+          "Width": 11,
+          "Height": 11,
+          "Prob": 93
+        },
+        {
+          "Word": "Q",
+          "X": 731,
+          "Y": 1078,
+          "Width": 13,
+          "Height": 15,
+          "Prob": 68
+        }
+      ],
+      "textContent": "12.(2025勤学早)如图，AB是⊙O的直径，弦 AC=4，H为AC的中点，M为BC的中点，连接MH.若ZCHM=30°，则MH 的长为()A.2B.2/2C./5D.2/3HMHBQ"
+    }
+  ],
+  "imageRegions": [
+    {
+      "x": 550,
+      "y": 0,
+      "width": 350,
+      "height": 100,
+      "confidence": 0.5179177523971393,
+      "method": "whitespace"
+    },
+    {
+      "x": 600,
+      "y": 150,
+      "width": 150,
+      "height": 150,
+      "confidence": 0.5076790367416312,
+      "method": "whitespace"
+    },
+    {
+      "x": 0,
+      "y": 400,
+      "width": 200,
+      "height": 150,
+      "confidence": 0.5102387156555082,
+      "method": "whitespace"
+    },
+    {
+      "x": 300,
+      "y": 450,
+      "width": 350,
+      "height": 100,
+      "confidence": 0.5179177523971393,
+      "method": "whitespace"
+    },
+    {
+      "x": 400,
+      "y": 850,
+      "width": 100,
+      "height": 100,
+      "confidence": 0.5051193578277541,
+      "method": "whitespace"
+    },
+    {
+      "x": 600,
+      "y": 850,
+      "width": 150,
+      "height": 100,
+      "confidence": 0.5076790367416312,
+      "method": "whitespace"
+    },
+    {
+      "x": 600,
+      "y": 1000,
+      "width": 100,
+      "height": 150,
+      "confidence": 0.5076790367416312,
+      "method": "whitespace"
+    }
+  ]
+}

@@ -3,57 +3,55 @@
 @tailwind utilities;
 
 /* ==========================================
-   日新平台 - 全局样式 (基于 Gauthmath 设计系统)
+   日新平台 - 全局样式 (基于日新教育平台设计系统)
    ========================================== */
 
 @layer base {
-  /* ===== CSS变量定义 (Gauthmath 设计系统) ===== */
+  /* ===== CSS变量定义 (日新教育平台设计系统) ===== */
   :root {
-    /* ========== Gauthmath 品牌色 ========== */
-    --brand-red: 348 100% 50%;         /* #ff013e - 主品牌色 */
-    --brand-red-hover: 348 100% 44%;   /* #e00036 - Hover状态 */
-    --brand-orange: 29 100% 50%;       /* #ff7a00 - 次品牌色 */
+    /* ========== 日新教育平台主色系统 (RealTime Colors) ========== */
+    --primary: 250 62% 52%;            /* #483ece - 主要操作 */
+    --primary-foreground: 0 0% 100%;   /* #ffffff - 白色文字 */
 
-    /* ========== Gauthmath 背景色系统 ========== */
-    --background: 0 0% 100%;           /* #ffffff - 主背景 */
-    --background-secondary: 240 11% 95%; /* #f2f2f7 - 次背景 */
-    --background-tertiary: 0 0% 98%;   /* #fafafa - 三级背景 */
+    /* ========== 背景色系统 ========== */
+    --background: 250 50% 98%;         /* #f8f7fc - 页面背景 */
+    --background-secondary: 250 45% 95%; /* #f1f0f9 - 次级背景 */
+    --background-tertiary: 0 0% 100%;  /* #ffffff - 卡片背景 */
 
-    /* ========== Gauthmath 前景色系统 ========== */
-    --foreground: 0 0% 0%;             /* #000000 - 主文字 */
-    --foreground-secondary: 240 4% 24%; /* #3c3c43 - 次文字 */
-    --foreground-tertiary: 0 0% 33%;    /* #555555 - 三级文字 (提高对比度 7.5:1) */
-    --foreground-quaternary: 0 0% 60%;  /* #999999 - 四级文字 (对比度 4.6:1) */
+    /* ========== 前景色系统 ========== */
+    --foreground: 250 45% 5%;          /* #090813 - 主文字 */
+    --foreground-secondary: 250 35% 45%; /* #6b63c7 - 次文字 */
+    --foreground-tertiary: 250 30% 60%; /* #a8a3d4 - 三级文字 */
+    --foreground-quaternary: 250 25% 75%; /* #d1cee8 - 四级文字 */
 
-    /* ========== Gauthmath 边框色 ========== */
-    --border: 220 13% 91%;             /* #e4e6eb - 浅边框 */
-    --border-medium: 240 4% 82%;       /* #d1d1d6 - 中边框 */
-    --border-dark: 240 5% 79%;         /* #c7c7cc - 深边框 */
+    /* ========== 边框色系统 ========== */
+    --border: 250 40% 90%;             /* #e4e2f3 - 边框、分割线 */
+    --border-medium: 250 35% 85%;      /* #d1cee8 - 中边框 */
+    --border-dark: 250 30% 75%;        /* #a8a3d4 - 深边框 */
 
-    /* ========== Gauthmath 功能色 ========== */
-    --success: 145 80% 49%;            /* #34c759 - 成功 */
-    --warning: 36 100% 50%;            /* #ff9500 - 警告 */
-    --error: 4 100% 60%;               /* #ff3b30 - 错误 */
-    --info: 211 100% 50%;              /* #007aff - 信息 */
+    /* ========== 语义色（Tailwind 标准） ========== */
+    --success: 160 84% 39%;            /* #10b981 - 成功 */
+    --warning: 38 92% 50%;             /* #f59e0b - 警告 */
+    --error: 0 84% 60%;                /* #ef4444 - 错误 */
+    --info: 217 91% 60%;               /* #3b82f6 - 信息 */
 
     /* ========== shadcn/ui 兼容变量 ========== */
     --card: 0 0% 100%;                 /* #ffffff */
-    --card-foreground: 0 0% 0%;        /* #000000 */
+    --card-foreground: 250 45% 5%;     /* #090813 */
     --popover: 0 0% 100%;              /* #ffffff */
-    --popover-foreground: 0 0% 0%;     /* #000000 */
-    --primary: 348 100% 50%;           /* #ff013e - 使用品牌红色 */
-    --primary-foreground: 0 0% 0%;     /* #000000 - 黑色文字 */
-    --secondary: 240 11% 95%;          /* #f2f2f7 */
-    --secondary-foreground: 0 0% 0%;   /* #000000 */
-    --muted: 240 11% 95%;              /* #f2f2f7 */
-    --muted-foreground: 240 3% 56%;    /* #8e8e93 */
-    --accent: 240 11% 95%;             /* #f2f2f7 */
-    --accent-foreground: 0 0% 0%;      /* #000000 */
-    --destructive: 4 100% 60%;         /* #ff3b30 */
+    --popover-foreground: 250 45% 5%;  /* #090813 */
+    --muted: 250 45% 95%;              /* #f1f0f9 */
+    --muted-foreground: 250 30% 60%;   /* #a8a3d4 */
+    --destructive: 0 84% 60%;          /* #ef4444 */
     --destructive-foreground: 0 0% 100%; /* #ffffff */
     --input: 0 0% 100%;                /* #ffffff */
-    --ring: 348 100% 50%;              /* #ff013e */
-    --radius: 0.75rem;                 /* 12px - Gauthmath默认圆角 */
+    --ring: 250 62% 52%;               /* #483ece */
+    --radius: 0.75rem;                 /* 12px - 默认圆角 */
+
+    /* ========== Gauthmath 品牌色（保留兼容） ========== */
+    --brand-red: 348 100% 50%;         /* #ff013e */
+    --brand-red-hover: 348 100% 44%;   /* #e00036 */
+    --brand-orange: 29 100% 50%;       /* #ff7a00 */
   }
 
   /* 暗色模式已禁用 - 强制使用浅色主题 */
@@ -64,9 +62,7 @@
    ========================================== */
 @layer base {
   /* ===== 基础样式重置 ===== */
-  /* 强制基础文本颜色为前景黑，防止白底白字 */
   :root {
-    color: #000000;
     color: hsl(var(--foreground));
   }
 
@@ -77,14 +73,12 @@
 
   html {
     height: 100%;
-    font-family: -apple-system, BlinkMacSystemFont, 'Google Sans', 'Roboto', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-    background-color: #ffffff;
+    font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background-color: hsl(var(--background));
   }
 
   body {
     @apply bg-background text-foreground;
-    background-color: #ffffff !important;
-    color: #000000 !important;
     height: 100%;
     margin: 0;
     font-feature-settings: 'rlig' 1, 'calt' 1;
@@ -94,28 +88,22 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  #__next,
-  main {
-    background-color: #ffffff;
-    color: #000000;
-  }
-
-  /* ===== 标题样式 (基于 Gauthmath) ===== */
+  /* ===== 标题样式 (基于设计系统) ===== */
   h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold tracking-tight text-foreground;
-    color: #000000;
+    @apply font-semibold tracking-tight;
+    color: hsl(var(--foreground));
   }
 
   h1 {
-    @apply text-5xl;  /* 48px */
+    @apply text-5xl font-bold;  /* 48px */
   }
 
   h2 {
-    @apply text-4xl;  /* 36px */
+    @apply text-4xl font-bold;  /* 36px */
   }
 
   h3 {
-    @apply text-3xl;  /* 28px */
+    @apply text-3xl;  /* 30px */
   }
 
   h4 {
@@ -123,309 +111,197 @@
   }
 
   h5 {
-    @apply text-xl;   /* 20px */
+    @apply text-xl font-medium;   /* 20px */
+  }
+
+  h6 {
+    @apply text-lg font-medium;   /* 18px */
   }
 
   p {
-    @apply leading-relaxed;
-    color: #3c3c43;  /* foreground-secondary */
+    @apply leading-relaxed text-slate-700;
   }
 
-  /* ===== 滚动条样式 (基于 Gauthmath) ===== */
+  /* ===== 滚动条样式 (Swiss Spa 美学) ===== */
   ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
   }
 
   ::-webkit-scrollbar-track {
-    background: #f2f2f7;  /* background-secondary */
+    background: hsl(var(--background-secondary));
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #555555;  /* 从 #8e8e93 改为 #555555，提高对比度 */
+    @apply bg-slate-400;
     border-radius: 9999px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #000000;  /* 从 #3c3c43 改为 #000000，提高对比度 */
+    @apply bg-slate-600;
   }
 
   /* ===== 选中文本样式 ===== */
   ::selection {
-    background: rgba(255, 1, 62, 0.2);  /* brand-red 20% */
-    color: #000000;
+    @apply bg-primary-200 text-slate-950;
   }
 
-  /* ===== 焦点样式 (基于 Gauthmath) ===== */
+  /* ===== 焦点样式 (基于设计系统) ===== */
   *:focus-visible {
-    @apply outline-none ring-4;
-    box-shadow: 0 0 0 4px rgba(255, 1, 62, 0.12);  /* brand-red 12% */
+    @apply outline-none ring-2 ring-primary-500/20;
   }
 
   *:focus:not(:focus-visible) {
     @apply outline-none;
   }
-
-  /* ===== 确保文字颜色正确 ===== */
-  .text-foreground {
-    color: #000000 !important;
-  }
-
-  .text-muted-foreground {
-    color: #555555 !important;  /* 从 #8e8e93 改为 #555555，提高对比度至 7.5:1 */
-  }
-
-  .text-card-foreground {
-    color: #000000 !important;
-  }
-
-  .text-popover-foreground {
-    color: #000000 !important;
-  }
-
-  .text-primary-foreground {
-    color: #000000 !important;  /* 黑色文字按用户要求，但对比度仅2.17:1 */
-  }
-
-  .text-secondary-foreground {
-    color: #000000 !important;
-  }
-
-  .text-accent-foreground {
-    color: #000000 !important;
-  }
 }
 
 /* ==========================================
-   自定义组件样式 (基于 Gauthmath)
+   自定义组件样式 (基于设计系统)
    ========================================== */
 
 @layer components {
   /* ===== 容器 ===== */
   .container-page {
-    @apply container mx-auto px-4 sm:px-6 lg:px-12 py-8 sm:py-12 max-w-screen-xl;
+    @apply container mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-screen-xl;
   }
 
-  /* ===== 卡片悬停效果 (Gauthmath 风格) ===== */
+  /* ===== 卡片悬停效果 (Swiss Spa 美学) ===== */
   .card-hover {
-    @apply transition-all duration-base ease-out;
-    @apply hover:shadow-md hover:-translate-y-0.5;
+    @apply transition-all duration-200 ease-out;
+    @apply hover:shadow-lg hover:-translate-y-0.5;
   }
 
   .card-hover:hover {
-    border-color: #d1d1d6;  /* border-medium */
+    @apply border-primary-300;
   }
 
   /* ===== 链接样式 ===== */
   .link {
-    @apply text-brand-red hover:text-brand-red-hover underline-offset-4 hover:underline;
-    @apply transition-colors duration-fast;
+    @apply text-primary-600 hover:text-primary-700 underline-offset-4 hover:underline;
+    @apply transition-colors duration-150;
   }
 
-  /* ===== Gauthmath 徽章样式 ===== */
+  /* ===== Gauthmath 徽章样式（保留兼容） ===== */
   .gauthmath-badge {
-    background: #ff7a00;  /* brand-orange */
-    @apply text-white px-3 py-1 rounded-full text-xs font-semibold inline-flex items-center gap-1;
+    @apply bg-brand-orange text-white px-3 py-1 rounded-full text-xs font-semibold inline-flex items-center gap-1;
   }
 
   .gauthmath-badge-success {
-    background: #34c759;
-    @apply text-white px-3 py-1 rounded-full text-xs font-semibold;
+    @apply bg-emerald-500 text-white px-3 py-1 rounded-full text-xs font-semibold;
   }
 
   .gauthmath-badge-warning {
-    background: #ff9500;
-    @apply text-white px-3 py-1 rounded-full text-xs font-semibold;
+    @apply bg-amber-500 text-white px-3 py-1 rounded-full text-xs font-semibold;
   }
 
   .gauthmath-badge-error {
-    background: #ff3b30;
-    @apply text-white px-3 py-1 rounded-full text-xs font-semibold;
+    @apply bg-red-500 text-white px-3 py-1 rounded-full text-xs font-semibold;
   }
 
   .gauthmath-badge-info {
-    background: #007aff;
-    @apply text-white px-3 py-1 rounded-full text-xs font-semibold;
+    @apply bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-semibold;
   }
 }
 
 /* ==========================================
-   日新平台自定义样式 (Gauthmath 设计标准)
+   日新平台自定义样式 (基于设计系统)
    ========================================== */
 
 .rx-container {
-  max-width: 1200px;  /* Gauthmath 容器宽度 */
+  max-width: 1200px;
   margin: 0 auto;
   padding: 0 16px;
 }
 
 .rx-header {
-  border-bottom: 1px solid #e4e6eb;  /* border-light */
-  position: sticky;
-  top: 0;
-  backdrop-filter: blur(6px);
-  background: rgba(255, 255, 255, 0.95);
-  z-index: 50;
+  @apply border-b border-slate-200/60 sticky top-0 backdrop-blur-sm bg-white/95 z-50;
 }
 
 .rx-logo {
-  font-size: 18px;
-  font-weight: 700;
-  margin: 0;
-  padding: 14px 0;
-  color: #000000;  /* foreground */
+  @apply text-lg font-bold m-0 py-3.5 text-slate-950;
 }
 
 .rx-nav {
-  display: flex;
-  gap: 14px;
-  align-items: center;
+  @apply flex gap-3.5 items-center;
 }
 
 .rx-nav a {
-  color: #555555;  /* 从 #8e8e93 改为 #555555，提高对比度至 7.5:1 */
-  text-decoration: none;
-  padding: 10px 12px;
-  border-radius: 8px;
-  transition: all 200ms;
-  font-weight: 500;
+  @apply text-slate-700 no-underline px-3 py-2.5 rounded-lg transition-all duration-200 font-medium;
 }
 
 .rx-nav a:hover {
-  color: #000000;  /* foreground */
-  background: #f2f2f7;  /* background-secondary */
+  @apply text-slate-950 bg-slate-100;
 }
 
 .rx-nav .rx-primary {
-  background: #ff013e;  /* brand-red */
-  color: #000000;  /* 黑色文字按用户要求 */
-  border: 1px solid #ff013e;
+  @apply bg-primary-600 text-white border border-primary-600;
 }
 
 .rx-nav .rx-primary:hover {
-  background: #e00036;  /* brand-red-hover */
-  border-color: #e00036;
-  box-shadow: 0 2px 16px 0 rgba(255, 1, 62, 0.24);  /* primary shadow */
-  color: #000000;  /* 保持黑色 */
+  @apply bg-primary-700 border-primary-700 shadow-lg;
 }
 
 .rx-main {
-  padding: 24px 0 64px;
-  min-height: calc(100vh - 200px);
-  background: #ffffff;
+  @apply py-6 pb-16 min-h-[calc(100vh-200px)] bg-white;
 }
 
 .rx-card {
-  background: #ffffff;
-  border: 1px solid #e4e6eb;  /* border-light */
-  border-radius: 12px;  /* Gauthmath 默认圆角 */
-  padding: 16px;
-  box-shadow: 0 2px 16px 0 rgba(0, 0, 0, 0.12);  /* Gauthmath 默认阴影 */
-  transition: all 200ms;
-}
-
-.rx-card:hover {
-  box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.16);  /* Gauthmath hover 阴影 */
-  transform: translateY(-2px);
+  @apply bg-white border border-slate-200/60 rounded-xl p-4 shadow-md hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5;
 }
 
 .rx-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
+  @apply grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4;
 }
 
 .rx-input,
 .rx-select {
-  width: 100%;
-  padding: 12px 16px;  /* Gauthmath 输入框内边距 */
-  border-radius: 8px;  /* Gauthmath 输入框圆角 */
-  background: #ffffff;
-  color: #000000;
-  border: 1px solid #e4e6eb;  /* border-light */
-  transition: all 150ms;  /* Gauthmath 快速过渡 */
-  font-size: 14px;
-  line-height: 20px;
+  @apply w-full px-4 py-3 rounded-lg bg-white text-slate-950 border border-slate-200 transition-all duration-150 text-sm;
 }
 
 .rx-input:focus,
 .rx-select:focus {
-  outline: none;
-  border-color: #ff013e;  /* brand-red */
-  box-shadow: 0 0 0 4px rgba(255, 1, 62, 0.12);  /* brand-red 12% */
+  @apply outline-none border-primary-500 ring-2 ring-primary-500/20;
 }
 
 .rx-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  @apply grid grid-cols-2 gap-3;
 }
 
 .rx-btn {
-  appearance: none;
-  border: 1px solid #e4e6eb;  /* border-light */
-  background: #ffffff;
-  color: #000000;
-  border-radius: 14px;  /* Gauthmath 按钮圆角 */
-  padding: 14px 24px;  /* Gauthmath 按钮内边距 */
-  cursor: pointer;
-  transition: all 200ms;
-  font-weight: 600;  /* Gauthmath 按钮字重 */
-  font-size: 14px;
-  line-height: 20px;
+  @apply appearance-none border border-slate-200 bg-white text-slate-950 rounded-xl px-6 py-3.5 cursor-pointer transition-all duration-200 font-semibold text-sm;
 }
 
 .rx-btn:hover {
-  border-color: #d1d1d6;  /* border-medium */
-  background: #fafafa;  /* background-tertiary */
+  @apply border-slate-300 bg-slate-50;
 }
 
 .rx-btn-primary {
-  background: #ff013e;  /* brand-red */
-  border-color: #ff013e;
-  color: #000000;  /* 黑色文字按用户要求 */
+  @apply bg-primary-600 border-primary-600 text-white;
 }
 
 .rx-btn-primary:hover {
-  background: #e00036;  /* brand-red-hover */
-  border-color: #e00036;
-  box-shadow: 0 2px 16px 0 rgba(255, 1, 62, 0.24);  /* primary shadow */
-  color: #000000;  /* 保持黑色 */
+  @apply bg-primary-700 border-primary-700 shadow-lg;
 }
 
 .rx-btn-primary:active {
-  background: #c70030;  /* brand-red-active */
-  transform: scale(0.98);
+  @apply scale-[0.98];
 }
 
 .rx-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: #555555;  /* 从 #8e8e93 改为 #555555，提高对比度至 7.5:1 */
-  border: 1px solid #e4e6eb;  /* border-light */
-  padding: 4px 12px;
-  border-radius: 999px;
-  background: #ffffff;
-  font-weight: 600;
+  @apply inline-flex items-center gap-1.5 text-xs text-slate-700 border border-slate-200 px-3 py-1 rounded-full bg-white font-semibold;
 }
 
 .rx-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  @apply flex flex-col gap-2.5;
 }
 
 .rx-muted {
-  color: #555555;  /* 从 #8e8e93 改为 #555555，提高对比度 */
+  @apply text-slate-700;
 }
 
 .rx-footer {
-  border-top: 1px solid #e4e6eb;  /* border-light */
-  padding: 16px 0;
-  color: #555555;  /* 从 #8e8e93 改为 #555555，提高对比度 */
-  background: #ffffff;
+  @apply border-t border-slate-200 py-4 text-slate-700 bg-white;
 }
 
 /* ==========================================

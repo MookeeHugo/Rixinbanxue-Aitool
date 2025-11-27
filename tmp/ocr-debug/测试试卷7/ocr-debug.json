@@ -1,0 +1,425 @@
+{
+  "width": 1136,
+  "height": 2397,
+  "wordCount": 37,
+  "questionRegions": [
+    {
+      "questionNumber": "8",
+      "bbox": {
+        "x": 69,
+        "y": 53,
+        "width": 996,
+        "height": 424
+      },
+      "words": [
+        {
+          "Word": "8.(2025勤学早)(八上教材P例3改)如图，AB=AC，点Ｄ在AB边上(不与点Ａ，B重合)，点",
+          "X": 69,
+          "Y": 53,
+          "Width": 996,
+          "Height": 29,
+          "Prob": 96
+        },
+        {
+          "Word": "E在AC边上(不与点Ａ，C重合)，连接BE，CD.若",
+          "X": 94,
+          "Y": 92,
+          "Width": 549,
+          "Height": 26,
+          "Prob": 97
+        },
+        {
+          "Word": "，则/B=ZC.请从①BE=",
+          "X": 765,
+          "Y": 93,
+          "Width": 295,
+          "Height": 23,
+          "Prob": 97
+        },
+        {
+          "Word": "CD；②AD=AE；③BD=CE这三个选项中选择一个作为条件(写序号)，使结论成立，并说明",
+          "X": 93,
+          "Y": 129,
+          "Width": 970,
+          "Height": 27,
+          "Prob": 99
+        },
+        {
+          "Word": "理由.",
+          "X": 94,
+          "Y": 167,
+          "Width": 59,
+          "Height": 25,
+          "Prob": 99
+        },
+        {
+          "Word": "E",
+          "X": 1026,
+          "Y": 290,
+          "Width": 15,
+          "Height": 17,
+          "Prob": 99
+        },
+        {
+          "Word": "B",
+          "X": 904,
+          "Y": 362,
+          "Width": 16,
+          "Height": 18,
+          "Prob": 99
+        }
+      ],
+      "textContent": "8.(2025勤学早)(八上教材P例3改)如图，AB=AC，点Ｄ在AB边上(不与点Ａ，B重合)，点E在AC边上(不与点Ａ，C重合)，连接BE，CD.若，则/B=ZC.请从①BE=CD；②AD=AE；③BD=CE这三个选项中选择一个作为条件(写序号)，使结论成立，并说明理由.EB"
+    },
+    {
+      "questionNumber": "9",
+      "bbox": {
+        "x": 69,
+        "y": 477,
+        "width": 994,
+        "height": 403
+      },
+      "words": [
+        {
+          "Word": "9.(2025勤学早)如图，/1=乙2，AB=AD.若",
+          "X": 69,
+          "Y": 477,
+          "Width": 503,
+          "Height": 26,
+          "Prob": 96
+        },
+        {
+          "Word": "，则AE=AC.请从①/B=/D；",
+          "X": 694,
+          "Y": 477,
+          "Width": 369,
+          "Height": 27,
+          "Prob": 96
+        },
+        {
+          "Word": "②/C=/AED；③BC=DE这三个选项中选择一个作为条件(写序号)，使结论成立，并说明",
+          "X": 94,
+          "Y": 514,
+          "Width": 969,
+          "Height": 27,
+          "Prob": 95
+        },
+        {
+          "Word": "理由.",
+          "X": 93,
+          "Y": 553,
+          "Width": 60,
+          "Height": 25,
+          "Prob": 99
+        },
+        {
+          "Word": "D",
+          "X": 885,
+          "Y": 610,
+          "Width": 15,
+          "Height": 18,
+          "Prob": 99
+        },
+        {
+          "Word": "E",
+          "X": 970,
+          "Y": 717,
+          "Width": 16,
+          "Height": 19,
+          "Prob": 99
+        }
+      ],
+      "textContent": "9.(2025勤学早)如图，/1=乙2，AB=AD.若，则AE=AC.请从①/B=/D；②/C=/AED；③BC=DE这三个选项中选择一个作为条件(写序号)，使结论成立，并说明理由.DE"
+    },
+    {
+      "questionNumber": "10",
+      "bbox": {
+        "x": 71,
+        "y": 880,
+        "width": 992,
+        "height": 405
+      },
+      "words": [
+        {
+          "Word": "10.(2025勤学早)如图，AC与BD相交于点O，BO=CO.若",
+          "X": 71,
+          "Y": 880,
+          "Width": 655,
+          "Height": 27,
+          "Prob": 99
+        },
+        {
+          "Word": "，则BD=AC.请从",
+          "X": 850,
+          "Y": 882,
+          "Width": 213,
+          "Height": 24,
+          "Prob": 99
+        },
+        {
+          "Word": "①/A=/D；②/B=/C；③AB=DC这三个选项中选择一个作为条件(写序号)，使结论",
+          "X": 107,
+          "Y": 918,
+          "Width": 956,
+          "Height": 27,
+          "Prob": 95
+        },
+        {
+          "Word": "成立，并说明理由.",
+          "X": 106,
+          "Y": 956,
+          "Width": 190,
+          "Height": 25,
+          "Prob": 99
+        },
+        {
+          "Word": "C",
+          "X": 954,
+          "Y": 1069,
+          "Width": 15,
+          "Height": 17,
+          "Prob": 97
+        }
+      ],
+      "textContent": "10.(2025勤学早)如图，AC与BD相交于点O，BO=CO.若，则BD=AC.请从①/A=/D；②/B=/C；③AB=DC这三个选项中选择一个作为条件(写序号)，使结论成立，并说明理由.C"
+    },
+    {
+      "questionNumber": "11",
+      "bbox": {
+        "x": 71,
+        "y": 1285,
+        "width": 998,
+        "height": 385
+      },
+      "words": [
+        {
+          "Word": "11.(2025勤学早)如图，Ａ，Ｄ，C，Ｂ四点在一条直线上，且 AC=BD，/ADE=乙BCF.若",
+          "X": 71,
+          "Y": 1285,
+          "Width": 926,
+          "Height": 26,
+          "Prob": 96
+        },
+        {
+          "Word": "，则DE=CF.请从①乙A=/B；②/E=/F；③AE=BF这三个选项中选择一个作为",
+          "X": 153,
+          "Y": 1322,
+          "Width": 911,
+          "Height": 26,
+          "Prob": 96
+        },
+        {
+          "Word": "条件(写序号)，使结论成立，并说明理由.",
+          "X": 106,
+          "Y": 1360,
+          "Width": 420,
+          "Height": 26,
+          "Prob": 99
+        },
+        {
+          "Word": "D",
+          "X": 930,
+          "Y": 1501,
+          "Width": 22,
+          "Height": 19,
+          "Prob": 99
+        },
+        {
+          "Word": "C",
+          "X": 963,
+          "Y": 1502,
+          "Width": 23,
+          "Height": 18,
+          "Prob": 99
+        },
+        {
+          "Word": "B",
+          "X": 1049,
+          "Y": 1503,
+          "Width": 20,
+          "Height": 17,
+          "Prob": 99
+        },
+        {
+          "Word": "第50页，共79页",
+          "X": 480,
+          "Y": 1567,
+          "Width": 176,
+          "Height": 26,
+          "Prob": 99
+        }
+      ],
+      "textContent": "11.(2025勤学早)如图，Ａ，Ｄ，C，Ｂ四点在一条直线上，且 AC=BD，/ADE=乙BCF.若，则DE=CF.请从①乙A=/B；②/E=/F；③AE=BF这三个选项中选择一个作为条件(写序号)，使结论成立，并说明理由.DCB第50页，共79页"
+    },
+    {
+      "questionNumber": "12",
+      "bbox": {
+        "x": 71,
+        "y": 1670,
+        "width": 996,
+        "height": 376
+      },
+      "words": [
+        {
+          "Word": "12.(2025勤学早)(八上教材PT改)如图，B是AD 的中点，BC=DE.若",
+          "X": 71,
+          "Y": 1670,
+          "Width": 777,
+          "Height": 26,
+          "Prob": 96
+        },
+        {
+          "Word": "，则AC//",
+          "X": 964,
+          "Y": 1671,
+          "Width": 102,
+          "Height": 25,
+          "Prob": 97
+        },
+        {
+          "Word": "BE.请从①/C=/E；②BC/BE；③AC=BE 这三个选项中选择一个作为条件(写序号)，",
+          "X": 107,
+          "Y": 1707,
+          "Width": 957,
+          "Height": 27,
+          "Prob": 96
+        },
+        {
+          "Word": "使结论成立，并说明理由.",
+          "X": 106,
+          "Y": 1746,
+          "Width": 264,
+          "Height": 25,
+          "Prob": 99
+        },
+        {
+          "Word": "C",
+          "X": 1054,
+          "Y": 1871,
+          "Width": 13,
+          "Height": 17,
+          "Prob": 99
+        },
+        {
+          "Word": "D",
+          "X": 906,
+          "Y": 1940,
+          "Width": 22,
+          "Height": 17,
+          "Prob": 99
+        },
+        {
+          "Word": "E",
+          "X": 997,
+          "Y": 1940,
+          "Width": 17,
+          "Height": 18,
+          "Prob": 99
+        }
+      ],
+      "textContent": "12.(2025勤学早)(八上教材PT改)如图，B是AD 的中点，BC=DE.若，则AC//BE.请从①/C=/E；②BC/BE；③AC=BE 这三个选项中选择一个作为条件(写序号)，使结论成立，并说明理由.CDE"
+    },
+    {
+      "questionNumber": "13",
+      "bbox": {
+        "x": 71,
+        "y": 2046,
+        "width": 996,
+        "height": 351
+      },
+      "words": [
+        {
+          "Word": "13.(2025勤学早)如图，Ｄ是AB边上一点，DF交AC于点E，DE=FE.若",
+          "X": 71,
+          "Y": 2046,
+          "Width": 786,
+          "Height": 29,
+          "Prob": 97
+        },
+        {
+          "Word": "，则FC//",
+          "X": 969,
+          "Y": 2048,
+          "Width": 98,
+          "Height": 25,
+          "Prob": 99
+        },
+        {
+          "Word": "AB.请从①AE=CE；②AD=CF；③乙AED=乙CEF 这三个选项中选择一个作为条件(写",
+          "X": 106,
+          "Y": 2086,
+          "Width": 959,
+          "Height": 24,
+          "Prob": 95
+        },
+        {
+          "Word": "序号)，使结论成立，并说明理由.",
+          "X": 106,
+          "Y": 2123,
+          "Width": 335,
+          "Height": 25,
+          "Prob": 99
+        },
+        {
+          "Word": "B",
+          "X": 867,
+          "Y": 2288,
+          "Width": 16,
+          "Height": 18,
+          "Prob": 99
+        }
+      ],
+      "textContent": "13.(2025勤学早)如图，Ｄ是AB边上一点，DF交AC于点E，DE=FE.若，则FC//AB.请从①AE=CE；②AD=CF；③乙AED=乙CEF 这三个选项中选择一个作为条件(写序号)，使结论成立，并说明理由.B"
+    }
+  ],
+  "imageRegions": [
+    {
+      "x": 0,
+      "y": 200,
+      "width": 1150,
+      "height": 250,
+      "confidence": 0.5183621545711482,
+      "method": "whitespace"
+    },
+    {
+      "x": 0,
+      "y": 550,
+      "width": 1150,
+      "height": 300,
+      "confidence": 0.53901957846369,
+      "method": "whitespace"
+    },
+    {
+      "x": 0,
+      "y": 950,
+      "width": 1150,
+      "height": 350,
+      "confidence": 0.5330518782280668,
+      "method": "whitespace"
+    },
+    {
+      "x": 0,
+      "y": 1350,
+      "width": 1150,
+      "height": 300,
+      "confidence": 0.5165259391140334,
+      "method": "whitespace"
+    },
+    {
+      "x": 0,
+      "y": 1750,
+      "width": 1150,
+      "height": 250,
+      "confidence": 0.5165259391140334,
+      "method": "whitespace"
+    },
+    {
+      "x": 0,
+      "y": 2100,
+      "width": 1150,
+      "height": 300,
+      "confidence": 0.5234117470782139,
+      "method": "whitespace"
+    }
+  ]
+}

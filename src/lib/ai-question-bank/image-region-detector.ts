@@ -171,10 +171,40 @@ export function detectImageByWhitespace(ocrResult: OCRResult): ImageRegion[] {
   // 合并相邻区域
   const mergedRegions = mergeAdjacentRegions(imageRegions, 30);
 
-  // 过滤太小的区域
-  const filteredRegions = mergedRegions.filter(
-    region => region.width >= minRegionSize && region.height >= minRegionSize
-  );
+  // 过滤不合理的区域
+  const filteredRegions = mergedRegions.filter(region => {
+    // 过滤太小的区域
+    if (region.width < minRegionSize || region.height < minRegionSize) {
+      console.log('[图像检测-过滤] 区域太小，已过滤', {
+        region: `(${region.x}, ${region.y}) ${region.width}x${region.height}`,
+        reason: '尺寸不足'
+      });
+      return false;
+    }
+
+    // 过滤太宽的区域（可能包含大量文字）
+    // 如果区域宽度超过图片宽度的70%，且从左边缘开始（x < 100），则可能是误检
+    if (region.width > Width * 0.7 && region.x < 100) {
+      console.log('[图像检测-过滤] 区域太宽，已过滤', {
+        region: `(${region.x}, ${region.y}) ${region.width}x${region.height}`,
+        widthRatio: Math.round(region.width / Width * 100) + '%',
+        reason: '宽度超过70%且从左边缘开始'
+      });
+      return false;
+    }
+
+    // 过滤太高的区域（可能跨越多题）
+    if (region.height > Height * 0.5) {
+      console.log('[图像检测-过滤] 区域太高，已过滤', {
+        region: `(${region.x}, ${region.y}) ${region.width}x${region.height}`,
+        heightRatio: Math.round(region.height / Height * 100) + '%',
+        reason: '高度超过50%'
+      });
+      return false;
+    }
+
+    return true;
+  });
 
   console.log('[图像检测] 空白区域检测完成', {
     rawRegions: imageRegions.length,
@@ -186,7 +216,7 @@ export function detectImageByWhitespace(ocrResult: OCRResult): ImageRegion[] {
 }
 
 /**
- * 扩展空白区域为完整矩形
+ * 扩展空白区域为完整矩形（向四个方向扩展）
  */
 function expandEmptyRegion(
   startX: number,
@@ -201,12 +231,34 @@ function expandEmptyRegion(
   let width = gridSize;
   let height = gridSize;
 
+  // 向左扩展
+  while (x > 0) {
+    const newX = Math.max(0, x - gridSize);
+    const testRect = { x: newX, y, width: width + (x - newX), height };
+    const hasText = textBlocks.some(block => isOverlapping(testRect, block));
+    if (hasText) break;
+    const delta = x - newX;
+    x = newX;
+    width += delta;
+  }
+
   // 向右扩展
   while (x + width < maxWidth) {
     const testRect = { x, y, width: width + gridSize, height };
     const hasText = textBlocks.some(block => isOverlapping(testRect, block));
     if (hasText) break;
     width += gridSize;
+  }
+
+  // 向上扩展
+  while (y > 0) {
+    const newY = Math.max(0, y - gridSize);
+    const testRect = { x, y: newY, width, height: height + (y - newY) };
+    const hasText = textBlocks.some(block => isOverlapping(testRect, block));
+    if (hasText) break;
+    const delta = y - newY;
+    y = newY;
+    height += delta;
   }
 
   // 向下扩展

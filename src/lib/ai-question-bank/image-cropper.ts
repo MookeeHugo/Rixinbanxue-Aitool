@@ -4,11 +4,12 @@
  */
 
 import { uploadFile, FileAccessLevel } from '@/lib/storage';
-import type { ImageRegion } from './types';
+import type { ImageRegion, QuestionImageAsset, QuestionImagePlaceholder } from './types';
 
 interface CropUploadResult {
   url: string;
   isBlank: boolean;
+  key?: string;
   stats?: {
     brightness?: number;
     contrast?: number;
@@ -105,6 +106,7 @@ export async function cropAndUploadImage(
     return {
       url: publicUrl,
       isBlank,
+      key: uploadResult.key || targetPath,
       stats: {
         brightness,
         contrast,
@@ -132,11 +134,11 @@ export async function cropAndUploadImage(
  */
 export async function cropQuestionImages(
   originalBuffer: Buffer,
-  questions: Array<{ number: string; image_region?: ImageRegion }>,
+  questions: Array<{ number: string; image_region?: ImageRegion; images?: QuestionImagePlaceholder[] }>,
   userId: string,
   taskId: string
-): Promise<Record<string, string>> {
-  const imageUrls: Record<string, string> = {};
+): Promise<Record<string, QuestionImageAsset[]>> {
+  const imageAssets: Record<string, QuestionImageAsset[]> = {};
   let imageWidth: number | undefined;
   let imageHeight: number | undefined;
 
@@ -166,7 +168,7 @@ export async function cropQuestionImages(
     const random = Math.random().toString(36).substring(2, 8);
     const targetPath = `ai-question-bank/${userId}/question-${taskId}-${question.number}-${timestamp}-${random}.png`;
 
-    let croppedUrl: string | null = null;
+    let croppedAsset: QuestionImageAsset | null = null;
     let lastError: string | null = null;
 
     for (const padding of paddingCandidates) {
@@ -193,10 +195,19 @@ export async function cropQuestionImages(
           continue;
         }
 
-        croppedUrl = result.url;
-        console.log('[图片裁剪] 题目配图处理完成', {
+        const existingCount = imageAssets[question.number]?.length ?? 0;
+        croppedAsset = {
+          id: result.key || targetPath,
+          key: result.key || targetPath,
+          url: result.url,
           questionNumber: question.number,
-          croppedUrl,
+          order: existingCount + 1,
+          placeholder: question.images?.[existingCount]?.placeholder ?? null,
+          used: false
+        };
+        console.log('[图片裁剪] 配图裁剪成功', {
+          questionNumber: question.number,
+          croppedUrl: croppedAsset.url,
           padding,
           stats: result.stats
         });
@@ -211,8 +222,11 @@ export async function cropQuestionImages(
       }
     }
 
-    if (croppedUrl) {
-      imageUrls[question.number] = croppedUrl;
+    if (croppedAsset) {
+      if (!imageAssets[question.number]) {
+        imageAssets[question.number] = [];
+      }
+      imageAssets[question.number].push(croppedAsset);
     } else {
       console.error('[图片裁剪] 题目配图处理失败', {
         questionNumber: question.number,
@@ -221,12 +235,17 @@ export async function cropQuestionImages(
     }
   }
 
-  console.log('[图片裁剪] 批量处理完成', {
+  const croppedCount = Object.values(imageAssets).reduce(
+    (sum, list) => sum + list.length,
+    0
+  );
+
+  console.log('[图片裁剪] 裁剪结果统计', {
     totalQuestions: questions.length,
-    croppedImages: Object.keys(imageUrls).length
+    croppedImages: croppedCount
   });
 
-  return imageUrls;
+  return imageAssets;
 }
 
 /**

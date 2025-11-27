@@ -71,6 +71,51 @@ export function generateFileKey(userId: string, fileName: string): string {
   return `ai-question-bank/${userId}/${timestamp}-${randomStr}.${ext}`;
 }
 
+const POSSIBLE_MOJIBAKE_PATTERN = /[ÃÂæåçèéêëìíîïðñòóôõöøùúûüýþÆØÅáàäâãåéèêëíìîïóòôöõúùûüñÝþ]/;
+
+function decodeLatin1ToUtf8(input: string): string {
+  try {
+    if (typeof Buffer !== 'undefined') {
+      return Buffer.from(input, 'binary').toString('utf8');
+    }
+    if (typeof TextDecoder !== 'undefined') {
+      const bytes = new Uint8Array(input.length);
+      for (let i = 0; i < input.length; i++) {
+        bytes[i] = input.charCodeAt(i) & 0xff;
+      }
+      return new TextDecoder('utf-8', { fatal: false }).decode(bytes);
+    }
+  } catch {
+    // ignore decode errors and fall back to the original string
+  }
+  return input;
+}
+
+/**
+ * ���й����ļ����ƣ�����ģ�涴����UTF-8�ַ���
+ */
+export function normalizeFileName(fileName?: string | null): string {
+  if (!fileName) return '';
+  const trimmed = fileName.trim();
+  if (!trimmed) return '';
+
+  if (!POSSIBLE_MOJIBAKE_PATTERN.test(trimmed)) {
+    return trimmed;
+  }
+
+  const decoded = decodeLatin1ToUtf8(trimmed);
+  if (
+    decoded &&
+    decoded !== trimmed &&
+    !decoded.includes('\uFFFD') &&
+    (/[\u4e00-\u9fff]/.test(decoded) || decoded.split('').some(char => char.charCodeAt(0) > 127))
+  ) {
+    return decoded;
+  }
+
+  return trimmed;
+}
+
 /**
  * 从URL提取文件名
  */

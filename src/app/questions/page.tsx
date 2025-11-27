@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import type { ColumnsType, TableRowSelection } from 'antd/es/table/interface'
-import { Table, message, Space, Tag, Modal, Radio, Upload } from 'antd'
+import { Table, Space, Modal, Radio, Upload } from 'antd'
 import { Input } from 'antd'
 import { logger } from '@/lib/logger'
 import {
@@ -15,7 +15,6 @@ import {
   Download,
   UploadCloud,
   ShoppingBasket,
-  FileDown,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { getCurrentProfile } from '@/lib/auth'
@@ -30,6 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useToast } from '@/hooks/use-toast'
 import { QuestionBasketDrawer } from '@/components/questions/question-basket-drawer'
 import { useQuestionBasketStore } from '@/stores/questionBasketStore'
 
@@ -57,6 +57,7 @@ interface ExportTask {
 
 export default function QuestionsPage() {
   const router = useRouter()
+  const { toast } = useToast()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [questions, setQuestions] = useState<QuestionRecord[]>([])
   const [loading, setLoading] = useState(true)
@@ -145,7 +146,11 @@ export default function QuestionsPage() {
       } catch (error) {
         if (!mountedRef.current) return
         logger.error('Failed to load questions:', { error: error })
-        message.error('加载题目失败')
+        toast({
+          title: '加载失败',
+          description: '加载题目失败',
+          variant: 'destructive',
+        })
       } finally {
         if (mountedRef.current) {
           setLoading(false)
@@ -177,7 +182,11 @@ export default function QuestionsPage() {
       } catch (error) {
         if (!mountedRef.current) return
         logger.error('轮询导出任务失败', { error: error })
-        message.error(error instanceof Error ? error.message : '查询导出任务失败')
+        toast({
+          title: '查询失败',
+          description: error instanceof Error ? error.message : '查询导出任务失败',
+          variant: 'destructive',
+        })
         setExportTask(null)
       }
     }, 4000)
@@ -191,12 +200,19 @@ export default function QuestionsPage() {
   useEffect(() => {
     if (!exportTask) return
     if (exportTask.status === 'COMPLETED') {
-      message.success('导出完成，可在题篮中下载文件')
+      toast({
+        title: '导出完成',
+        description: '可在题篮中下载文件',
+      })
     }
     if (exportTask.status === 'FAILED') {
-      message.error(exportTask.error_message || '导出失败，请稍后重试')
+      toast({
+        title: '导出失败',
+        description: exportTask.error_message || '导出失败，请稍后重试',
+        variant: 'destructive',
+      })
     }
-  }, [exportTask?.status])
+  }, [exportTask?.status, toast])
 
   const questionMap = useMemo(() => {
     const map = new Map<string, QuestionRecord>()
@@ -226,7 +242,11 @@ export default function QuestionsPage() {
       setQuestions((data as QuestionRecord[]) || [])
     } catch (error) {
       logger.error('Failed to load questions:', { error: error })
-      message.error('加载题目失败')
+      toast({
+        title: '加载失败',
+        description: '加载题目失败',
+        variant: 'destructive',
+      })
     } finally {
       setLoading(false)
     }
@@ -274,7 +294,10 @@ export default function QuestionsPage() {
   const handleAddToBasketAction = useCallback((record: QuestionRecord) => {
     const id = String(record.id)
     if (hasQuestionInBasket(id)) {
-      message.info('题目已在题篮中')
+      toast({
+        title: '提示',
+        description: '题目已在题篮中',
+      })
       return
     }
     addToBasket({
@@ -284,8 +307,11 @@ export default function QuestionsPage() {
       difficulty: (record.difficulty as any) || 'medium',
       knowledge_points: record.knowledge_points || [],
     })
-    message.success('已加入题篮')
-  }, [hasQuestionInBasket, addToBasket])
+    toast({
+      title: '成功',
+      description: '已加入题篮',
+    })
+  }, [hasQuestionInBasket, addToBasket, toast])
 
 const fetchExportTaskStatus = async (taskId: string) => {
     const token = await getAccessToken()
@@ -306,7 +332,11 @@ const fetchExportTaskStatus = async (taskId: string) => {
 
   const handleStartBuildFromBasket = useCallback(() => {
     if (!basketQuestions.length) {
-      message.warning('题篮为空')
+      toast({
+        title: '提示',
+        description: '题篮为空',
+        variant: 'destructive',
+      })
       return
     }
     try {
@@ -316,11 +346,15 @@ const fetchExportTaskStatus = async (taskId: string) => {
     }
     setBasketOpen(false)
     router.push('/papers/create?source=basket')
-  }, [basketQuestions, router])
+  }, [basketQuestions, router, toast])
 
   const handleExportFromBasket = useCallback(async () => {
     if (!basketQuestions.length) {
-      message.warning('题篮为空')
+      toast({
+        title: '提示',
+        description: '题篮为空',
+        variant: 'destructive',
+      })
       return
     }
     setExportLoading(true)
@@ -343,15 +377,22 @@ const fetchExportTaskStatus = async (taskId: string) => {
         throw new Error(data.error || '创建导出任务失败')
       }
       setExportTask(data.task as ExportTask)
-      message.success('导出任务已创建')
+      toast({
+        title: '成功',
+        description: '导出任务已创建',
+      })
       setBasketOpen(true)
     } catch (error: any) {
       logger.error('创建导出任务失败:', { error: error })
-      message.error(error?.message || '创建导出任务失败')
+      toast({
+        title: '创建失败',
+        description: error?.message || '创建导出任务失败',
+        variant: 'destructive',
+      })
     } finally {
       setExportLoading(false)
     }
-  }, [basketQuestions])
+  }, [basketQuestions, toast])
 
   const callDeleteApi = useCallback(async (ids: string[], mode: 'soft' | 'hard') => {
     const token = await getAccessToken()
@@ -386,27 +427,42 @@ const fetchExportTaskStatus = async (taskId: string) => {
 
   const handleBulkDelete = useCallback(async () => {
     if (!selectedRowKeys.length) {
-      message.warning('请选择题目')
+      toast({
+        title: '提示',
+        description: '请选择题目',
+        variant: 'destructive',
+      })
       return
     }
     setBulkLoading(true)
     try {
       await callDeleteApi(selectedRowKeys.map(String), deleteMode)
-      message.success(deleteMode === 'hard' ? '已硬删除所选题目' : '所选题目已软删除')
+      toast({
+        title: '成功',
+        description: deleteMode === 'hard' ? '已硬删除所选题目' : '所选题目已软删除',
+      })
       setSelectedRowKeys([])
       setDeleteModalOpen(false)
       void loadQuestions()
     } catch (error: any) {
       logger.error('Error occurred', { error: error })
-      message.error(error.message || '批量删除失败')
+      toast({
+        title: '删除失败',
+        description: error.message || '批量删除失败',
+        variant: 'destructive',
+      })
     } finally {
       setBulkLoading(false)
     }
-  }, [selectedRowKeys, deleteMode, callDeleteApi])
+  }, [selectedRowKeys, deleteMode, callDeleteApi, toast])
 
   const handleBulkExport = useCallback((format: 'csv' | 'json') => {
     if (!selectedRowKeys.length) {
-      message.warning('请选择题目')
+      toast({
+        title: '提示',
+        description: '请选择题目',
+        variant: 'destructive',
+      })
       return
     }
     const rows = selectedRowKeys
@@ -414,7 +470,11 @@ const fetchExportTaskStatus = async (taskId: string) => {
       .filter((item): item is QuestionRecord => Boolean(item))
 
     if (!rows.length) {
-      message.warning('未找到可导出的题目')
+      toast({
+        title: '提示',
+        description: '未找到可导出的题目',
+        variant: 'destructive',
+      })
       return
     }
 
@@ -435,17 +495,28 @@ const fetchExportTaskStatus = async (taskId: string) => {
       ].join('\n')
       triggerDownload(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), 'questions-export.csv')
     }
-    message.success(`已导出 ${rows.length} 道题目`)
-  }, [selectedRowKeys, questionMap])
+    toast({
+      title: '导出成功',
+      description: `已导出 ${rows.length} 道题目`,
+    })
+  }, [selectedRowKeys, questionMap, toast])
 
   const handleBulkImport = useCallback(async (file: File) => {
     if (!profile) {
-      message.error('请先登录')
+      toast({
+        title: '错误',
+        description: '请先登录',
+        variant: 'destructive',
+      })
       return Upload.LIST_IGNORE
     }
 
     if (!file.name.endsWith('.csv')) {
-      message.error('请上传 CSV 文件')
+      toast({
+        title: '错误',
+        description: '请上传 CSV 文件',
+        variant: 'destructive',
+      })
       return Upload.LIST_IGNORE
     }
 
@@ -453,7 +524,11 @@ const fetchExportTaskStatus = async (taskId: string) => {
       const text = await file.text()
       const rows = parseCsv(text)
       if (!rows.length) {
-        message.warning('未解析到题目')
+        toast({
+          title: '提示',
+          description: '未解析到题目',
+          variant: 'destructive',
+        })
         return Upload.LIST_IGNORE
       }
 
@@ -469,15 +544,22 @@ const fetchExportTaskStatus = async (taskId: string) => {
       const { error } = await supabase.from('questions').insert(payload)
       if (error) throw error
 
-      message.success(`成功导入 ${payload.length} 道题目`)
+      toast({
+        title: '导入成功',
+        description: `成功导入 ${payload.length} 道题目`,
+      })
       void loadQuestions()
     } catch (error: any) {
       logger.error('导入失败:', { error: error })
-      message.error(error.message || '导入失败')
+      toast({
+        title: '导入失败',
+        description: error.message || '导入失败',
+        variant: 'destructive',
+      })
     }
 
     return Upload.LIST_IGNORE
-  }, [profile])
+  }, [profile, toast])
 
   const columns: ColumnsType<QuestionRecord> = useMemo(
     () => [
@@ -502,7 +584,7 @@ const fetchExportTaskStatus = async (taskId: string) => {
         dataIndex: 'difficulty',
         key: 'difficulty',
         render: (difficulty: string) => (
-          <Tag color={getDifficultyColor(difficulty)}>{getDifficultyLabel(difficulty)}</Tag>
+          <Badge variant={getDifficultyVariant(difficulty)}>{getDifficultyLabel(difficulty)}</Badge>
         ),
       },
       {
@@ -580,6 +662,11 @@ const fetchExportTaskStatus = async (taskId: string) => {
           <p className="text-muted-foreground mt-1">管理题目、搜索高亮，并批量处理导入/导出</p>
         </div>
         <div className="flex items-center gap-3">
+          <Link href="/tools/ingest">
+            <Button variant="secondary" size="lg">
+              开始录题
+            </Button>
+          </Link>
           <Button
             variant="outline"
             size="lg"
@@ -892,11 +979,11 @@ function getDifficultyLabel(level: string) {
   return labels[level] || level
 }
 
-function getDifficultyColor(level: string) {
-  const colors: Record<string, string> = {
+function getDifficultyVariant(level: string): 'success' | 'warning' | 'error' | 'default' {
+  const variants: Record<string, 'success' | 'warning' | 'error'> = {
     easy: 'success',
     medium: 'warning',
     hard: 'error',
   }
-  return colors[level] || 'default'
+  return variants[level] || 'default'
 }

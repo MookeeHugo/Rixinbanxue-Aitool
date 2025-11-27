@@ -123,6 +123,12 @@ function matchByQuestionBoundary(
 
   const expandedBBox = expandQuestionBBox(questionRegion.bbox, imageWidth, imageHeight);
 
+  console.log(`[智能匹配-边界] 题${question.number}边界检查`, {
+    originalBBox: questionRegion.bbox,
+    expandedBBox,
+    imageRegionsToCheck: imageRegions.length - usedRegions.size
+  });
+
   // 在该题的边界内查找图像区域
   for (let i = 0; i < imageRegions.length; i++) {
     if (usedRegions.has(i)) continue;
@@ -135,6 +141,17 @@ function matchByQuestionBoundary(
       region.y >= expandedBBox.y &&
       region.x + region.width <= expandedBBox.x + expandedBBox.width &&
       region.y + region.height <= expandedBBox.y + expandedBBox.height;
+
+    console.log(`[智能匹配-边界] 题${question.number}检查区域#${i}`, {
+      region: { x: region.x, y: region.y, width: region.width, height: region.height },
+      checks: {
+        'x >= expandedBBox.x': `${region.x} >= ${expandedBBox.x} = ${region.x >= expandedBBox.x}`,
+        'y >= expandedBBox.y': `${region.y} >= ${expandedBBox.y} = ${region.y >= expandedBBox.y}`,
+        'right <= expandedRight': `${region.x + region.width} <= ${expandedBBox.x + expandedBBox.width} = ${region.x + region.width <= expandedBBox.x + expandedBBox.width}`,
+        'bottom <= expandedBottom': `${region.y + region.height} <= ${expandedBBox.y + expandedBBox.height} = ${region.y + region.height <= expandedBBox.y + expandedBBox.height}`
+      },
+      isInside
+    });
 
     if (isInside) {
       usedRegions.add(i);
@@ -157,6 +174,7 @@ function matchByQuestionBoundary(
     }
   }
 
+  console.warn(`[智能匹配-边界] 题${question.number}: 边界匹配失败，未找到在边界内的图像`);
   return null;
 }
 
@@ -360,13 +378,35 @@ function trimRegionForQuestion(
   const overlapLeft = Math.max(region.x, questionBBox.x);
   const overlapRight = Math.min(regionRight, questionRight);
   const overlapWidth = overlapRight - overlapLeft;
+  const overlapRatio = overlapWidth > 0 ? overlapWidth / region.width : 0;
 
-  if (overlapWidth > 0 && overlapWidth / region.width > 0.6) {
+  // 如果重叠过多（>80%），可能是检测错误，不裁剪
+  if (overlapRatio > 0.8) {
+    console.warn('[trimRegion] 重叠比例过高，跳过裁剪', {
+      overlapRatio: Math.round(overlapRatio * 100) + '%',
+      region
+    });
+    return region;
+  }
+
+  // 中等重叠（60%-80%），尝试裁剪到题号右边
+  if (overlapRatio > 0.6) {
     const newX = Math.min(
       imageWidth - 50,
       Math.max(questionRight + 8, region.x)
     );
     const newWidth = Math.max(50, regionRight - newX);
+
+    // 如果裁剪后宽度太小（<100px），保持原区域
+    if (newWidth < 100) {
+      console.warn('[trimRegion] 裁剪后宽度过小，保持原区域', {
+        originalWidth: region.width,
+        newWidth,
+        region
+      });
+      return region;
+    }
+
     if (newWidth < region.width) {
       return { ...region, x: newX, width: newWidth };
     }

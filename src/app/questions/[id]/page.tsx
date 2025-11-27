@@ -9,8 +9,18 @@ import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, Edit3, Trash2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import type { Question } from '@/lib/supabase'
-import { Modal, message, Skeleton, Space, Radio } from 'antd'
 import { logger } from '@/lib/logger'
+import { useToast } from '@/hooks/use-toast'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Label } from '@/components/ui/label'
 
 type QuestionRecord = Question & {
   knowledge_points?: string[]
@@ -27,6 +37,7 @@ type QuestionRecord = Question & {
 export default function QuestionDetailPage() {
   const params = useParams()
   const router = useRouter()
+  const { toast } = useToast()
   const [loading, setLoading] = useState(true)
   const [question, setQuestion] = useState<QuestionRecord | null>(null)
   const [deleting, setDeleting] = useState(false)
@@ -94,11 +105,18 @@ export default function QuestionDetailPage() {
         const data = await res.json().catch(() => ({}))
         throw new Error(data.error || '删除失败')
       }
-      message.success(deleteMode === 'hard' ? '已彻底删除' : '已归档')
+      toast({
+        title: '删除成功',
+        description: deleteMode === 'hard' ? '已彻底删除' : '已归档',
+      })
       router.push('/questions')
     } catch (err: any) {
       logger.error('Error occurred', { error: err })
-      message.error(err.message || '删除失败，请稍后重试')
+      toast({
+        title: '删除失败',
+        description: err.message || '删除失败，请稍后重试',
+        variant: 'destructive',
+      })
     } finally {
       setDeleting(false)
       setDeleteModalOpen(false)
@@ -109,9 +127,9 @@ export default function QuestionDetailPage() {
     if (loading) {
       return (
         <div className="space-y-4">
-          <Skeleton active />
-          <Skeleton active />
-          <Skeleton active />
+          <div className="h-32 bg-muted animate-pulse rounded-lg" />
+          <div className="h-32 bg-muted animate-pulse rounded-lg" />
+          <div className="h-32 bg-muted animate-pulse rounded-lg" />
         </div>
       )
     }
@@ -209,7 +227,7 @@ export default function QuestionDetailPage() {
 
           <section className="space-y-3">
             <h3 className="text-lg font-semibold">知识点与元信息</h3>
-            <Space size={[8, 8]} wrap>
+            <div className="flex flex-wrap gap-2">
               {question.knowledge_points?.length ? (
                 question.knowledge_points.map((kp) => (
                   <Badge key={kp} variant="secondary">
@@ -228,7 +246,7 @@ export default function QuestionDetailPage() {
               {question.source && (
                 <Badge variant="outline">来源：{question.source}</Badge>
               )}
-            </Space>
+            </div>
           </section>
 
           {question.image_url ? (
@@ -269,29 +287,38 @@ export default function QuestionDetailPage() {
   return (
     <>
       <div className="space-y-6">{renderContent()}</div>
-      <Modal
-        title="删除题目"
-        open={deleteModalOpen}
-        okText={deleteMode === 'hard' ? '硬删除' : '软删除'}
-        okButtonProps={{ danger: deleteMode === 'hard', loading: deleting }}
-        cancelText="取消"
-        onOk={confirmDelete}
-        onCancel={() => {
-          if (!deleting) setDeleteModalOpen(false)
-        }}
-      >
-        <p className="text-sm text-muted-foreground mb-3">
-          软删除会保留题目数据并仅对作者隐藏；硬删除将彻底移除题目及图片。
-        </p>
-        <Radio.Group
-          value={deleteMode}
-          onChange={(event) => setDeleteMode(event.target.value)}
-          className="flex flex-col gap-2"
-        >
-          <Radio value="soft">软删除（可在数据库恢复）</Radio>
-          <Radio value="hard">硬删除（不可恢复）</Radio>
-        </Radio.Group>
-      </Modal>
+      <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>删除题目</DialogTitle>
+            <DialogDescription>
+              软删除会保留题目数据并仅对作者隐藏；硬删除将彻底移除题目及图片。
+            </DialogDescription>
+          </DialogHeader>
+          <RadioGroup value={deleteMode} onValueChange={(value: 'soft' | 'hard') => setDeleteMode(value)}>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="soft" id="soft" />
+              <Label htmlFor="soft">软删除（可在数据库恢复）</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="hard" id="hard" />
+              <Label htmlFor="hard">硬删除（不可恢复）</Label>
+            </div>
+          </RadioGroup>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteModalOpen(false)} disabled={deleting}>
+              取消
+            </Button>
+            <Button
+              variant={deleteMode === 'hard' ? 'destructive' : 'default'}
+              onClick={confirmDelete}
+              disabled={deleting}
+            >
+              {deleting ? '删除中...' : deleteMode === 'hard' ? '硬删除' : '软删除'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

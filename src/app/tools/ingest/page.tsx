@@ -8,21 +8,26 @@ import { FileUploadSection } from './_components/file-upload-section'
 import { TaskListSection } from './_components/task-list-section'
 
 /**
- * AI题库批量导入页面
- * 路径: /tools/ingest
+ * AI棰樺簱鎵归噺瀵煎叆椤甸潰
+ * 璺緞: /tools/ingest
  */
 export default function QuestionIngestPage() {
   const router = useRouter()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
+  const [hydrated, setHydrated] = useState(false)
+
+  useEffect(() => {
+    setHydrated(true)
+  }, [])
 
   useEffect(() => {
     const loadProfile = async () => {
       try {
         const response = await fetch('/api/profile', {
           method: 'GET',
-          credentials: 'include',
+          credentials: 'include'
         })
 
         if (!response.ok) {
@@ -35,14 +40,14 @@ export default function QuestionIngestPage() {
 
         const { profile: data } = await response.json()
 
-        // 只允许教师访问
+        // 鍙厑璁告暀甯堣闂?
         if (!data || data.role !== 'teacher') {
           router.push('/')
           return
         }
         setProfile(data)
       } catch (err) {
-        logger.error('加载用户信息失败:', { error: err })
+        logger.error('鍔犺浇鐢ㄦ埛淇℃伅澶辫触:', { error: err })
         router.push('/login')
       } finally {
         setLoading(false)
@@ -52,14 +57,22 @@ export default function QuestionIngestPage() {
   }, [router])
 
   const handleUploadSuccess = () => {
-    // 刷新任务列表
+    // 鍒锋柊浠诲姟鍒楄〃
     setRefreshTrigger(prev => prev + 1)
+  }
+
+  if (!hydrated) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-muted-foreground">正在初始化页面...</div>
+      </div>
+    )
   }
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-muted-foreground">加载中...</div>
+        <div className="text-muted-foreground">鍔犺浇涓?..</div>
       </div>
     )
   }
@@ -70,18 +83,18 @@ export default function QuestionIngestPage() {
 
   return (
     <div className="container mx-auto py-6 space-y-8">
-      {/* 页面标题 */}
+      {/* 椤甸潰鏍囬 */}
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">AI题库批量导入</h1>
+        <h1 className="text-3xl font-bold tracking-tight">AI棰樺簱鎵归噺瀵煎叆</h1>
         <p className="text-muted-foreground">
-          上传试卷图片或PDF，AI自动识别题目并入库
+          涓婁紶璇曞嵎鍥剧墖鎴朠DF锛孉I鑷姩璇嗗埆棰樼洰骞跺叆搴?
         </p>
       </div>
 
-      {/* 上传区域 */}
+      {/* 涓婁紶鍖哄煙 */}
       <FileUploadSection onSuccess={handleUploadSuccess} />
 
-      {/* 任务列表 */}
+      {/* 浠诲姟鍒楄〃 */}
       <TaskListSection refreshTrigger={refreshTrigger} />
     </div>
   )

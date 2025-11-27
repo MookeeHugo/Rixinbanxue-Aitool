@@ -62,6 +62,16 @@ export default function HomePage() {
         <h1 className="text-3xl font-bold mb-6">教师工作台</h1>
         <div className="rx-grid">
           <section className="rx-card">
+            <h2 className="text-xl font-semibold mb-2">开始录题</h2>
+            <p className="rx-muted mb-4">使用 AI 智能识别试卷，快速录入题目</p>
+            <div className="flex gap-2">
+              <Link href="/tools/ingest" className="rx-btn rx-btn-primary">
+                开始录题
+              </Link>
+            </div>
+          </section>
+
+          <section className="rx-card">
             <h2 className="text-xl font-semibold mb-2">题库管理</h2>
             <p className="rx-muted mb-4">管理您的题目库，支持选择题、填空题、解答题</p>
             <div className="flex gap-2">

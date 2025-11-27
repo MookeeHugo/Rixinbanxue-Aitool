@@ -1,6 +1,6 @@
-import { logger } from '@/lib/logger'
-
 "use client"
+
+import { logger } from '@/lib/logger'
 
 export default function DebugEnvPage() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'undefined'

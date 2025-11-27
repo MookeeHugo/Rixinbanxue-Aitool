@@ -9,58 +9,66 @@ const config: Config = {
   ],
   theme: {
     extend: {
-      // ✅ 基于 Gauthmath 设计系统的色彩方案
+      // ✅ 基于日新教育平台设计系统的色彩方案
       colors: {
-        // ========== Gauthmath 品牌色 ==========
-        brand: {
-          red: {
-            DEFAULT: '#ff013e',        // 主品牌色 - CTA按钮
-            hover: '#e00036',          // Hover状态 (加深10%)
-            active: '#c70030',         // Active状态 (加深20%)
-          },
-          orange: {
-            DEFAULT: '#ff7a00',        // 次品牌色 - 强调、徽章
-            hover: '#e66d00',
-            active: '#cc6100',
-          },
-        },
-
-        // ========== Gauthmath 背景色系统 ==========
-        'bg-primary': '#ffffff',       // 主背景
-        'bg-secondary': '#f2f2f7',     // 次背景 - 卡片、面板
-        'bg-tertiary': '#fafafa',      // 三级背景 - hover状态
-
-        // ========== Gauthmath 文字色系统 ==========
-        'text-primary': '#000000',     // 主文字
-        'text-secondary': '#3c3c43',   // 次文字
-        'text-tertiary': '#555555',    // 三级文字 (提高对比度至 7.5:1)
-        'text-quaternary': '#999999',  // 四级文字 (提高对比度至 4.6:1)
-
-        // ========== Gauthmath 边框色 ==========
-        'border-light': '#e4e6eb',     // 浅边框
-        'border-medium': '#d1d1d6',    // 中边框
-        'border-dark': '#c7c7cc',      // 深边框
-
-        // ========== Gauthmath 功能色 ==========
-        'gauthmath-success': '#34c759',
-        'gauthmath-warning': '#ff9500',
-        'gauthmath-error': '#ff3b30',
-        'gauthmath-info': '#007aff',
-
-        // ========== 保留原有色系以兼容现有组件 ==========
+        // ========== 日新教育平台主色系统 (RealTime Colors) ==========
         primary: {
-          50: '#f5f3ff',
-          100: '#ede9fe',
-          200: '#ddd6fe',
-          300: '#c4b5fd',
-          400: '#a78bfa',
-          500: '#8b5cf6',
-          600: '#7c3aed',
-          700: '#6d28d9',
-          800: '#5b21b6',
-          900: '#4c1d95',
-          950: '#2e1065',
+          DEFAULT: '#483ece',    // 主要操作 - 主按钮、链接
+          50: '#f5f4fe',
+          100: '#ebe9fd',
+          200: '#d8d4fb',
+          300: '#bbb3f8',
+          400: '#9a8af3',
+          500: '#7d63ed',
+          600: '#6a47e3',
+          700: '#5a38cf',
+          800: '#483ece',        // Primary
+          900: '#3d2ba8',
+          950: '#2e1d7a',
         },
+        secondary: {
+          DEFAULT: '#8881e9',    // 次要操作 - 次按钮、辅助元素
+          50: '#f7f6fd',
+          100: '#efedfa',
+          200: '#e0ddf6',
+          300: '#cbc5ef',
+          400: '#b3a9e6',
+          500: '#9a8ddc',
+          600: '#8881e9',        // Secondary
+          700: '#7469d0',
+          800: '#5f54b0',
+          900: '#4e4690',
+        },
+        accent: {
+          DEFAULT: '#564cec',    // 强调元素 - 高亮、徽章
+          50: '#f5f4fe',
+          100: '#eceafb',
+          200: '#dad8f8',
+          300: '#bfb9f2',
+          400: '#9f93ea',
+          500: '#7f6de0',
+          600: '#6a52d4',
+          700: '#564cec',        // Accent
+          800: '#4d3bc0',
+          900: '#41339b',
+        },
+
+        // ========== 中性色系统 (Slate - 与主色系统协调) ==========
+        slate: {
+          50: '#f8f7fc',         // 浅背景（与 Background 一致）
+          100: '#f1f0f9',        // 次级背景
+          200: '#e4e2f3',        // 边框、分割线
+          300: '#d1cee8',        // 禁用状态边框
+          400: '#a8a3d4',        // 占位符文字
+          500: '#8881e9',        // 次要文字（与 Secondary 一致）
+          600: '#6b63c7',        // 辅助文字
+          700: '#564cec',        // 重要文字（与 Accent 一致）
+          800: '#483ece',        // 标题文字（与 Primary 一致）
+          900: '#2d2680',        // 深色文字
+          950: '#090813',        // 主文字（与 Text 一致）
+        },
+
+        // ========== 语义色（Tailwind 标准） ==========
         success: {
           50: '#ecfdf5',
           100: '#d1fae5',
@@ -111,16 +119,26 @@ const config: Config = {
           950: '#030712',
         },
 
+        // ========== Gauthmath 品牌色（保留兼容） ==========
+        brand: {
+          red: {
+            DEFAULT: '#ff013e',
+            hover: '#e00036',
+            active: '#c70030',
+          },
+          orange: {
+            DEFAULT: '#ff7a00',
+            hover: '#e66d00',
+            active: '#cc6100',
+          },
+        },
+
         // ========== shadcn/ui 内置颜色变量 ==========
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
-        secondary: {
-          DEFAULT: 'hsl(var(--secondary))',
-          foreground: 'hsl(var(--secondary-foreground))',
-        },
         destructive: {
           DEFAULT: 'hsl(var(--destructive))',
           foreground: 'hsl(var(--destructive-foreground))',
@@ -128,10 +146,6 @@ const config: Config = {
         muted: {
           DEFAULT: 'hsl(var(--muted))',
           foreground: 'hsl(var(--muted-foreground))',
-        },
-        accent: {
-          DEFAULT: 'hsl(var(--accent))',
-          foreground: 'hsl(var(--accent-foreground))',
         },
         popover: {
           DEFAULT: 'hsl(var(--popover))',
@@ -181,26 +195,30 @@ const config: Config = {
         full: '9999px',   // 圆形 - 徽章、头像
       },
 
-      // ✅ 阴影系统 (基于 Gauthmath)
+      // ✅ 阴影系统 (Swiss Spa 美学 - 超柔和阴影)
       boxShadow: {
-        sm: '0 1px 8px 0 rgba(0, 0, 0, 0.08)',           // 小阴影
-        DEFAULT: '0 2px 16px 0 rgba(0, 0, 0, 0.12)',     // 默认阴影 - Gauthmath标准
-        md: '0 4px 24px 0 rgba(0, 0, 0, 0.16)',          // 中等阴影 - hover状态
-        lg: '0 8px 32px 0 rgba(0, 0, 0, 0.20)',          // 大阴影 - 模态框
-        xl: '0 12px 48px 0 rgba(0, 0, 0, 0.24)',         // 超大阴影
-        '2xl': '0 20px 64px 0 rgba(0, 0, 0, 0.28)',      // 2XL阴影
-        inner: 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)',  // 内阴影
-        primary: '0 2px 16px 0 rgba(255, 1, 62, 0.24)',  // 品牌红色阴影
-        orange: '0 2px 16px 0 rgba(255, 122, 0, 0.24)',  // 品牌橙色阴影
+        xs: '0 1px 2px rgba(0, 0, 0, 0.02)',             // 微妙提升
+        sm: '0 2px 4px rgba(0, 0, 0, 0.03)',             // 轻微提升
+        DEFAULT: '0 2px 10px rgba(0, 0, 0, 0.03)',       // 卡片默认
+        md: '0 2px 10px rgba(0, 0, 0, 0.03)',            // 卡片默认（别名）
+        lg: '0 4px 20px rgba(0, 0, 0, 0.06)',            // 卡片悬停
+        xl: '0 8px 40px rgba(0, 0, 0, 0.12)',            // 弹窗、抽屉
+        '2xl': '0 12px 60px rgba(0, 0, 0, 0.16)',        // 大型模态框
+        inner: 'inset 0 2px 4px rgba(0, 0, 0, 0.02)',    // 内阴影
         none: 'none',
+        // Gauthmath 兼容（保留）
+        'gauthmath-sm': '0 1px 8px 0 rgba(0, 0, 0, 0.08)',
+        'gauthmath-default': '0 2px 16px 0 rgba(0, 0, 0, 0.12)',
+        'gauthmath-primary': '0 2px 16px 0 rgba(255, 1, 62, 0.24)',
       },
 
-      // ✅ 字体系统 (基于 Gauthmath)
+      // ✅ 字体系统 (基于设计系统)
       fontFamily: {
         sans: [
+          'Inter',
           '-apple-system',
           'BlinkMacSystemFont',
-          'Google Sans',
+          'Segoe UI',
           'Roboto',
           'Noto Sans SC',
           'PingFang SC',
@@ -216,17 +234,17 @@ const config: Config = {
         ],
       },
 
-      // ✅ 字号系统 (基于 Gauthmath)
+      // ✅ 字号系统 (基于设计系统)
       fontSize: {
-        xs: ['12px', { lineHeight: '16px', letterSpacing: '0' }],       // 辅助文字、Caption
-        sm: ['14px', { lineHeight: '20px', letterSpacing: '0' }],       // 小正文、Body Small
-        base: ['16px', { lineHeight: '24px', letterSpacing: '0' }],     // 标准正文、Body
-        lg: ['18px', { lineHeight: '28px', letterSpacing: '0' }],       // 大正文、Body Large
-        xl: ['20px', { lineHeight: '28px', letterSpacing: '0' }],       // 五级标题、H5
-        '2xl': ['24px', { lineHeight: '32px', letterSpacing: '0' }],    // 四级标题、H4
-        '3xl': ['28px', { lineHeight: '36px', letterSpacing: '-0.005em' }], // 三级标题、H3
-        '4xl': ['36px', { lineHeight: '44px', letterSpacing: '-0.01em' }],  // 二级标题、H2
-        '5xl': ['48px', { lineHeight: '56px', letterSpacing: '-0.01em' }],  // 一级标题、H1
+        xs: ['12px', { lineHeight: '18px', letterSpacing: '0' }],       // 辅助说明、标签
+        sm: ['14px', { lineHeight: '21px', letterSpacing: '0' }],       // 次要文字、表单
+        base: ['16px', { lineHeight: '24px', letterSpacing: '0' }],     // 正文
+        lg: ['18px', { lineHeight: '27px', letterSpacing: '0' }],       // 大正文
+        xl: ['20px', { lineHeight: '30px', letterSpacing: '0' }],       // 小标题
+        '2xl': ['24px', { lineHeight: '36px', letterSpacing: '0' }],    // 中标题
+        '3xl': ['30px', { lineHeight: '45px', letterSpacing: '0' }],    // 大标题
+        '4xl': ['36px', { lineHeight: '43px', letterSpacing: '-0.01em' }],  // 页面标题
+        '5xl': ['48px', { lineHeight: '58px', letterSpacing: '-0.01em' }],  // 超大标题
       },
 
       // ✅ 字重系统

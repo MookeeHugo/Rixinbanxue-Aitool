@@ -1,0 +1,477 @@
+{
+  "width": 1128,
+  "height": 2067,
+  "wordCount": 47,
+  "questionRegions": [
+    {
+      "questionNumber": "7",
+      "bbox": {
+        "x": 65,
+        "y": 206,
+        "width": 994,
+        "height": 352
+      },
+      "words": [
+        {
+          "Word": "7.(2025勤学早)如图，在Rt△ABC中，乙ABC=90°，AB=BC=5，E是△ABC内一点，连接",
+          "X": 65,
+          "Y": 206,
+          "Width": 990,
+          "Height": 27,
+          "Prob": 98
+        },
+        {
+          "Word": "AE，CE，F是CE 的中点，且/CBF=乙EAB.若BF=3，则AE的长为",
+          "X": 91,
+          "Y": 247,
+          "Width": 744,
+          "Height": 23,
+          "Prob": 97
+        },
+        {
+          "Word": "A",
+          "X": 909,
+          "Y": 283,
+          "Width": 15,
+          "Height": 17,
+          "Prob": 97
+        },
+        {
+          "Word": "E",
+          "X": 918,
+          "Y": 402,
+          "Width": 18,
+          "Height": 17,
+          "Prob": 99
+        },
+        {
+          "Word": "F",
+          "X": 996,
+          "Y": 404,
+          "Width": 15,
+          "Height": 15,
+          "Prob": 99
+        },
+        {
+          "Word": "B",
+          "X": 904,
+          "Y": 441,
+          "Width": 18,
+          "Height": 18,
+          "Prob": 99
+        },
+        {
+          "Word": "C",
+          "X": 1046,
+          "Y": 441,
+          "Width": 13,
+          "Height": 18,
+          "Prob": 99
+        }
+      ],
+      "textContent": "7.(2025勤学早)如图，在Rt△ABC中，乙ABC=90°，AB=BC=5，E是△ABC内一点，连接AE，CE，F是CE 的中点，且/CBF=乙EAB.若BF=3，则AE的长为AEFBC"
+    },
+    {
+      "questionNumber": "8",
+      "bbox": {
+        "x": 64,
+        "y": 558,
+        "width": 991,
+        "height": 332
+      },
+      "words": [
+        {
+          "Word": "8.(2025勤学早)如图，E是菱形 ABCD 的对角线BD上一点，连接 AE 并延长至点Ｆ，使EF=",
+          "X": 64,
+          "Y": 558,
+          "Width": 991,
+          "Height": 27,
+          "Prob": 98
+        },
+        {
+          "Word": "AE，AF交BC于点G，连接 BF.若CG=BG=5，BD=12，则BF的长为",
+          "X": 88,
+          "Y": 600,
+          "Width": 757,
+          "Height": 23,
+          "Prob": 98
+        },
+        {
+          "Word": "D",
+          "X": 889,
+          "Y": 634,
+          "Width": 18,
+          "Height": 17,
+          "Prob": 99
+        },
+        {
+          "Word": "E",
+          "X": 937,
+          "Y": 735,
+          "Width": 19,
+          "Height": 18,
+          "Prob": 99
+        },
+        {
+          "Word": "A",
+          "X": 852,
+          "Y": 772,
+          "Width": 14,
+          "Height": 16,
+          "Prob": 79
+        },
+        {
+          "Word": "B",
+          "X": 970,
+          "Y": 772,
+          "Width": 18,
+          "Height": 16,
+          "Prob": 99
+        }
+      ],
+      "textContent": "8.(2025勤学早)如图，E是菱形 ABCD 的对角线BD上一点，连接 AE 并延长至点Ｆ，使EF=AE，AF交BC于点G，连接 BF.若CG=BG=5，BD=12，则BF的长为DEAB"
+    },
+    {
+      "questionNumber": "9",
+      "bbox": {
+        "x": 63,
+        "y": 890,
+        "width": 998,
+        "height": 348
+      },
+      "words": [
+        {
+          "Word": "9.(2025勤学早)如图，在菱形 ABCD中，/BAD=60°，E是边BC的中点，EFLAE交CD于点",
+          "X": 63,
+          "Y": 890,
+          "Width": 998,
+          "Height": 25,
+          "Prob": 96
+        },
+        {
+          "Word": "F，则",
+          "X": 91,
+          "Y": 943,
+          "Width": 55,
+          "Height": 27,
+          "Prob": 99
+        },
+        {
+          "Word": "D",
+          "X": 143,
+          "Y": 948,
+          "Width": 23,
+          "Height": 27,
+          "Prob": 99
+        },
+        {
+          "Word": "的值为",
+          "X": 188,
+          "Y": 943,
+          "Width": 69,
+          "Height": 27,
+          "Prob": 99
+        },
+        {
+          "Word": "D",
+          "X": 920,
+          "Y": 938,
+          "Width": 18,
+          "Height": 17,
+          "Prob": 99
+        },
+        {
+          "Word": "F",
+          "X": 997,
+          "Y": 938,
+          "Width": 12,
+          "Height": 16,
+          "Prob": 99
+        },
+        {
+          "Word": "C",
+          "X": 1033,
+          "Y": 936,
+          "Width": 21,
+          "Height": 20,
+          "Prob": 99
+        },
+        {
+          "Word": "E",
+          "X": 1014,
+          "Y": 1010,
+          "Width": 18,
+          "Height": 17,
+          "Prob": 99
+        },
+        {
+          "Word": "A",
+          "X": 861,
+          "Y": 1063,
+          "Width": 10,
+          "Height": 16,
+          "Prob": 87
+        },
+        {
+          "Word": "B",
+          "X": 977,
+          "Y": 1061,
+          "Width": 16,
+          "Height": 16,
+          "Prob": 99
+        },
+        {
+          "Word": "(二)角度关系→勾股、全等(相似)、解三角形",
+          "X": 66,
+          "Y": 1200,
+          "Width": 456,
+          "Height": 27,
+          "Prob": 98
+        }
+      ],
+      "textContent": "9.(2025勤学早)如图，在菱形 ABCD中，/BAD=60°，E是边BC的中点，EFLAE交CD于点F，则D的值为DFCEAB(二)角度关系→勾股、全等(相似)、解三角形"
+    },
+    {
+      "questionNumber": "10",
+      "bbox": {
+        "x": 67,
+        "y": 1238,
+        "width": 995,
+        "height": 435
+      },
+      "words": [
+        {
+          "Word": "10.(2025勤学早)如图，E为正方形 ABCD 外的一点，且乙AEC=90°，连接BE交AC于点Ｆ.若",
+          "X": 67,
+          "Y": 1238,
+          "Width": 995,
+          "Height": 29,
+          "Prob": 96
+        },
+        {
+          "Word": "/EAD=/ACE，BE=2，则BF的长为",
+          "X": 107,
+          "Y": 1280,
+          "Width": 415,
+          "Height": 24,
+          "Prob": 98
+        },
+        {
+          "Word": "E",
+          "X": 975,
+          "Y": 1317,
+          "Width": 14,
+          "Height": 17,
+          "Prob": 98
+        },
+        {
+          "Word": "D",
+          "X": 1046,
+          "Y": 1349,
+          "Width": 14,
+          "Height": 16,
+          "Prob": 99
+        },
+        {
+          "Word": "F",
+          "X": 939,
+          "Y": 1389,
+          "Width": 13,
+          "Height": 17,
+          "Prob": 99
+        },
+        {
+          "Word": "B",
+          "X": 908,
+          "Y": 1463,
+          "Width": 14,
+          "Height": 16,
+          "Prob": 99
+        },
+        {
+          "Word": "第38页，共79页",
+          "X": 478,
+          "Y": 1570,
+          "Width": 173,
+          "Height": 27,
+          "Prob": 99
+        }
+      ],
+      "textContent": "10.(2025勤学早)如图，E为正方形 ABCD 外的一点，且乙AEC=90°，连接BE交AC于点Ｆ.若/EAD=/ACE，BE=2，则BF的长为EDFB第38页，共79页"
+    },
+    {
+      "questionNumber": "11",
+      "bbox": {
+        "x": 66,
+        "y": 1673,
+        "width": 997,
+        "height": 394
+      },
+      "words": [
+        {
+          "Word": "11.(2025勤学早)如图，在Rt△ABC中，乙ACB=90°，BD 平分乙ABC 交 AC 于点Ｄ，E是BC",
+          "X": 66,
+          "Y": 1673,
+          "Width": 989,
+          "Height": 28,
+          "Prob": 95
+        },
+        {
+          "Word": "上的一点，且/CDE=",
+          "X": 107,
+          "Y": 1728,
+          "Width": 221,
+          "Height": 25,
+          "Prob": 99
+        },
+        {
+          "Word": "三",
+          "X": 316,
+          "Y": 1728,
+          "Width": 23,
+          "Height": 24,
+          "Prob": 84
+        },
+        {
+          "Word": "2",
+          "X": 336,
+          "Y": 1722,
+          "Width": 24,
+          "Height": 40,
+          "Prob": 99
+        },
+        {
+          "Word": "/BAC.",
+          "X": 359,
+          "Y": 1730,
+          "Width": 81,
+          "Height": 21,
+          "Prob": 97
+        },
+        {
+          "Word": "(1)/BDE的度数为",
+          "X": 106,
+          "Y": 1779,
+          "Width": 216,
+          "Height": 26,
+          "Prob": 96
+        },
+        {
+          "Word": "；",
+          "X": 444,
+          "Y": 1789,
+          "Width": 10,
+          "Height": 15,
+          "Prob": 99
+        },
+        {
+          "Word": "C",
+          "X": 974,
+          "Y": 1778,
+          "Width": 13,
+          "Height": 16,
+          "Prob": 99
+        },
+        {
+          "Word": "E",
+          "X": 997,
+          "Y": 1809,
+          "Width": 18,
+          "Height": 17,
+          "Prob": 99
+        },
+        {
+          "Word": "(2)若CD=6，BE=10，则DE 的长为",
+          "X": 107,
+          "Y": 1820,
+          "Width": 390,
+          "Height": 24,
+          "Prob": 97
+        },
+        {
+          "Word": "D",
+          "X": 895,
+          "Y": 1825,
+          "Width": 16,
+          "Height": 17,
+          "Prob": 99
+        },
+        {
+          "Word": "B",
+          "X": 1044,
+          "Y": 1924,
+          "Width": 19,
+          "Height": 18,
+          "Prob": 99
+        }
+      ],
+      "textContent": "11.(2025勤学早)如图，在Rt△ABC中，乙ACB=90°，BD 平分乙ABC 交 AC 于点Ｄ，E是BC上的一点，且/CDE=三2/BAC.(1)/BDE的度数为；CE(2)若CD=6，BE=10，则DE 的长为DB"
+    }
+  ],
+  "imageRegions": [
+    {
+      "x": 700,
+      "y": 0,
+      "width": 450,
+      "height": 200,
+      "confidence": 0.5171557778944371,
+      "method": "whitespace"
+    },
+    {
+      "x": 950,
+      "y": 250,
+      "width": 200,
+      "height": 150,
+      "confidence": 0.5042889444736093,
+      "method": "whitespace"
+    },
+    {
+      "x": 0,
+      "y": 300,
+      "width": 900,
+      "height": 250,
+      "confidence": 0.5273420210192591,
+      "method": "whitespace"
+    },
+    {
+      "x": 950,
+      "y": 600,
+      "width": 200,
+      "height": 250,
+      "confidence": 0.5080417708880174,
+      "method": "whitespace"
+    },
+    {
+      "x": 0,
+      "y": 650,
+      "width": 850,
+      "height": 200,
+      "confidence": 0.5182280140128394,
+      "method": "whitespace"
+    },
+    {
+      "x": 0,
+      "y": 950,
+      "width": 1150,
+      "height": 250,
+      "confidence": 0.5182280140128394,
+      "method": "whitespace"
+    },
+    {
+      "x": 0,
+      "y": 1300,
+      "width": 1150,
+      "height": 350,
+      "confidence": 0.5386005002624834,
+      "method": "whitespace"
+    },
+    {
+      "x": 0,
+      "y": 1750,
+      "width": 1150,
+      "height": 350,
+      "confidence": 0.5428894447360927,
+      "method": "whitespace"
+    }
+  ]
+}

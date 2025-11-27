@@ -3,10 +3,10 @@
  * 包含类型筛选、难度筛选、搜索框和搜索历史
  */
 
-import { Input } from 'antd'
-import { Filter, Search as SearchIcon } from 'lucide-react'
+import { Filter, Search as SearchIcon, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 import {
   Select,
   SelectContent,
@@ -103,10 +103,22 @@ export function QuestionsFilterBar({
               placeholder="全文搜索题干/答案"
               value={searchText}
               onChange={(e) => onSearchTextChange(e.target.value)}
-              onPressEnter={onSearch}
-              allowClear
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  onSearch()
+                }
+              }}
+              className="pr-16"
             />
-            <SearchIcon className="absolute right-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            {searchText && (
+              <button
+                onClick={() => onSearchTextChange('')}
+                className="absolute right-8 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+            <SearchIcon className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
           </div>
           <Button variant="ghost" size="sm" onClick={onSearch}>
             搜索

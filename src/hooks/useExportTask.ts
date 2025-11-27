@@ -4,8 +4,8 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
-import { message } from 'antd'
 import { logger } from '@/lib/logger'
+import { useToast } from '@/hooks/use-toast'
 export interface ExportTask {
   id: string
   status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED'
@@ -41,6 +41,7 @@ async function fetchExportTaskStatus(taskId: string): Promise<ExportTask | null>
 
 export function useExportTask(options: UseExportTaskOptions = {}) {
   const { pollInterval = 4000, onCompleted, onFailed } = options
+  const { toast } = useToast()
 
   const [task, setTask] = useState<ExportTask | null>(null)
   const [loading, setLoading] = useState(false)
@@ -61,7 +62,11 @@ export function useExportTask(options: UseExportTaskOptions = {}) {
         }
       } catch (error) {
         logger.error('Failed to poll export task status', { taskId: task.id, error })
-        message.error('查询导出任务状态失败')
+        toast({
+          title: '查询失败',
+          description: '查询导出任务状态失败',
+          variant: 'destructive',
+        })
         setTask(null)
       }
     }, pollInterval)
@@ -74,10 +79,17 @@ export function useExportTask(options: UseExportTaskOptions = {}) {
     if (!task) return
 
     if (task.status === 'COMPLETED') {
-      message.success('导出完成，可在题篮中下载文件')
+      toast({
+        title: '导出完成',
+        description: '可在题篮中下载文件',
+      })
       onCompleted?.(task)
     } else if (task.status === 'FAILED') {
-      message.error(task.error_message || '导出失败，请稍后重试')
+      toast({
+        title: '导出失败',
+        description: task.error_message || '导出失败，请稍后重试',
+        variant: 'destructive',
+      })
       onFailed?.(task)
     }
   }, [task?.status, onCompleted, onFailed])
@@ -105,7 +117,11 @@ export function useExportTask(options: UseExportTaskOptions = {}) {
       return data.task
     } catch (error) {
       logger.error('Failed to create export task', { questionIds, templateId, error })
-      message.error(error instanceof Error ? error.message : '创建导出任务失败')
+      toast({
+        title: '创建失败',
+        description: error instanceof Error ? error.message : '创建导出任务失败',
+        variant: 'destructive',
+      })
       throw error
     } finally {
       setLoading(false)
