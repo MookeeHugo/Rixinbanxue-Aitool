@@ -7,27 +7,30 @@
    ========================================== */
 
 @layer base {
-  /* ===== CSS变量定义 (日新教育平台设计系统) ===== */
+  /* ===== CSS变量定义 (RixinMate 品牌色彩系统) ===== */
   :root {
-    /* ========== 日新教育平台主色系统 (RealTime Colors) ========== */
-    --primary: 250 62% 52%;            /* #483ece - 主要操作 */
+    /* ========== RixinMate 品牌主色系统（深空蓝 + 光子橙）========== */
+    --primary: 213 100% 42%;           /* #0052D4 - 深空蓝 */
     --primary-foreground: 0 0% 100%;   /* #ffffff - 白色文字 */
 
-    /* ========== 背景色系统 ========== */
-    --background: 250 50% 98%;         /* #f8f7fc - 页面背景 */
-    --background-secondary: 250 45% 95%; /* #f1f0f9 - 次级背景 */
+    --accent: 25 100% 50%;             /* #FF6B00 - 光子橙 */
+    --accent-foreground: 0 0% 100%;    /* #ffffff - 白色文字 */
+
+    /* ========== 背景色系统（极浅灰）========== */
+    --background: 210 20% 98%;         /* #F9FAFB - 页面背景 */
+    --background-secondary: 210 16% 96%; /* #F3F4F6 - 次级背景 */
     --background-tertiary: 0 0% 100%;  /* #ffffff - 卡片背景 */
 
-    /* ========== 前景色系统 ========== */
-    --foreground: 250 45% 5%;          /* #090813 - 主文字 */
-    --foreground-secondary: 250 35% 45%; /* #6b63c7 - 次文字 */
-    --foreground-tertiary: 250 30% 60%; /* #a8a3d4 - 三级文字 */
-    --foreground-quaternary: 250 25% 75%; /* #d1cee8 - 四级文字 */
+    /* ========== 前景色系统（灰阶文字）========== */
+    --foreground: 222 47% 11%;         /* #111827 - 主文字（深黑）*/
+    --foreground-secondary: 215 16% 47%; /* #6B7280 - 次文字（中灰）*/
+    --foreground-tertiary: 214 14% 65%; /* #9CA3AF - 三级文字 */
+    --foreground-quaternary: 214 16% 82%; /* #D1D5DB - 四级文字 */
 
-    /* ========== 边框色系统 ========== */
-    --border: 250 40% 90%;             /* #e4e2f3 - 边框、分割线 */
-    --border-medium: 250 35% 85%;      /* #d1cee8 - 中边框 */
-    --border-dark: 250 30% 75%;        /* #a8a3d4 - 深边框 */
+    /* ========== 边框色系统（去紫调）========== */
+    --border: 214 20% 91%;             /* #E5E7EB - 边框 */
+    --border-medium: 214 16% 88%;      /* #D1D5DB - 中边框 */
+    --border-dark: 214 14% 65%;        /* #9CA3AF - 深边框 */
 
     /* ========== 语义色（Tailwind 标准） ========== */
     --success: 160 84% 39%;            /* #10b981 - 成功 */
@@ -37,21 +40,20 @@
 
     /* ========== shadcn/ui 兼容变量 ========== */
     --card: 0 0% 100%;                 /* #ffffff */
-    --card-foreground: 250 45% 5%;     /* #090813 */
+    --card-foreground: 222 47% 11%;    /* #111827 */
     --popover: 0 0% 100%;              /* #ffffff */
-    --popover-foreground: 250 45% 5%;  /* #090813 */
-    --muted: 250 45% 95%;              /* #f1f0f9 */
-    --muted-foreground: 250 30% 60%;   /* #a8a3d4 */
+    --popover-foreground: 222 47% 11%; /* #111827 */
+    --muted: 210 16% 96%;              /* #F3F4F6 */
+    --muted-foreground: 215 16% 47%;   /* #6B7280 */
     --destructive: 0 84% 60%;          /* #ef4444 */
     --destructive-foreground: 0 0% 100%; /* #ffffff */
     --input: 0 0% 100%;                /* #ffffff */
-    --ring: 250 62% 52%;               /* #483ece */
+    --ring: 213 100% 42%;              /* #0052D4 - 深空蓝 */
     --radius: 0.75rem;                 /* 12px - 默认圆角 */
 
-    /* ========== Gauthmath 品牌色（保留兼容） ========== */
-    --brand-red: 348 100% 50%;         /* #ff013e */
-    --brand-red-hover: 348 100% 44%;   /* #e00036 */
-    --brand-orange: 29 100% 50%;       /* #ff7a00 */
+    /* ========== 已废弃：Gauthmath 遗留品牌色 ========== */
+    /* --brand-red: 348 100% 50%; */        /* ❌ 已删除 */
+    /* --brand-orange: 29 100% 50%; */      /* ✅ 迁移到 --accent */
   }
 
   /* 暗色模式已禁用 - 强制使用浅色主题 */
@@ -119,7 +121,7 @@
   }
 
   p {
-    @apply leading-relaxed text-slate-700;
+    @apply leading-relaxed text-gray-700;
   }
 
   /* ===== 滚动条样式 (Swiss Spa 美学) ===== */
@@ -133,17 +135,17 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-slate-400;
+    @apply bg-gray-400;
     border-radius: 9999px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-slate-600;
+    @apply bg-gray-600;
   }
 
   /* ===== 选中文本样式 ===== */
   ::selection {
-    @apply bg-primary-200 text-slate-950;
+    @apply bg-primary-200 text-gray-950;
   }
 
   /* ===== 焦点样式 (基于设计系统) ===== */
@@ -215,11 +217,11 @@
 }
 
 .rx-header {
-  @apply border-b border-slate-200/60 sticky top-0 backdrop-blur-sm bg-white/95 z-50;
+  @apply border-b border-gray-200/60 sticky top-0 backdrop-blur-sm bg-white/95 z-50;
 }
 
 .rx-logo {
-  @apply text-lg font-bold m-0 py-3.5 text-slate-950;
+  @apply text-lg font-bold m-0 py-3.5 text-gray-950;
 }
 
 .rx-nav {
@@ -227,11 +229,11 @@
 }
 
 .rx-nav a {
-  @apply text-slate-700 no-underline px-3 py-2.5 rounded-lg transition-all duration-200 font-medium;
+  @apply text-gray-700 no-underline px-3 py-2.5 rounded-lg transition-all duration-200 font-medium;
 }
 
 .rx-nav a:hover {
-  @apply text-slate-950 bg-slate-100;
+  @apply text-gray-950 bg-gray-100;
 }
 
 .rx-nav .rx-primary {
@@ -247,7 +249,7 @@
 }
 
 .rx-card {
-  @apply bg-white border border-slate-200/60 rounded-xl p-4 shadow-md hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5;
+  @apply bg-white border border-gray-200/60 rounded-xl p-4 shadow-md hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5;
 }
 
 .rx-grid {
@@ -256,7 +258,7 @@
 
 .rx-input,
 .rx-select {
-  @apply w-full px-4 py-3 rounded-lg bg-white text-slate-950 border border-slate-200 transition-all duration-150 text-sm;
+  @apply w-full px-4 py-3 rounded-lg bg-white text-gray-950 border border-gray-200 transition-all duration-150 text-sm;
 }
 
 .rx-input:focus,
@@ -269,11 +271,11 @@
 }
 
 .rx-btn {
-  @apply appearance-none border border-slate-200 bg-white text-slate-950 rounded-xl px-6 py-3.5 cursor-pointer transition-all duration-200 font-semibold text-sm;
+  @apply appearance-none border border-gray-200 bg-white text-gray-950 rounded-xl px-6 py-3.5 cursor-pointer transition-all duration-200 font-semibold text-sm;
 }
 
 .rx-btn:hover {
-  @apply border-slate-300 bg-slate-50;
+  @apply border-gray-300 bg-gray-50;
 }
 
 .rx-btn-primary {
@@ -289,7 +291,7 @@
 }
 
 .rx-badge {
-  @apply inline-flex items-center gap-1.5 text-xs text-slate-700 border border-slate-200 px-3 py-1 rounded-full bg-white font-semibold;
+  @apply inline-flex items-center gap-1.5 text-xs text-gray-700 border border-gray-200 px-3 py-1 rounded-full bg-white font-semibold;
 }
 
 .rx-list {
@@ -297,11 +299,11 @@
 }
 
 .rx-muted {
-  @apply text-slate-700;
+  @apply text-gray-700;
 }
 
 .rx-footer {
-  @apply border-t border-slate-200 py-4 text-slate-700 bg-white;
+  @apply border-t border-gray-200 py-4 text-gray-700 bg-white;
 }
 
 /* ==========================================
