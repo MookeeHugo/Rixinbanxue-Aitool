@@ -149,7 +149,7 @@ export default function MyMistakesPage() {
                     className="bg-background rounded-lg p-4 text-center border border-border"
                   >
                     <p className="text-foreground-secondary text-sm mb-1">{stat.name}</p>
-                    <p className="text-brand-red text-2xl font-bold">{stat.count}</p>
+                    <p className="text-primary-600 text-2xl font-bold">{stat.count}</p>
                   </div>
                 ))}
               </div>
@@ -162,7 +162,7 @@ export default function MyMistakesPage() {
                   onClick={() => setSelectedKnowledge('all')}
                   className={`px-4 py-2 rounded-lg transition-colors ${
                     selectedKnowledge === 'all'
-                      ? 'bg-brand-red text-white'
+                      ? 'bg-accent-500 text-white'
                       : 'bg-card text-foreground-secondary border border-border hover:bg-border-light'
                   }`}
                 >
@@ -174,7 +174,7 @@ export default function MyMistakesPage() {
                     onClick={() => setSelectedKnowledge(kp)}
                     className={`px-4 py-2 rounded-lg transition-colors ${
                       selectedKnowledge === kp
-                        ? 'bg-brand-red text-white'
+                        ? 'bg-accent-500 text-white'
                         : 'bg-card text-foreground-secondary border border-border hover:bg-border-light'
                     }`}
                   >
@@ -193,11 +193,11 @@ export default function MyMistakesPage() {
                       <span className="text-xs bg-error/20 text-error px-2 py-1 rounded">
                         错题
                       </span>
-                      <span className="text-xs bg-brand-red/20 text-brand-red px-2 py-1 rounded">
+                      <span className="text-xs bg-accent-500/20 text-primary-600 px-2 py-1 rounded">
                         {mistake.question.type === 'choice' ? '选择题' :
                          mistake.question.type === 'fill' ? '填空题' : '解答题'}
                       </span>
-                      <span className="text-xs bg-secondary text-foreground-secondary px-2 py-1 rounded">
+                      <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
                         {mistake.knowledgePoint}
                       </span>
                     </div>

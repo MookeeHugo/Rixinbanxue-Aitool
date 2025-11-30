@@ -163,7 +163,7 @@ function CreateAssignmentPageContent() {
               </div>
               <button
                 onClick={() => setError(null)}
-                className="bg-secondary text-foreground px-4 py-2 rounded-lg hover:bg-border-medium transition-colors"
+                className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors"
               >
                 关闭
               </button>
@@ -178,7 +178,7 @@ function CreateAssignmentPageContent() {
             </p>
             <button
               onClick={() => router.push('/classes/create')}
-              className="bg-brand-red text-white px-6 py-2 rounded-lg hover:bg-brand-red-hover transition-colors"
+              className="bg-accent-500 text-white px-6 py-2 rounded-lg hover:bg-accent-500-hover transition-colors"
             >
               创建班级
             </button>
@@ -190,7 +190,7 @@ function CreateAssignmentPageContent() {
             </p>
             <button
               onClick={() => router.push('/papers/create')}
-              className="bg-brand-red text-white px-6 py-2 rounded-lg hover:bg-brand-red-hover transition-colors"
+              className="bg-accent-500 text-white px-6 py-2 rounded-lg hover:bg-accent-500-hover transition-colors"
             >
               智能组卷
             </button>
@@ -204,7 +204,7 @@ function CreateAssignmentPageContent() {
               <select
                 value={selectedClassId}
                 onChange={(e) => setSelectedClassId(e.target.value)}
-                className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:border-brand-red"
+                className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:border-primary-500"
                 required
               >
                 <option value="">请选择班级</option>
@@ -223,7 +223,7 @@ function CreateAssignmentPageContent() {
               <select
                 value={selectedPaperId}
                 onChange={(e) => setSelectedPaperId(e.target.value)}
-                className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:border-brand-red"
+                className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:border-primary-500"
                 required
               >
                 <option value="">请选择试卷</option>
@@ -238,7 +238,7 @@ function CreateAssignmentPageContent() {
                 <button
                   type="button"
                   onClick={() => router.push('/papers/create')}
-                  className="text-brand-red hover:underline ml-1"
+                  className="text-primary-600 hover:underline ml-1"
                 >
                   去组卷
                 </button>
@@ -254,7 +254,7 @@ function CreateAssignmentPageContent() {
                 value={deadline}
                 onChange={(e) => setDeadline(e.target.value)}
                 min={minDateTime}
-                className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:border-brand-red"
+                className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:border-primary-500"
                 required
               />
             </div>
@@ -271,7 +271,7 @@ function CreateAssignmentPageContent() {
                     value="published"
                     checked={status === 'published'}
                     onChange={(e) => setStatus(e.target.value as 'published')}
-                    className="text-brand-red"
+                    className="text-primary-600"
                   />
                   <span className="text-foreground">立即发布</span>
                 </label>
@@ -282,7 +282,7 @@ function CreateAssignmentPageContent() {
                     value="draft"
                     checked={status === 'draft'}
                     onChange={(e) => setStatus(e.target.value as 'draft')}
-                    className="text-brand-red"
+                    className="text-primary-600"
                   />
                   <span className="text-foreground">保存为草稿</span>
                 </label>
@@ -294,7 +294,7 @@ function CreateAssignmentPageContent() {
 
             <div className="bg-background rounded-lg p-4 mb-6 border border-border">
               <p className="text-foreground-secondary text-sm">
-                <span className="text-brand-red">💡 提示:</span> 发布后，学生可以在"我的作业"中看到并完成作业。您可以在作业详情页面查看学生提交情况和进行批改。
+                <span className="text-primary-600">💡 提示:</span> 发布后，学生可以在"我的作业"中看到并完成作业。您可以在作业详情页面查看学生提交情况和进行批改。
               </p>
             </div>
 
@@ -302,14 +302,14 @@ function CreateAssignmentPageContent() {
               <button
                 type="button"
                 onClick={() => router.back()}
-                className="flex-1 bg-secondary text-foreground py-3 rounded-lg hover:bg-border-medium transition-colors"
+                className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-lg hover:bg-gray-200 transition-colors"
               >
                 取消
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 bg-brand-red text-white py-3 rounded-lg hover:bg-brand-red-hover transition-colors disabled:opacity-50"
+                className="flex-1 bg-accent-500 text-white py-3 rounded-lg hover:bg-accent-500-hover transition-colors disabled:opacity-50"
               >
                 {loading ? '发布中...' : status === 'published' ? '发布作业' : '保存草稿'}
               </button>

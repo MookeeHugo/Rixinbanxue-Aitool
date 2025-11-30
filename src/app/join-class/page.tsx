@@ -185,7 +185,7 @@ export default function JoinClassPage() {
                 onChange={(e) => setClassCode(e.target.value.toUpperCase())}
                 placeholder="例如：ABC123"
                 maxLength={6}
-                className="w-full bg-background border border-border rounded-lg px-4 py-3 text-foreground text-lg font-mono tracking-wider focus:outline-none focus:border-brand-red"
+                className="w-full bg-background border border-border rounded-lg px-4 py-3 text-foreground text-lg font-mono tracking-wider focus:outline-none focus:border-primary-500"
                 required
               />
               <p className="text-foreground-secondary text-sm mt-2">
@@ -195,7 +195,7 @@ export default function JoinClassPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-brand-red text-white py-3 rounded-lg hover:bg-brand-red-hover transition-colors disabled:opacity-50 font-semibold"
+              className="w-full bg-accent-500 text-white py-3 rounded-lg hover:bg-accent-500-hover transition-colors disabled:opacity-50 font-semibold"
             >
               {loading ? '加入中...' : '加入班级'}
             </button>
@@ -222,7 +222,7 @@ export default function JoinClassPage() {
               {joinedClasses.map((cls) => (
                 <div
                   key={cls.id}
-                  className="bg-background rounded-lg p-5 border border-border hover:border-brand-red transition-colors"
+                  className="bg-background rounded-lg p-5 border border-border hover:border-primary-500 transition-colors"
                 >
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
@@ -237,7 +237,7 @@ export default function JoinClassPage() {
                           教师: {cls.teacher_name}
                         </p>
                         <p className="text-foreground-secondary">
-                          班级代码: <span className="text-brand-red font-mono">{cls.class_code}</span>
+                          班级代码: <span className="text-primary-600 font-mono">{cls.class_code}</span>
                         </p>
                       </div>
                     </div>

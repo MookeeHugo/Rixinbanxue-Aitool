@@ -180,7 +180,8 @@ export default function AnalyticsPage() {
       })
 
     } catch (error) {
-      logger.error('加载分析数据失败:', { error: error })
+      const appError = error instanceof Error ? error : undefined
+      logger.error('加载分析数据失败:', appError, { error })
       alert('加载分析数据失败')
     } finally {
       setLoading(false)
@@ -213,7 +214,7 @@ export default function AnalyticsPage() {
               onClick={() => setTimeRange('week')}
               className={`px-4 py-2 rounded-lg transition-colors border ${
                 timeRange === 'week'
-                  ? 'bg-brand-red text-white border-brand-red'
+                  ? 'bg-accent-500 text-white border-primary-500'
                   : 'bg-card text-foreground-secondary hover:text-foreground hover:bg-border-light border-border'
               }`}
             >
@@ -223,7 +224,7 @@ export default function AnalyticsPage() {
               onClick={() => setTimeRange('month')}
               className={`px-4 py-2 rounded-lg transition-colors border ${
                 timeRange === 'month'
-                  ? 'bg-brand-red text-white border-brand-red'
+                  ? 'bg-accent-500 text-white border-primary-500'
                   : 'bg-card text-foreground-secondary hover:text-foreground hover:bg-border-light border-border'
               }`}
             >
@@ -233,7 +234,7 @@ export default function AnalyticsPage() {
               onClick={() => setTimeRange('all')}
               className={`px-4 py-2 rounded-lg transition-colors border ${
                 timeRange === 'all'
-                  ? 'bg-brand-red text-white border-brand-red'
+                  ? 'bg-accent-500 text-white border-primary-500'
                   : 'bg-card text-foreground-secondary hover:text-foreground hover:bg-border-light border-border'
               }`}
             >
@@ -266,7 +267,7 @@ export default function AnalyticsPage() {
               </div>
               <div className="bg-card rounded-lg p-6 border border-border">
                 <p className="text-foreground-secondary text-sm mb-2">平均正确率</p>
-                <p className="text-brand-red text-3xl font-bold">{totalStats.averageScore}%</p>
+                <p className="text-primary-600 text-3xl font-bold">{totalStats.averageScore}%</p>
               </div>
             </div>
 

@@ -226,13 +226,13 @@ export default function GradeSubmissionPage() {
               <div className="flex gap-2">
                 <button
                   onClick={() => window.location.reload()}
-                  className="bg-brand-red text-white px-4 py-2 rounded-lg hover:bg-brand-red-hover transition-colors"
+                  className="bg-accent-500 text-white px-4 py-2 rounded-lg hover:bg-accent-500-hover transition-colors"
                 >
                   重试
                 </button>
                 <button
                   onClick={() => router.push(`/assignments/${assignmentId}`)}
-                  className="bg-secondary text-foreground px-4 py-2 rounded-lg hover:bg-border-medium transition-colors"
+                  className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors"
                 >
                   返回
                 </button>

@@ -291,7 +291,7 @@ export default function TeacherAnalyticsPage() {
                   onClick={() => setSelectedClass(stat.classId)}
                   className={`bg-card rounded-lg p-6 cursor-pointer transition-all border ${
                     selectedClass === stat.classId
-                      ? 'ring-2 ring-brand-red border-brand-red'
+                      ? 'ring-2 ring-brand-red border-primary-500'
                       : 'border-border hover:bg-border-light'
                   }`}
                 >

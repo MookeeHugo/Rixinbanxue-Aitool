@@ -16,13 +16,13 @@ interface AssignmentWithDetails extends Assignment {
 function getStatusColor(status: string) {
   switch (status) {
     case 'draft':
-      return 'bg-secondary text-foreground-secondary'
+      return 'bg-gray-100 text-gray-700'
     case 'published':
       return 'bg-success/10 text-success'
     case 'closed':
       return 'bg-error/10 text-error'
     default:
-      return 'bg-secondary text-foreground-secondary'
+      return 'bg-gray-100 text-gray-700'
   }
 }
 
@@ -162,7 +162,7 @@ function AssignmentsPageContent() {
           <h1 className="text-3xl font-bold text-foreground">作业管理</h1>
           <button
             onClick={() => router.push('/assignments/create')}
-            className="bg-brand-red text-white px-6 py-2 rounded-lg hover:bg-brand-red-hover transition-colors"
+            className="bg-accent-500 text-white px-6 py-2 rounded-lg hover:bg-accent-500-hover transition-colors"
           >
             + 发布作业
           </button>
@@ -179,13 +179,13 @@ function AssignmentsPageContent() {
               <div className="flex gap-2">
                 <button
                   onClick={() => checkUser()}
-                  className="bg-brand-red text-white px-4 py-2 rounded-lg hover:bg-brand-red-hover transition-colors"
+                  className="bg-accent-500 text-white px-4 py-2 rounded-lg hover:bg-accent-500-hover transition-colors"
                 >
                   重试
                 </button>
                 <button
                   onClick={() => setError(null)}
-                  className="bg-secondary text-foreground px-4 py-2 rounded-lg hover:bg-border-medium transition-colors"
+                  className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors"
                 >
                   关闭
                 </button>
@@ -202,7 +202,7 @@ function AssignmentsPageContent() {
               onClick={() => setFilterStatus('all')}
               className={`px-4 py-2 rounded-lg transition-colors ${
                 filterStatus === 'all'
-                  ? 'bg-brand-red text-white'
+                  ? 'bg-accent-500 text-white'
                   : 'bg-background text-foreground-secondary hover:text-foreground border border-border'
               }`}
             >
@@ -212,7 +212,7 @@ function AssignmentsPageContent() {
               onClick={() => setFilterStatus('draft')}
               className={`px-4 py-2 rounded-lg transition-colors ${
                 filterStatus === 'draft'
-                  ? 'bg-brand-red text-white'
+                  ? 'bg-accent-500 text-white'
                   : 'bg-background text-foreground-secondary hover:text-foreground border border-border'
               }`}
             >
@@ -222,7 +222,7 @@ function AssignmentsPageContent() {
               onClick={() => setFilterStatus('published')}
               className={`px-4 py-2 rounded-lg transition-colors ${
                 filterStatus === 'published'
-                  ? 'bg-brand-red text-white'
+                  ? 'bg-accent-500 text-white'
                   : 'bg-background text-foreground-secondary hover:text-foreground border border-border'
               }`}
             >
@@ -232,7 +232,7 @@ function AssignmentsPageContent() {
               onClick={() => setFilterStatus('closed')}
               className={`px-4 py-2 rounded-lg transition-colors ${
                 filterStatus === 'closed'
-                  ? 'bg-brand-red text-white'
+                  ? 'bg-accent-500 text-white'
                   : 'bg-background text-foreground-secondary hover:text-foreground border border-border'
               }`}
             >
@@ -246,7 +246,7 @@ function AssignmentsPageContent() {
             <p className="text-foreground-secondary text-lg mb-4">暂无作业</p>
             <button
               onClick={() => router.push('/assignments/create')}
-              className="bg-brand-red text-white px-6 py-2 rounded-lg hover:bg-brand-red-hover transition-colors"
+              className="bg-accent-500 text-white px-6 py-2 rounded-lg hover:bg-accent-500-hover transition-colors"
             >
               发布第一个作业
             </button>
@@ -256,7 +256,7 @@ function AssignmentsPageContent() {
             {assignments.map((assignment) => (
               <div
                 key={assignment.id}
-                className="bg-card rounded-lg p-6 border border-border hover:border-brand-red transition-colors"
+                className="bg-card rounded-lg p-6 border border-border hover:border-primary-500 transition-colors"
               >
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex-1">
@@ -277,7 +277,7 @@ function AssignmentsPageContent() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => router.push(`/assignments/${assignment.id}`)}
-                      className="bg-brand-red text-white px-4 py-2 rounded hover:bg-brand-red-hover transition-colors"
+                      className="bg-accent-500 text-white px-4 py-2 rounded hover:bg-accent-500-hover transition-colors"
                     >
                       查看详情
                     </button>

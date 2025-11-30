@@ -269,14 +269,14 @@ export default function CreatePaperPage() {
             <div className="flex gap-2">
               <button
                 onClick={() => setShowPreview(false)}
-                className="bg-secondary text-foreground px-6 py-2 rounded-lg hover:bg-border-medium transition-colors"
+                className="bg-gray-100 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-200 transition-colors"
               >
                 返回编辑
               </button>
               <button
                 onClick={savePaper}
                 disabled={loading}
-                className="bg-brand-red text-white px-6 py-2 rounded-lg hover:bg-brand-red-hover transition-colors disabled:opacity-50"
+                className="bg-accent-500 text-white px-6 py-2 rounded-lg hover:bg-accent-600 transition-colors disabled:opacity-50"
               >
                 {loading ? '保存中...' : '保存试卷'}
               </button>
@@ -297,10 +297,10 @@ export default function CreatePaperPage() {
                     {/* 题目内容 */}
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-xs bg-brand-red/10 text-brand-red px-2 py-1 rounded">
+                        <span className="text-xs bg-primary-50 text-primary-700 px-2 py-1 rounded">
                           {question.type === 'choice' ? '选择题' : question.type === 'fill' ? '填空题' : '解答题'}
                         </span>
-                        <span className="text-xs bg-secondary text-foreground-tertiary px-2 py-1 rounded">
+                        <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
                           {question.difficulty === 'easy' ? '简单' : question.difficulty === 'medium' ? '中等' : '困难'}
                         </span>
                       </div>
@@ -319,7 +319,7 @@ export default function CreatePaperPage() {
                       <button
                         onClick={() => moveQuestionUp(index)}
                         disabled={index === 0}
-                        className="px-2 py-1 text-xs bg-secondary text-foreground rounded hover:bg-border-medium disabled:opacity-30 disabled:cursor-not-allowed"
+                        className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed"
                         title="上移"
                       >
                         ↑
@@ -327,7 +327,7 @@ export default function CreatePaperPage() {
                       <button
                         onClick={() => moveQuestionDown(index)}
                         disabled={index === selectedQuestions.length - 1}
-                        className="px-2 py-1 text-xs bg-secondary text-foreground rounded hover:bg-border-medium disabled:opacity-30 disabled:cursor-not-allowed"
+                        className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed"
                         title="下移"
                       >
                         ↓
@@ -362,7 +362,7 @@ export default function CreatePaperPage() {
             value={paperName}
             onChange={(e) => setPaperName(e.target.value)}
             placeholder="例如：初二数学第一次月考"
-            className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground placeholder:text-foreground-tertiary focus:outline-none focus:border-brand-red"
+            className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground placeholder:text-foreground-tertiary focus:outline-none focus:border-primary-500"
           />
         </div>
 
@@ -376,28 +376,28 @@ export default function CreatePaperPage() {
               placeholder="搜索知识点..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground placeholder:text-foreground-tertiary focus:outline-none focus:border-brand-red"
+              className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground placeholder:text-foreground-tertiary focus:outline-none focus:border-primary-500"
             />
           </div>
 
           {/* 知识点列表 */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2 max-h-64 overflow-y-auto">
             {filteredKnowledgePoints.map((point) => (
-              <label key={point} className="flex items-center gap-2 text-sm cursor-pointer hover:text-brand-red">
+              <label key={point} className="flex items-center gap-2 text-sm cursor-pointer hover:text-primary-600">
                 <input
                   type="checkbox"
                   checked={selectedKnowledgePoints.includes(point)}
                   onChange={() => toggleKnowledgePoint(point)}
                   className="rounded"
                 />
-                <span className={selectedKnowledgePoints.includes(point) ? 'text-brand-red' : 'text-foreground-secondary'}>
+                <span className={selectedKnowledgePoints.includes(point) ? 'text-primary-600' : 'text-foreground-secondary'}>
                   {point}
                 </span>
               </label>
             ))}
           </div>
           {selectedKnowledgePoints.length > 0 && (
-            <p className="text-brand-red text-sm mt-4">
+            <p className="text-primary-600 text-sm mt-4">
               已选择 {selectedKnowledgePoints.length} 个知识点
             </p>
           )}
@@ -408,7 +408,7 @@ export default function CreatePaperPage() {
             <h3 className="text-foreground font-semibold">组卷要求</h3>
             <button
               onClick={addRequirement}
-              className="bg-brand-red text-white px-4 py-1 rounded text-sm hover:bg-brand-red-hover transition-colors"
+              className="bg-accent-500 text-white px-4 py-1 rounded text-sm hover:bg-accent-600 transition-colors"
             >
               + 添加要求
             </button>
@@ -422,7 +422,7 @@ export default function CreatePaperPage() {
                   <select
                     value={req.type}
                     onChange={(e) => updateRequirement(index, 'type', e.target.value)}
-                    className="w-full bg-background border border-border rounded px-3 py-2 text-foreground focus:outline-none focus:border-brand-red"
+                    className="w-full bg-background border border-border rounded px-3 py-2 text-foreground focus:outline-none focus:border-primary-500"
                   >
                     <option value="">全部</option>
                     <option value="choice">选择题</option>
@@ -436,7 +436,7 @@ export default function CreatePaperPage() {
                   <select
                     value={req.difficulty}
                     onChange={(e) => updateRequirement(index, 'difficulty', e.target.value)}
-                    className="w-full bg-background border border-border rounded px-3 py-2 text-foreground focus:outline-none focus:border-brand-red"
+                    className="w-full bg-background border border-border rounded px-3 py-2 text-foreground focus:outline-none focus:border-primary-500"
                   >
                     <option value="">全部</option>
                     <option value="easy">简单</option>
@@ -452,7 +452,7 @@ export default function CreatePaperPage() {
                     min="0"
                     value={req.count || ''}
                     onChange={(e) => updateRequirement(index, 'count', parseInt(e.target.value) || 0)}
-                    className="w-full bg-background border border-border rounded px-3 py-2 text-foreground focus:outline-none focus:border-brand-red"
+                    className="w-full bg-background border border-border rounded px-3 py-2 text-foreground focus:outline-none focus:border-primary-500"
                   />
                 </div>
 
@@ -468,21 +468,21 @@ export default function CreatePaperPage() {
 
           <div className="mt-4 text-right">
             <span className="text-foreground-secondary">预计题目数量: </span>
-            <span className="text-brand-red font-semibold">{getTotalQuestions()} 道</span>
+            <span className="text-primary-600 font-semibold">{getTotalQuestions()} 道</span>
           </div>
         </div>
 
         <div className="flex gap-4">
           <button
             onClick={() => router.back()}
-            className="flex-1 bg-secondary text-foreground py-3 rounded-lg hover:bg-border-medium transition-colors"
+            className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-lg hover:bg-gray-200 transition-colors"
           >
             取消
           </button>
           <button
             onClick={generatePaper}
             disabled={loading}
-            className="flex-1 bg-brand-red text-white py-3 rounded-lg hover:bg-brand-red-hover transition-colors disabled:opacity-50"
+            className="flex-1 bg-accent-500 text-white py-3 rounded-lg hover:bg-accent-600 transition-colors disabled:opacity-50"
           >
             {loading ? '生成中...' : '生成试卷'}
           </button>

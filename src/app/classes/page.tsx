@@ -102,7 +102,7 @@ export default function ClassesPage() {
           <h1 className="text-3xl font-bold text-foreground">班级管理</h1>
           <button
             onClick={() => router.push('/classes/create')}
-            className="bg-brand-red text-white px-6 py-2 rounded-lg hover:bg-brand-red-hover transition-colors"
+            className="bg-accent-500 text-white px-6 py-2 rounded-lg hover:bg-accent-500-hover transition-colors"
           >
             + 创建班级
           </button>
@@ -119,13 +119,13 @@ export default function ClassesPage() {
               <div className="flex gap-2">
                 <button
                   onClick={() => window.location.reload()}
-                  className="bg-brand-red text-white px-4 py-2 rounded-lg hover:bg-brand-red-hover transition-colors"
+                  className="bg-accent-500 text-white px-4 py-2 rounded-lg hover:bg-accent-500-hover transition-colors"
                 >
                   重试
                 </button>
                 <button
                   onClick={() => setError(null)}
-                  className="bg-secondary text-foreground px-4 py-2 rounded-lg hover:bg-border-medium transition-colors"
+                  className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors"
                 >
                   关闭
                 </button>
@@ -139,7 +139,7 @@ export default function ClassesPage() {
             <p className="text-foreground-secondary text-lg mb-4">暂无班级</p>
             <button
               onClick={() => router.push('/classes/create')}
-              className="bg-brand-red text-white px-6 py-2 rounded-lg hover:bg-brand-red-hover transition-colors"
+              className="bg-accent-500 text-white px-6 py-2 rounded-lg hover:bg-accent-500-hover transition-colors"
             >
               创建第一个班级
             </button>
@@ -149,20 +149,20 @@ export default function ClassesPage() {
             {classes.map((cls) => (
               <div
                 key={cls.id}
-                className="bg-card rounded-lg p-6 border border-border hover:border-brand-red transition-colors"
+                className="bg-card rounded-lg p-6 border border-border hover:border-primary-500 transition-colors"
               >
                 <h3 className="text-xl font-semibold text-foreground mb-2">
                   {cls.name}
                 </h3>
                 <div className="text-foreground-secondary text-sm mb-4">
                   <p>年级: {cls.grade}</p>
-                  <p>班级代码: <span className="text-brand-red font-mono">{cls.class_code}</span></p>
+                  <p>班级代码: <span className="text-primary-600 font-mono">{cls.class_code}</span></p>
                   <p>创建时间: {new Date(cls.created_at).toLocaleDateString()}</p>
                 </div>
                 <div className="flex gap-2">
                   <button
                     onClick={() => router.push(`/classes/${cls.id}`)}
-                    className="flex-1 bg-brand-red text-white px-4 py-2 rounded hover:bg-brand-red-hover transition-colors"
+                    className="flex-1 bg-accent-500 text-white px-4 py-2 rounded hover:bg-accent-500-hover transition-colors"
                   >
                     查看详情
                   </button>

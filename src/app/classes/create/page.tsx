@@ -91,7 +91,7 @@ export default function CreateClassPage() {
               value={className}
               onChange={(e) => setClassName(e.target.value)}
               placeholder="例如：初二（1）班"
-              className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:border-brand-red"
+              className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:border-primary-500"
               required
             />
           </div>
@@ -103,7 +103,7 @@ export default function CreateClassPage() {
             <select
               value={grade}
               onChange={(e) => setGrade(e.target.value)}
-              className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:border-brand-red"
+              className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:border-primary-500"
               required
             >
               <option value="">请选择年级</option>
@@ -115,7 +115,7 @@ export default function CreateClassPage() {
 
           <div className="bg-background rounded-lg p-4 mb-6 border border-border">
             <p className="text-foreground-secondary text-sm">
-              <span className="text-brand-red">💡 提示:</span> 班级创建后会自动生成唯一的班级代码，学生可以通过班级代码加入班级。
+              <span className="text-primary-600">💡 提示:</span> 班级创建后会自动生成唯一的班级代码，学生可以通过班级代码加入班级。
             </p>
           </div>
 
@@ -123,14 +123,14 @@ export default function CreateClassPage() {
             <button
               type="button"
               onClick={() => router.back()}
-              className="flex-1 bg-secondary text-foreground py-3 rounded-lg hover:bg-border-medium transition-colors"
+              className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-lg hover:bg-gray-200 transition-colors"
             >
               取消
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 bg-brand-red text-white py-3 rounded-lg hover:bg-brand-red-hover transition-colors disabled:opacity-50"
+              className="flex-1 bg-accent-500 text-white py-3 rounded-lg hover:bg-accent-600 transition-colors disabled:opacity-50"
             >
               {loading ? '创建中...' : '创建班级'}
             </button>

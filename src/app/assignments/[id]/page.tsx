@@ -178,13 +178,13 @@ export default function AssignmentDetailPage() {
               <div className="flex gap-2">
                 <button
                   onClick={() => window.location.reload()}
-                  className="bg-brand-red text-white px-4 py-2 rounded-lg hover:bg-brand-red-hover transition-colors"
+                  className="bg-accent-500 text-white px-4 py-2 rounded-lg hover:bg-accent-500-hover transition-colors"
                 >
                   重试
                 </button>
                 <button
                   onClick={() => router.push('/assignments')}
-                  className="bg-secondary text-foreground px-4 py-2 rounded-lg hover:bg-border-medium transition-colors"
+                  className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors"
                 >
                   返回列表
                 </button>
@@ -203,7 +203,7 @@ export default function AssignmentDetailPage() {
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-foreground">{assignment.paper_name}</h1>
-          <button onClick={() => router.push('/assignments')} className="bg-secondary text-foreground px-6 py-2 rounded-lg hover:bg-border-medium transition-colors">
+          <button onClick={() => router.push('/assignments')} className="bg-gray-100 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-200 transition-colors">
             返回列表
           </button>
         </div>
@@ -231,12 +231,12 @@ export default function AssignmentDetailPage() {
                       <p className="text-foreground-secondary text-sm">{new Date(sub.submitted_at).toLocaleString()}</p>
                     </div>
                     <div className="flex items-center gap-4">
-                      <p className="text-brand-red text-xl font-semibold">
+                      <p className="text-primary-600 text-xl font-semibold">
                         {sub.score !== null ? `${sub.score}分` : '未批改'}
                       </p>
                       <button
                         onClick={() => router.push(`/assignments/${assignmentId}/grade/${sub.id}`)}
-                        className="bg-brand-red text-white px-4 py-2 rounded hover:bg-brand-red-hover transition-colors"
+                        className="bg-accent-500 text-white px-4 py-2 rounded hover:bg-accent-500-hover transition-colors"
                       >
                         查看/批改
                       </button>

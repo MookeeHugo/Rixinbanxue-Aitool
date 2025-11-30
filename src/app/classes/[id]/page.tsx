@@ -126,7 +126,7 @@ export default function ClassDetailPage() {
           <div className="flex gap-2">
             <button
               onClick={() => router.push('/classes')}
-              className="bg-secondary text-foreground px-6 py-2 rounded-lg hover:bg-border-medium transition-colors"
+              className="bg-gray-100 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-200 transition-colors"
             >
               返回列表
             </button>
@@ -154,10 +154,10 @@ export default function ClassDetailPage() {
             <div>
               <p className="text-foreground-secondary text-sm mb-1">班级代码</p>
               <div className="flex items-center gap-2">
-                <p className="text-brand-red font-mono text-xl">{classData.class_code}</p>
+                <p className="text-primary-600 font-mono text-xl">{classData.class_code}</p>
                 <button
                   onClick={copyClassCode}
-                  className="text-xs bg-brand-red/20 text-brand-red px-3 py-1 rounded hover:bg-brand-red/30 transition-colors"
+                  className="text-xs bg-primary-50 text-primary-700 px-3 py-1 rounded hover:bg-primary-100 transition-colors"
                 >
                   复制
                 </button>
@@ -184,10 +184,10 @@ export default function ClassDetailPage() {
                 <p className="text-sm text-foreground-secondary mb-2">
                   学生可以通过以下班级代码加入：
                 </p>
-                <p className="text-brand-red font-mono text-2xl mb-2">{classData.class_code}</p>
+                <p className="text-primary-600 font-mono text-2xl mb-2">{classData.class_code}</p>
                 <button
                   onClick={copyClassCode}
-                  className="text-sm bg-brand-red text-white px-4 py-2 rounded hover:bg-brand-red-hover transition-colors"
+                  className="text-sm bg-accent-500 text-white px-4 py-2 rounded hover:bg-accent-600 transition-colors"
                 >
                   复制班级代码
                 </button>
@@ -229,14 +229,14 @@ export default function ClassDetailPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <button
               onClick={() => router.push(`/assignments/create?classId=${classId}`)}
-              className="bg-brand-red text-white px-6 py-3 rounded-lg hover:bg-brand-red-hover transition-colors text-left"
+              className="bg-accent-500 text-white px-6 py-3 rounded-lg hover:bg-accent-600 transition-colors text-left"
             >
               <p className="font-semibold mb-1">发布作业</p>
               <p className="text-sm opacity-80">为这个班级发布新作业</p>
             </button>
             <button
               onClick={() => router.push(`/assignments?classId=${classId}`)}
-              className="bg-secondary text-white px-6 py-3 rounded-lg hover:bg-border-medium transition-colors text-left"
+              className="bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition-colors text-left"
             >
               <p className="font-semibold mb-1">查看作业</p>
               <p className="text-sm opacity-80">查看班级所有作业</p>

@@ -112,13 +112,13 @@ export default function PaperDetailPage() {
           <div className="flex gap-2">
             <button
               onClick={() => router.push('/papers')}
-              className="bg-secondary text-foreground px-6 py-2 rounded-lg hover:bg-border-medium transition-colors"
+              className="bg-gray-100 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-200 transition-colors"
             >
               返回列表
             </button>
             <button
               onClick={printPaper}
-              className="bg-brand-red text-white px-6 py-2 rounded-lg hover:bg-brand-red-hover transition-colors"
+              className="bg-accent-500 text-white px-6 py-2 rounded-lg hover:bg-accent-600 transition-colors"
             >
               打印试卷
             </button>
@@ -162,11 +162,11 @@ export default function PaperDetailPage() {
                   <div className="flex-1">
                     {/* 题目标签 */}
                     <div className="flex items-center gap-2 mb-3 print:hidden">
-                      <span className="text-xs bg-brand-red/10 text-brand-red px-2 py-1 rounded">
+                      <span className="text-xs bg-primary-50 text-primary-700 px-2 py-1 rounded">
                         {question.type === 'choice' ? '选择题' :
                          question.type === 'fill' ? '填空题' : '解答题'}
                       </span>
-                      <span className="text-xs bg-secondary text-foreground-secondary px-2 py-1 rounded">
+                      <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
                         {question.difficulty === 'easy' ? '简单' :
                          question.difficulty === 'medium' ? '中等' : '困难'}
                       </span>
@@ -205,7 +205,7 @@ export default function PaperDetailPage() {
                     {/* 答案（仅屏幕显示） */}
                     <div className="mt-4 p-4 bg-background print:hidden rounded-lg">
                       <p className="text-sm text-foreground-secondary mb-1">参考答案:</p>
-                      <p className="text-brand-red">{question.answer}</p>
+                      <p className="text-primary-600">{question.answer}</p>
                     </div>
                   </div>
                 </div>

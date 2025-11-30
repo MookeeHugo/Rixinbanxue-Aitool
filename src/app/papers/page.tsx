@@ -78,7 +78,7 @@ export default function PapersPage() {
           <h1 className="text-3xl font-bold text-foreground">我的试卷</h1>
           <button
             onClick={() => router.push('/papers/create')}
-            className="bg-brand-red text-white px-6 py-2 rounded-lg hover:bg-brand-red-hover transition-colors"
+            className="bg-accent-500 text-white px-6 py-2 rounded-lg hover:bg-accent-600 transition-colors"
           >
             + 智能组卷
           </button>
@@ -89,7 +89,7 @@ export default function PapersPage() {
             <p className="text-foreground-secondary text-lg mb-4">暂无试卷</p>
             <button
               onClick={() => router.push('/papers/create')}
-              className="bg-brand-red text-white px-6 py-2 rounded-lg hover:bg-brand-red-hover transition-colors"
+              className="bg-accent-500 text-white px-6 py-2 rounded-lg hover:bg-accent-600 transition-colors"
             >
               开始组卷
             </button>
@@ -99,7 +99,7 @@ export default function PapersPage() {
             {papers.map((paper) => (
               <div
                 key={paper.id}
-                className="bg-card rounded-lg p-6 border border-border hover:border-brand-red transition-colors"
+                className="bg-card rounded-lg p-6 border border-border hover:border-primary-500 transition-colors"
               >
                 <h3 className="text-xl font-semibold text-foreground mb-2">
                   {paper.name}
@@ -111,7 +111,7 @@ export default function PapersPage() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => router.push(`/papers/${paper.id}`)}
-                    className="flex-1 bg-brand-red text-white px-4 py-2 rounded hover:bg-brand-red-hover transition-colors"
+                    className="flex-1 bg-accent-500 text-white px-4 py-2 rounded hover:bg-accent-600 transition-colors"
                   >
                     查看
                   </button>

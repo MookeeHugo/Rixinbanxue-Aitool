@@ -152,7 +152,7 @@ export default function DoAssignmentPage() {
           </div>
           <button
             onClick={() => router.back()}
-            className="bg-secondary text-foreground px-6 py-2 rounded-lg hover:bg-border-medium transition-colors"
+            className="bg-gray-100 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-200 transition-colors"
           >
             返回
           </button>
@@ -166,7 +166,7 @@ export default function DoAssignmentPage() {
                   <span className="text-foreground font-semibold min-w-[2rem]">{index + 1}.</span>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-3">
-                      <span className="text-xs bg-brand-red/20 text-brand-red px-2 py-1 rounded">
+                      <span className="text-xs bg-accent-500/20 text-primary-600 px-2 py-1 rounded">
                         {question.type === 'choice' ? '选择题' : question.type === 'fill' ? '填空题' : '解答题'}
                       </span>
                     </div>
@@ -199,7 +199,7 @@ export default function DoAssignmentPage() {
                         value={answers[question.id] || ''}
                         onChange={(e) => handleAnswerChange(question.id, e.target.value)}
                         placeholder="请输入答案"
-                        className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:border-brand-red"
+                        className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:border-primary-500"
                       />
                     )}
 
@@ -209,7 +209,7 @@ export default function DoAssignmentPage() {
                         onChange={(e) => handleAnswerChange(question.id, e.target.value)}
                         placeholder="请输入答案"
                         rows={6}
-                        className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:border-brand-red resize-none"
+                        className="w-full bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:border-primary-500 resize-none"
                       />
                     )}
                   </div>
@@ -227,7 +227,7 @@ export default function DoAssignmentPage() {
             <button
               onClick={handleSubmit}
               disabled={submitting}
-              className="bg-brand-red text-white px-8 py-3 rounded-lg hover:bg-brand-red-hover transition-colors disabled:opacity-50"
+              className="bg-accent-500 text-white px-8 py-3 rounded-lg hover:bg-accent-500-hover transition-colors disabled:opacity-50"
             >
               {submitting ? '提交中...' : '提交作业'}
             </button>

@@ -158,7 +158,7 @@ export default function MyAssignmentsPage() {
             <p className="text-foreground-secondary mb-6">您可能还没有加入任何班级</p>
             <button
               onClick={() => router.push('/join-class')}
-              className="bg-brand-red text-white px-8 py-3 rounded-lg hover:bg-brand-red-hover transition-colors font-semibold"
+              className="bg-accent-500 text-white px-8 py-3 rounded-lg hover:bg-accent-500-hover transition-colors font-semibold"
             >
               立即加入班级
             </button>
@@ -179,7 +179,7 @@ export default function MyAssignmentsPage() {
               {pendingAssignments.map((assignment) => (
                 <div
                   key={assignment.id}
-                  className="bg-card rounded-lg p-6 border border-border hover:border-brand-red transition-colors"
+                  className="bg-card rounded-lg p-6 border border-border hover:border-primary-500 transition-colors"
                 >
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
@@ -195,7 +195,7 @@ export default function MyAssignmentsPage() {
                     </div>
                     <button
                       onClick={() => router.push(`/my-assignments/${assignment.id}/do`)}
-                      className="bg-brand-red text-white px-6 py-2 rounded-lg hover:bg-brand-red-hover transition-colors"
+                      className="bg-accent-500 text-white px-6 py-2 rounded-lg hover:bg-accent-500-hover transition-colors"
                     >
                       开始作答
                     </button>
@@ -230,14 +230,14 @@ export default function MyAssignmentsPage() {
                       <div className="text-foreground-secondary text-sm space-y-1">
                         <p>班级: {assignment.class_name}</p>
                         <p>提交时间: {assignment.submitted_at ? new Date(assignment.submitted_at).toLocaleString() : '-'}</p>
-                        <p className="text-brand-red text-lg font-semibold">
+                        <p className="text-primary-600 text-lg font-semibold">
                           成绩: {assignment.score !== null && assignment.score !== undefined ? `${assignment.score}分` : '待批改'}
                         </p>
                       </div>
                     </div>
                     <button
                       onClick={() => router.push(`/my-assignments/${assignment.id}/result`)}
-                      className="bg-secondary text-foreground px-6 py-2 rounded-lg hover:bg-border-medium transition-colors"
+                      className="bg-gray-100 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-200 transition-colors"
                     >
                       查看详情
                     </button>
