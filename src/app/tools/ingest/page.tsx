@@ -8,8 +8,8 @@ import { FileUploadSection } from './_components/file-upload-section'
 import { TaskListSection } from './_components/task-list-section'
 
 /**
- * AI棰樺簱鎵归噺瀵煎叆椤甸潰
- * 璺緞: /tools/ingest
+ * AI题库批量导入页面
+ * 路径: /tools/ingest
  */
 export default function QuestionIngestPage() {
   const router = useRouter()
@@ -40,14 +40,14 @@ export default function QuestionIngestPage() {
 
         const { profile: data } = await response.json()
 
-        // 鍙厑璁告暀甯堣闂?
+        // 只允许教师访问
         if (!data || data.role !== 'teacher') {
           router.push('/')
           return
         }
         setProfile(data)
       } catch (err) {
-        logger.error('鍔犺浇鐢ㄦ埛淇℃伅澶辫触:', { error: err })
+        logger.error('加载用户信息失败:', { error: err })
         router.push('/login')
       } finally {
         setLoading(false)
@@ -57,7 +57,7 @@ export default function QuestionIngestPage() {
   }, [router])
 
   const handleUploadSuccess = () => {
-    // 鍒锋柊浠诲姟鍒楄〃
+    // 刷新任务列表
     setRefreshTrigger(prev => prev + 1)
   }
 
@@ -72,7 +72,7 @@ export default function QuestionIngestPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-muted-foreground">鍔犺浇涓?..</div>
+        <div className="text-muted-foreground">加载中...</div>
       </div>
     )
   }
@@ -83,18 +83,18 @@ export default function QuestionIngestPage() {
 
   return (
     <div className="container mx-auto py-6 space-y-8">
-      {/* 椤甸潰鏍囬 */}
+      {/* 页面标题 */}
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">AI棰樺簱鎵归噺瀵煎叆</h1>
+        <h1 className="text-3xl font-bold tracking-tight">AI题库批量导入</h1>
         <p className="text-muted-foreground">
-          涓婁紶璇曞嵎鍥剧墖鎴朠DF锛孉I鑷姩璇嗗埆棰樼洰骞跺叆搴?
+          上传试卷图片或PDF，AI自动识别题目并入库
         </p>
       </div>
 
-      {/* 涓婁紶鍖哄煙 */}
+      {/* 上传区域 */}
       <FileUploadSection onSuccess={handleUploadSuccess} />
 
-      {/* 浠诲姟鍒楄〃 */}
+      {/* 任务列表 */}
       <TaskListSection refreshTrigger={refreshTrigger} />
     </div>
   )
