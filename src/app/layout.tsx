@@ -13,39 +13,45 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const lightThemeVars: React.CSSProperties = {
-    '--brand-red': '348 100% 50%',
-    '--brand-red-hover': '348 100% 44%',
-    '--brand-orange': '29 100% 50%',
-    '--background': '0 0% 100%',
-    '--background-secondary': '240 11% 95%',
-    '--background-tertiary': '0 0% 98%',
-    '--foreground': '0 0% 0%',
-    '--foreground-secondary': '240 4% 24%',
-    '--foreground-tertiary': '0 0% 33%',
-    '--foreground-quaternary': '0 0% 60%',
-    '--border': '220 13% 91%',
-    '--border-medium': '240 4% 82%',
-    '--border-dark': '240 5% 79%',
-    '--success': '145 80% 49%',
-    '--warning': '36 100% 50%',
-    '--error': '4 100% 60%',
-    '--info': '211 100% 50%',
+    // RixinMate 品牌色系统
+    '--primary': '213 100% 42%',           // #0052D4 深空蓝
+    '--primary-foreground': '0 0% 100%',   // 白色文字
+    '--accent': '25 100% 50%',             // #FF6B00 光子橙
+    '--accent-foreground': '0 0% 100%',    // 白色文字
+
+    // 背景色系统
+    '--background': '210 20% 98%',         // #F9FAFB 极浅灰
+    '--background-secondary': '210 16% 96%', // #F3F4F6
+    '--background-tertiary': '0 0% 100%',  // 白色
+
+    // 前景色系统（灰阶文字）
+    '--foreground': '222 47% 11%',         // #111827 深黑
+    '--foreground-secondary': '215 16% 47%', // #6B7280 中灰
+    '--foreground-tertiary': '214 14% 65%', // #9CA3AF
+    '--foreground-quaternary': '214 16% 82%', // #D1D5DB
+
+    // 边框色系统
+    '--border': '214 20% 91%',             // #E5E7EB
+    '--border-medium': '214 16% 88%',      // #D1D5DB
+    '--border-dark': '214 14% 65%',        // #9CA3AF
+
+    // 语义色
+    '--success': '160 84% 39%',            // #10b981
+    '--warning': '38 92% 50%',             // #f59e0b
+    '--error': '0 84% 60%',                // #ef4444
+    '--info': '217 91% 60%',               // #3b82f6
+
+    // shadcn/ui 兼容变量
     '--card': '0 0% 100%',
-    '--card-foreground': '0 0% 0%',
+    '--card-foreground': '222 47% 11%',    // #111827
     '--popover': '0 0% 100%',
-    '--popover-foreground': '0 0% 0%',
-    '--primary': '348 100% 50%',
-    '--primary-foreground': '0 0% 100%',
-    '--secondary': '240 11% 95%',
-    '--secondary-foreground': '0 0% 0%',
-    '--muted': '240 11% 95%',
-    '--muted-foreground': '0 0% 33%',
-    '--accent': '240 11% 95%',
-    '--accent-foreground': '0 0% 0%',
-    '--destructive': '4 100% 60%',
+    '--popover-foreground': '222 47% 11%',
+    '--muted': '210 16% 96%',              // #F3F4F6
+    '--muted-foreground': '215 16% 47%',   // #6B7280
+    '--destructive': '0 84% 60%',          // #ef4444
     '--destructive-foreground': '0 0% 100%',
     '--input': '0 0% 100%',
-    '--ring': '348 100% 50%',
+    '--ring': '213 100% 42%',              // #0052D4 深空蓝
     '--radius': '0.75rem'
   } as React.CSSProperties
 
@@ -57,11 +63,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             locale={zhCN}
             theme={{
               token: {
-                colorPrimary: '#ff013e',
-                colorSuccess: '#34c759',
-                colorWarning: '#ff9500',
-                colorError: '#ff3b30',
-                colorInfo: '#007aff',
+                colorPrimary: '#0052D4',    // 深空蓝
+                colorSuccess: '#10b981',     // 成功绿
+                colorWarning: '#f59e0b',     // 警告橙
+                colorError: '#ef4444',       // 错误红
+                colorInfo: '#2563EB',        // 信息蓝
                 colorText: '#000000',
                 colorTextSecondary: '#3c3c43',
                 colorTextTertiary: '#555555',

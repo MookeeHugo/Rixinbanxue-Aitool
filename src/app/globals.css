@@ -216,12 +216,13 @@
   padding: 0 16px;
 }
 
+/* ========== 导航栏样式（深空蓝背景 + 白色文字）========== */
 .rx-header {
-  @apply border-b border-gray-200/60 sticky top-0 backdrop-blur-sm bg-white/95 z-50;
+  @apply border-b border-primary-700 sticky top-0 backdrop-blur-sm bg-primary-500/95 z-50;
 }
 
 .rx-logo {
-  @apply text-lg font-bold m-0 py-3.5 text-gray-950;
+  @apply text-lg font-bold m-0 py-3.5 text-white;
 }
 
 .rx-nav {
@@ -229,19 +230,19 @@
 }
 
 .rx-nav a {
-  @apply text-gray-700 no-underline px-3 py-2.5 rounded-lg transition-all duration-200 font-medium;
+  @apply text-white/90 no-underline px-3 py-2.5 rounded-lg transition-all duration-200 font-medium;
 }
 
 .rx-nav a:hover {
-  @apply text-gray-950 bg-gray-100;
+  @apply text-white bg-white/10;
 }
 
 .rx-nav .rx-primary {
-  @apply bg-primary-600 text-white border border-primary-600;
+  @apply bg-accent-500 text-white border border-accent-500;
 }
 
 .rx-nav .rx-primary:hover {
-  @apply bg-primary-700 border-primary-700 shadow-lg;
+  @apply bg-accent-600 border-accent-600 shadow-lg;
 }
 
 .rx-main {

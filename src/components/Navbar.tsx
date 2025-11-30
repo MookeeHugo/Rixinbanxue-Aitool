@@ -91,12 +91,12 @@ export default function Navbar() {
                   </>
                 )}
                 <div className="flex items-center gap-3">
-                  <span className="text-sm text-foreground-secondary">
+                  <span className="text-sm text-white/80">
                     {profile.name} ({profile.role === 'teacher' ? '教师' : '学生'})
                   </span>
                   <button
                     onClick={handleSignOut}
-                    className="rx-btn text-sm"
+                    className="px-4 py-2 text-sm rounded-lg bg-white/10 text-white hover:bg-white/20 transition-all duration-200"
                   >
                     退出登录
                   </button>
@@ -106,8 +106,12 @@ export default function Navbar() {
               <>
                 {!loading && (
                   <>
-                    <Link href="/login" className="rx-btn">登录</Link>
-                    <Link href="/register" className="rx-btn rx-primary">注册</Link>
+                    <Link href="/login" className="px-4 py-2 text-sm rounded-lg bg-white/10 text-white hover:bg-white/20 transition-all duration-200">
+                      登录
+                    </Link>
+                    <Link href="/register" className="px-4 py-2 text-sm rounded-lg bg-accent-500 text-white hover:bg-accent-600 transition-all duration-200">
+                      注册
+                    </Link>
                   </>
                 )}
               </>
