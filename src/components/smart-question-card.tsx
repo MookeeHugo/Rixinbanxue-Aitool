@@ -82,7 +82,7 @@ export function SmartQuestionCard({
   return (
     <Card className={cn(
       // Swiss Spa 美学：超柔和阴影、更大圆角、呼吸感边距
-      'bg-white border border-slate-200/60 rounded-xl shadow-[0_2px_10px_rgba(0,0,0,0.03)]',
+      'bg-white border border-gray-200/60 rounded-xl shadow-[0_2px_10px_rgba(0,0,0,0.03)]',
       'transition-all duration-200 hover:shadow-[0_4px_20px_rgba(0,0,0,0.06)]',
       // 低置信度警告样式优化
       lowConfidence && 'border-amber-300/70 bg-amber-50/30'
@@ -92,8 +92,8 @@ export function SmartQuestionCard({
         <div className="flex items-center gap-3 flex-wrap">
           {/* 题号 Badge - 主要标识 */}
           <Badge
-            variant="secondary"
-            className="bg-slate-100 text-slate-700 border-0 font-medium px-3 py-1"
+            variant="default"
+            className="font-medium px-3 py-1"
           >
             第 {question.number || index + 1} 题
           </Badge>
@@ -119,7 +119,7 @@ export function SmartQuestionCard({
           {/* 置信度指示器 */}
           <span className={cn(
             'text-xs font-medium',
-            lowConfidence ? 'text-amber-700' : 'text-slate-500'
+            lowConfidence ? 'text-amber-700' : 'text-gray-500'
           )}>
             置信度 {formatConfidence(question.confidence)}
           </span>
@@ -154,7 +154,6 @@ export function SmartQuestionCard({
               variant="outline"
               size="sm"
               onClick={onEdit}
-              className="border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-colors"
             >
               <Edit className="w-4 h-4 mr-1.5 stroke-[1.5px]" />
               编辑
@@ -183,7 +182,7 @@ export function SmartQuestionCard({
           <div className="flex-1 min-w-0 flex flex-col gap-6">
 
             {/* 1. 题干区域 - 优化排版 */}
-            <div className="text-slate-900 text-base leading-[1.75] break-words">
+            <div className="text-gray-900 text-base leading-[1.75] break-words">
               <MarkdownRenderer content={question.content} />
             </div>
 
@@ -198,10 +197,10 @@ export function SmartQuestionCard({
                     key={i}
                     className={cn(
                       'flex items-start px-4 py-3 rounded-lg',
-                      'border border-slate-200/60 bg-slate-50/50',
-                      'hover:bg-slate-100/50 hover:border-slate-300/60',
+                      'border border-gray-200/60 bg-gray-50/50',
+                      'hover:bg-gray-100/50 hover:border-gray-300/60',
                       'transition-all duration-150',
-                      'text-slate-700 text-sm font-medium'
+                      'text-gray-700 text-sm font-medium'
                     )}
                   >
                     {opt}
@@ -213,9 +212,9 @@ export function SmartQuestionCard({
             {/* 3. 答案区域 - 优化视觉呈现 */}
             {question.answer && (
               <div className="space-y-2 mt-2">
-                <p className="text-sm font-semibold text-slate-900">答案</p>
+                <p className="text-sm font-semibold text-gray-900">答案</p>
                 <div className={cn(
-                  'text-slate-700 bg-emerald-50/50 border border-emerald-200/60',
+                  'text-gray-700 bg-emerald-50/50 border border-emerald-200/60',
                   'px-4 py-3 rounded-lg text-sm leading-relaxed'
                 )}>
                   {question.answer}
@@ -226,10 +225,10 @@ export function SmartQuestionCard({
             {/* 4. 解题步骤 - 优化列表样式 */}
             {question.steps && question.steps.length > 0 && (
               <div className="space-y-2 mt-2">
-                <p className="text-sm font-semibold text-slate-900">AI 解题步骤</p>
+                <p className="text-sm font-semibold text-gray-900">AI 解题步骤</p>
                 <ul className="space-y-2">
                   {question.steps.map((step, i) => (
-                    <li key={i} className="flex gap-3 text-sm text-slate-700 leading-relaxed">
+                    <li key={i} className="flex gap-3 text-sm text-gray-700 leading-relaxed">
                       <span className="flex-shrink-0 w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-medium">
                         {i + 1}
                       </span>
@@ -243,13 +242,13 @@ export function SmartQuestionCard({
             {/* 5. 知识点标签 - 优化标签样式 */}
             {question.tags?.knowledge?.length > 0 && (
               <div className="space-y-2 mt-2">
-                <p className="text-sm font-semibold text-slate-900">知识点</p>
+                <p className="text-sm font-semibold text-gray-900">知识点</p>
                 <div className="flex flex-wrap gap-2">
                   {question.tags.knowledge.map((tag, i) => (
                     <Badge
                       key={i}
                       variant="outline"
-                      className="bg-slate-50 text-slate-700 border-slate-200/60 font-medium px-3 py-1"
+                      className="bg-gray-50 text-gray-700 border-gray-200/60 font-medium px-3 py-1"
                     >
                       {tag}
                     </Badge>
@@ -273,13 +272,13 @@ export function SmartQuestionCard({
 
         {/* 查看原图按钮 - 优化按钮样式 */}
         {proxyOriginalImageUrl && (
-          <div className="mt-6 pt-6 border-t border-slate-200/60">
+          <div className="mt-6 pt-6 border-t border-gray-200/60">
             <Dialog>
               <DialogTrigger asChild>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-colors gap-2"
+                  className="border-gray-200 text-gray-700 gap-2"
                 >
                   <ZoomIn className="w-4 h-4 stroke-[1.5px]" />
                   查看完整原图
@@ -290,11 +289,11 @@ export function SmartQuestionCard({
                   <img
                     src={proxyOriginalImageUrl}
                     alt="题目原图"
-                    className="w-full h-auto rounded-lg border border-slate-200/60"
+                    className="w-full h-auto rounded-lg border border-gray-200/60"
                     loading="lazy"
                   />
                 </div>
-                <p className="text-sm text-slate-500 mt-4">
+                <p className="text-sm text-gray-500 mt-4">
                   提示：此为上传时的原始图片，可与AI解析的题目内容对照查看
                 </p>
               </DialogContent>
@@ -323,8 +322,8 @@ function ImageThumbnail({
       <DialogTrigger asChild>
         <div className={cn(
           'relative group cursor-zoom-in',
-          'border border-slate-200/60 rounded-xl overflow-hidden',
-          'bg-slate-50/50 hover:border-slate-300/80',
+          'border border-gray-200/60 rounded-xl overflow-hidden',
+          'bg-gray-50/50 hover:border-gray-300/80',
           'transition-all duration-200',
           'shadow-[0_1px_3px_rgba(0,0,0,0.02)]',
           'hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)]'
@@ -340,7 +339,7 @@ function ImageThumbnail({
               />
               {/* 悬停遮罩 - 优化交互反馈 */}
               <div className={cn(
-                'absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/5',
+                'absolute inset-0 bg-gray-900/0 group-hover:bg-gray-900/5',
                 'transition-all duration-200',
                 'flex items-center justify-center'
               )}>
@@ -350,7 +349,7 @@ function ImageThumbnail({
                   'bg-white/90 backdrop-blur-sm',
                   'rounded-full p-2.5 shadow-lg'
                 )}>
-                  <ZoomIn className="w-5 h-5 text-slate-700 stroke-[1.5px]" />
+                  <ZoomIn className="w-5 h-5 text-gray-700 stroke-[1.5px]" />
                 </div>
               </div>
             </>
@@ -365,7 +364,7 @@ function ImageThumbnail({
         </div>
       </DialogTrigger>
       <DialogContent className={cn(
-        'max-w-4xl bg-white border border-slate-200/60',
+        'max-w-4xl bg-white border border-gray-200/60',
         'shadow-[0_8px_40px_rgba(0,0,0,0.12)]',
         'p-0 overflow-hidden'
       )}>
@@ -373,7 +372,7 @@ function ImageThumbnail({
           <img
             src={src}
             alt="大图预览"
-            className="w-full h-auto rounded-lg border border-slate-200/60"
+            className="w-full h-auto rounded-lg border border-gray-200/60"
           />
         </div>
       </DialogContent>
