@@ -311,7 +311,7 @@ export default function GradeSubmissionPage() {
               <button
                 onClick={handleSaveScore}
                 disabled={saving}
-                className="bg-primary text-white px-6 py-2 rounded hover:bg-blue-600 transition-colors disabled:opacity-50 ml-auto"
+                className="bg-accent-500 text-white px-6 py-2 rounded hover:bg-accent-600 transition-colors disabled:opacity-50 ml-auto"
               >
                 {saving ? '保存中...' : '保存分数'}
               </button>
@@ -364,7 +364,7 @@ export default function GradeSubmissionPage() {
                               ? 'bg-green-500/10 border border-green-500/30'
                               : 'bg-red-500/10 border border-red-500/30'
                             : String(question.answer) === key
-                              ? 'bg-blue-500/10 border border-blue-500/30'
+                              ? 'bg-primary-500/10 border border-primary-500/30'
                               : 'bg-gray-800/50'
                         }`}
                       >
@@ -416,7 +416,7 @@ export default function GradeSubmissionPage() {
           <button
             onClick={handleSaveScore}
             disabled={saving}
-            className="bg-primary text-white px-6 py-2 rounded hover:bg-blue-600 transition-colors disabled:opacity-50"
+            className="bg-accent-500 text-white px-6 py-2 rounded hover:bg-accent-600 transition-colors disabled:opacity-50"
           >
             {saving ? '保存中...' : '保存分数'}
           </button>

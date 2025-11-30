@@ -141,7 +141,7 @@ export function ClientReviewPage({ task, initialQuestions, imageUrls }: ClientPa
         </CardHeader>
         <CardContent className="space-y-6">
           {unsubmittedQuestions.length > 0 && (
-            <Card className="bg-slate-50 border-slate-200">
+            <Card className="bg-gray-50 border-gray-200">
               <CardContent className="py-4">
                 <div className="flex items-center justify-between gap-4 flex-wrap">
                   <div className="flex items-center gap-4 flex-wrap">
@@ -165,7 +165,7 @@ export function ClientReviewPage({ task, initialQuestions, imageUrls }: ClientPa
                   <Button
                     onClick={openSubmitDialog}
                     disabled={selectedIds.size === 0 || isSubmitting}
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                    className="bg-accent-500 hover:bg-accent-600 text-white"
                   >
                     <Upload className="w-4 h-4 mr-2" />
                     {isSubmitting ? '提交中...' : `批量提交 (${selectedIds.size})`}
@@ -216,7 +216,7 @@ export function ClientReviewPage({ task, initialQuestions, imageUrls }: ClientPa
             <Button variant="outline" onClick={() => setSubmitDialogOpen(false)} disabled={isSubmitting}>
               取消
             </Button>
-            <Button onClick={handleBatchSubmit} disabled={isSubmitting} className="bg-blue-600 hover:bg-blue-700 text-white">
+            <Button onClick={handleBatchSubmit} disabled={isSubmitting} className="bg-accent-500 hover:bg-accent-600 text-white">
               {isSubmitting ? '提交中...' : '确认提交'}
             </Button>
           </DialogFooter>

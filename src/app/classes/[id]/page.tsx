@@ -231,15 +231,15 @@ export default function ClassDetailPage() {
               onClick={() => router.push(`/assignments/create?classId=${classId}`)}
               className="bg-accent-500 text-white px-6 py-3 rounded-lg hover:bg-accent-600 transition-colors text-left"
             >
-              <p className="font-semibold mb-1">发布作业</p>
-              <p className="text-sm opacity-80">为这个班级发布新作业</p>
+              <p className="font-semibold mb-1 text-current">发布作业</p>
+              <p className="text-sm opacity-80 text-current">为这个班级发布新作业</p>
             </button>
             <button
               onClick={() => router.push(`/assignments?classId=${classId}`)}
               className="bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition-colors text-left"
             >
-              <p className="font-semibold mb-1">查看作业</p>
-              <p className="text-sm opacity-80">查看班级所有作业</p>
+              <p className="font-semibold mb-1 text-current">查看作业</p>
+              <p className="text-sm opacity-80 text-current">查看班级所有作业</p>
             </button>
           </div>
         </div>

@@ -196,7 +196,7 @@ export function TaskListSection({ refreshTrigger = 0 }: TaskListSectionProps) {
         )
       case 'failed':
         return (
-          <Badge variant="destructive">
+          <Badge variant="error">
             <XCircle className="mr-1 h-3 w-3" />
             失败
           </Badge>
