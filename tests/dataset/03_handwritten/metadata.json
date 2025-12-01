@@ -1,0 +1,25 @@
+{
+  "HAND-06-student-annotations.jpg": {
+    "scenario": "03_handwritten",
+    "source": "tmp/gemini-test-results/测试试卷5/question-11.-img1.png",
+    "hasRedPen": true,
+    "notes": "含学生批注与自由书写，验证去噪能力",
+    "addedAt": "2025-12-01T10:56:00+08:00",
+    "expected_count": 1
+  },
+  "HAND-01-red-pen-marks.jpg": {
+    "expected_count": 11
+  },
+  "HAND-02-student-answers.jpg": {
+    "expected_count": 6
+  },
+  "HAND-03-margin-notes.jpg": {
+    "expected_count": 9
+  },
+  "HAND-04-scribbled-out.jpg": {
+    "expected_count": 12
+  },
+  "HAND-05-pencil-sketches.jpg": {
+    "expected_count": 4
+  }
+}

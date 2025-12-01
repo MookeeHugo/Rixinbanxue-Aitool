@@ -76,6 +76,8 @@ export interface ParsedQuestion {
   isSubmitted: boolean
   questionId?: string
   createdAt: string
+  hasImage?: boolean
+  imageUrl?: string
 }
 
 /**

@@ -38,13 +38,17 @@ interface ImageBlock {
 interface Question {
   id: string
   type: "choice" | "fill" | "solve"
-  rawText: string
-  cleanText: string
+  content?: string
+  rawText?: string
+  cleanText?: string
   options?: string[]
   answer: string
-  images: ImageBlock[]
+  difficulty?: "easy" | "medium" | "hard"
+  hasImage?: boolean
+  imageUrl?: string
+  images?: ImageBlock[]
   aiTags?: Array<{ category: string; value: string; confidence: number }>
-  confidence: number
+  confidence?: number
 }
 
 interface AdvancedQuestionEditorProps {
@@ -105,7 +109,7 @@ export function AdvancedQuestionEditor({ question, onSave, onCancel }: AdvancedQ
       <div className="px-4 md:px-6 py-4 border-b">
         <div className="flex items-center gap-3">
           <span className="text-base md:text-lg font-semibold">高级编辑器</span>
-          {question.confidence < 0.8 && (
+          {question.confidence !== undefined && question.confidence < 0.8 && (
             <Badge variant="outline" className="border-amber-500 text-amber-700 text-xs">
               <AlertTriangle className="mr-1 h-3 w-3" />
               低置信度 ({Math.round(question.confidence * 100)}%)
@@ -259,7 +263,7 @@ export function AdvancedQuestionEditor({ question, onSave, onCancel }: AdvancedQ
             </div>
           )}
 
-          {question.confidence < 0.8 && (
+          {question.confidence !== undefined && question.confidence < 0.8 && (
             <Card className="p-4 bg-gray-50 border-gray-300">
               <h5 className="text-xs font-semibold text-gray-700 mb-2 flex items-center gap-1">
                 <AlertTriangle className="h-3 w-3" />

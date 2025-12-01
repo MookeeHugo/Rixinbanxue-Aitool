@@ -53,3 +53,8 @@ nul
 # External git repositories (treat as external dependencies)
 SuperClaude_Framework/
 claude-code-workflows/
+
+# Logs & local artifacts
+logs/
+tmp/
+tests/output/

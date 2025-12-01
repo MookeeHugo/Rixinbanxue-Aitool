@@ -14,7 +14,14 @@ import { useToast } from "@/hooks/use-toast"
 import { useAppStore } from "@/lib/store"
 
 // Mock data
-const mockQuestions = [
+const mockQuestions: Array<{
+  id: string
+  type: "choice" | "fill" | "solve"
+  content: string
+  options?: string[]
+  answer: string
+  tags: Array<{ category: string; value: string; id?: string }>
+}> = [
   {
     id: "1",
     type: "choice" as const,

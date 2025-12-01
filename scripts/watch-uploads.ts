@@ -30,12 +30,14 @@ async function checkStatus() {
         lastTaskId = task.id;
       }
 
-      const statusEmoji = {
-        'pending': '⏳',
-        'processing': '🔄',
-        'completed': '✅',
-        'failed': '❌'
-      }[task.status] || '❓';
+      const statusEmojiMap = {
+        pending: '?',
+        processing: '??',
+        completed: '?',
+        failed: '?'
+      } as const;
+      const statusEmoji =
+        statusEmojiMap[task.status as keyof typeof statusEmojiMap] || '?';
 
       process.stdout.write(`\r${statusEmoji} 状态: ${task.status.padEnd(12)} | 进度: ${task.progress}%   `);
 

@@ -3,7 +3,7 @@
  * 处理 WebRTC 连接配置、状态监控和自动重连
  */
 
-import { Room, RoomConnectOptions, ConnectionState, RoomEvent } from 'livekit-client';
+import { Room, RoomConnectOptions, ConnectionState, RoomEvent, DisconnectReason } from 'livekit-client';
 import { logger } from '@/lib/logger';
 
 // STUN/TURN 服务器配置
@@ -27,8 +27,6 @@ export const ICE_SERVERS: RTCIceServer[] = [
 // 连接选项配置
 export const DEFAULT_CONNECT_OPTIONS: RoomConnectOptions = {
   autoSubscribe: true,
-  dynacast: true, // 启用动态广播以优化带宽
-  adaptiveStream: true, // 根据网络条件自动调整质量
   rtcConfig: {
     iceServers: ICE_SERVERS,
     iceTransportPolicy: 'all', // 允许所有 ICE 候选（relay 和 host）
@@ -83,6 +81,9 @@ export class ConnectionManager {
   private retryConfig: RetryConfig;
   private currentAttempt = 0;
   private retryTimeout?: NodeJS.Timeout;
+  private lastUrl?: string;
+  private lastToken?: string;
+  private lastOptions?: RoomConnectOptions;
   private connectionInfo: ConnectionInfo = {
     status: 'disconnected',
     attempt: 0,
@@ -106,7 +107,7 @@ export class ConnectionManager {
     });
 
     // 监听断开连接
-    this.room.on(RoomEvent.Disconnected, (reason?: string) => {
+    this.room.on(RoomEvent.Disconnected, (reason?: DisconnectReason) => {
       logger.debug('[ConnectionManager] 已断开连接:', reason);
       this.handleDisconnect(reason);
     });
@@ -142,6 +143,10 @@ export class ConnectionManager {
         ...DEFAULT_CONNECT_OPTIONS,
         ...options,
       };
+
+      this.lastUrl = url;
+      this.lastToken = token;
+      this.lastOptions = connectOptions;
 
       await this.room.connect(url, token, connectOptions);
 
@@ -180,15 +185,15 @@ export class ConnectionManager {
   /**
    * 处理断开连接
    */
-  private handleDisconnect(reason?: string) {
+  private handleDisconnect(reason?: DisconnectReason) {
     this.updateStatus('disconnected', {
       code: 'DISCONNECTED',
-      message: reason || '连接已断开',
+      message: reason ? String(reason) : '连接已断开',
       recoverable: true,
     });
 
     // 如果不是主动断开，尝试重连
-    if (reason !== 'user-initiated' && this.shouldRetry()) {
+    if (reason !== DisconnectReason.CLIENT_INITIATED && this.shouldRetry()) {
       this.scheduleReconnect();
     }
   }
@@ -234,21 +239,32 @@ export class ConnectionManager {
    * 判断错误是否可恢复
    */
   private isRecoverableError(error: unknown): boolean {
-    // 网络错误通常可恢复
-    if (error.message?.includes('network') || error.message?.includes('timeout')) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : typeof error === 'string'
+        ? error
+        : '';
+
+    if (!message) {
       return true;
     }
-    // ICE 连接失败可能可恢复（尝试 ICE restart）
-    if (error.message?.includes('ice')) {
+
+    if (message.toLowerCase().includes('network') || message.toLowerCase().includes('timeout')) {
       return true;
     }
-    // Token 错误通常不可恢复（需要重新获取 token）
-    if (error.message?.includes('token') || error.message?.includes('unauthorized')) {
+
+    if (message.toLowerCase().includes('ice')) {
+      return true;
+    }
+
+    if (message.toLowerCase().includes('token') || message.toLowerCase().includes('unauthorized')) {
       return false;
     }
-    // 默认认为可恢复
+
     return true;
   }
+
 
   /**
    * 判断是否应该重试
@@ -287,8 +303,20 @@ export class ConnectionManager {
       this.updateStatus('reconnecting');
 
       try {
-        // 尝试 ICE Restart
-        await this.room.engine.reconnect();
+        if (!this.lastUrl || !this.lastToken) {
+          logger.error('[ConnectionManager] 缺少连接参数，无法重连');
+          this.updateStatus('failed', {
+            code: 'MISSING_PARAMS',
+            message: '缺少连接参数，无法重连',
+            recoverable: false,
+          });
+          return;
+        }
+
+        await this.room.connect(this.lastUrl, this.lastToken, this.lastOptions || DEFAULT_CONNECT_OPTIONS);
+        logger.debug('[ConnectionManager] 重连成功');
+        this.currentAttempt = 0;
+        this.updateStatus('connected');
       } catch (error: unknown) {
         logger.error('[ConnectionManager] 重连失败:', { error: error });
         this.handleConnectionError(error);
@@ -301,11 +329,12 @@ export class ConnectionManager {
    */
   private updateConnectionQuality(quality: unknown) {
     let qualityLevel: ConnectionInfo['connectionQuality'] = 'unknown';
+    const score = typeof quality === 'number' ? quality : 0;
 
     // LiveKit 的连接质量评分（0-5）
-    if (quality >= 4) {
+    if (score >= 4) {
       qualityLevel = 'excellent';
-    } else if (quality >= 2) {
+    } else if (score >= 2) {
       qualityLevel = 'good';
     } else {
       qualityLevel = 'poor';
@@ -371,8 +400,14 @@ export class ConnectionManager {
   async reconnect(): Promise<void> {
     logger.debug('[ConnectionManager] 手动触发重连');
     this.currentAttempt = 0; // 重置计数
+    if (!this.lastUrl || !this.lastToken) {
+      throw new Error('缺少连接参数，无法重连');
+    }
+
+    this.updateStatus('reconnecting');
     try {
-      await this.room.engine.reconnect();
+      await this.room.connect(this.lastUrl, this.lastToken, this.lastOptions || DEFAULT_CONNECT_OPTIONS);
+      this.updateStatus('connected');
     } catch (error: unknown) {
       logger.error('[ConnectionManager] 手动重连失败:', { error: error });
       this.handleConnectionError(error);

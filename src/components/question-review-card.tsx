@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -10,9 +10,13 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
 import { QuestionContentRenderer } from './question-content-renderer'
-import type { ParsedQuestionRecord, DifficultyLevel } from '@/lib/ai-question-bank'
+import { LatexEditor } from '@/components/latex-editor'
+import { ImagePositionEditor, type ImageItem } from '@/components/image-position-editor'
+import { ImageEnhancementDialog } from './image-enhancement-dialog'
+import type { ParsedQuestionRecord, DifficultyLevel, QuestionImageAsset } from '@/lib/ai-question-bank'
 import { updateQuestion, deleteQuestion } from '@/app/actions/question-upload'
 import {
   formatConfidence,
@@ -21,7 +25,10 @@ import {
   getQuestionTypeLabel,
   isLowConfidence
 } from '@/lib/ai-question-bank/display-helpers'
-import { AlertCircle, CheckCircle2, Edit, Plus, Trash2, X } from 'lucide-react'
+import { AlertCircle, CheckCircle2, Crop, Edit, Plus, Sparkles, Trash2, X } from 'lucide-react'
+import { manualCropQuestionImage } from '@/app/actions/question-upload'
+import { ManualImageCropper } from './manual-image-cropper'
+import { ReparseButton } from './reparse-button'
 
 interface QuestionReviewCardProps {
   question: ParsedQuestionRecord
@@ -36,12 +43,20 @@ export function QuestionReviewCard({ question, index, imageUrl }: QuestionReview
   const [isDeleting, setIsDeleting] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [cropDialogOpen, setCropDialogOpen] = useState(false)
+  const [isCropping, setIsCropping] = useState(false)
+  const [cropSelection, setCropSelection] = useState<[number, number, number, number] | null>(null)
+  const [contentEditMode, setContentEditMode] = useState<'visual' | 'raw'>('visual')
+  const [answerEditMode, setAnswerEditMode] = useState<'visual' | 'raw'>('visual')
+  const [enhanceDialogOpen, setEnhanceDialogOpen] = useState(false)
+  const [selectedImageForEnhancement, setSelectedImageForEnhancement] = useState<QuestionImageAsset | null>(null)
 
   const [editedData, setEditedData] = useState({
     type: question.type,
     content: question.content,
     options: question.options || [],
     answer: question.answer || '',
+    imageAssets: question.image_assets || [],
     tags: {
       ...question.tags,
       difficulty: (question.tags?.difficulty as DifficultyLevel) || 'medium',
@@ -49,9 +64,130 @@ export function QuestionReviewCard({ question, index, imageUrl }: QuestionReview
     }
   })
 
+  const handleSelectionChange = useCallback((box: [number, number, number, number] | null) => {
+    setCropSelection(box)
+  }, [])
+
+  // 转换 QuestionImageAsset 到 ImageItem 格式
+  const convertToImageItems = useCallback((assets: QuestionImageAsset[]): ImageItem[] => {
+    return assets.map((asset, index) => ({
+      id: asset.id || `asset-${index}`,
+      url: `/api/image-proxy?url=${encodeURIComponent(asset.url)}`,
+      title: asset.placeholder || `配图 ${asset.order || index + 1}`,
+      width: asset.region?.width || asset.trimmedSize?.width,
+      height: asset.region?.height || asset.trimmedSize?.height,
+      data: {
+        source: asset.source || 'ai',
+        order: asset.order || index + 1,
+        rawUrl: asset.url,
+        key: asset.key,
+        region: asset.region
+      }
+    }))
+  }, [])
+
+  // 转换 ImageItem 回 QuestionImageAsset 格式
+  const convertToQuestionAssets = useCallback((items: ImageItem[]): QuestionImageAsset[] => {
+    return items.map((item, index) => ({
+      id: item.id,
+      url: (item.data?.rawUrl as string) || item.url,
+      key: item.data?.key as string | undefined,
+      placeholder: item.title || `配图 ${index + 1}`,
+      order: index + 1,
+      source: (item.data?.source as 'ai' | 'manual') || 'ai',
+      region: item.data?.region as any
+    }))
+  }, [])
+
+  // 处理图片重新排序
+  const handleImageReorder = useCallback((reorderedImages: ImageItem[]) => {
+    const updatedAssets = convertToQuestionAssets(reorderedImages)
+    setEditedData((prev) => ({
+      ...prev,
+      imageAssets: updatedAssets
+    }))
+  }, [convertToQuestionAssets])
+
+  // 处理图片删除
+  const handleImageDelete = useCallback((imageId: string) => {
+    const asset = editedData.imageAssets.find((a) => a.id === imageId)
+    const assetName = asset?.placeholder || '此配图'
+
+    if (window.confirm(`确定要删除"${assetName}"吗？\n\n删除后需要点击"保存修改"才会生效。`)) {
+      setEditedData((prev) => ({
+        ...prev,
+        imageAssets: prev.imageAssets.filter((asset) => asset.id !== imageId)
+      }))
+
+      toast({
+        title: '已从列表中移除',
+        description: '点击"保存修改"后将永久删除此配图'
+      })
+    }
+  }, [editedData.imageAssets, toast])
+
+  // 处理图片增强
+  const handleImageEnhance = useCallback((imageId: string) => {
+    const asset = editedData.imageAssets.find((a) => a.id === imageId)
+    if (asset) {
+      setSelectedImageForEnhancement(asset)
+      setEnhanceDialogOpen(true)
+    }
+  }, [editedData.imageAssets])
+
+  // 增强成功后更新图片
+  const handleEnhanceSuccess = useCallback(async (newImageUrl: string) => {
+    if (!selectedImageForEnhancement) return
+
+    // 如果在编辑模式，更新编辑数据
+    if (isEditing) {
+      setEditedData((prev) => ({
+        ...prev,
+        imageAssets: prev.imageAssets.map((asset) =>
+          asset.id === selectedImageForEnhancement.id
+            ? { ...asset, url: newImageUrl, source: 'manual' as const }
+            : asset
+        )
+      }))
+
+      toast({
+        title: '图片已增强',
+        description: '配图已更新，记得保存修改'
+      })
+    } else {
+      // 卡片快捷模式，直接保存到数据库
+      try {
+        const updatedAssets = (question.image_assets || []).map((asset) =>
+          asset.id === selectedImageForEnhancement.id
+            ? { ...asset, url: newImageUrl, source: 'manual' as const }
+            : asset
+        )
+
+        const result = await updateQuestion(question.id, { imageAssets: updatedAssets })
+
+        if (!result.success) {
+          throw new Error(result.error || '保存失败')
+        }
+
+        toast({
+          title: '图片已增强',
+          description: '配图已更新为增强后的版本'
+        })
+        router.refresh()
+      } catch (error) {
+        toast({
+          title: '保存失败',
+          description: error instanceof Error ? error.message : '请稍后重试',
+          variant: 'destructive'
+        })
+      }
+    }
+  }, [selectedImageForEnhancement, isEditing, question.id, question.image_assets, toast, router])
+
   const lowConfidence = isLowConfidence(question.confidence)
   const difficultyColor = getDifficultyColor(editedData.tags.difficulty)
   const questionNumber = question.number || index + 1
+  const canManualCrop = Boolean(imageUrl)
 
   const handleSave = async () => {
     setIsSaving(true)
@@ -156,12 +292,92 @@ export function QuestionReviewCard({ question, index, imageUrl }: QuestionReview
     })
   }
 
+  const handleManualCrop = async () => {
+    if (!cropSelection) {
+      toast({
+        title: '请先框选区域',
+        description: '在原图上框出需要保留的图像，再执行裁剪。',
+        variant: 'destructive'
+      })
+      return
+    }
+
+    setIsCropping(true)
+    try {
+      const result = await manualCropQuestionImage({
+        questionId: question.id,
+        taskId: question.upload_task_id,
+        box2d: cropSelection
+      })
+
+      if (!result.success) {
+        throw new Error(result.error || '裁剪失败')
+      }
+
+      toast({
+        title: '裁剪完成',
+        description: '人工修复的配图已生成，可在列表中查看效果。'
+      })
+      setCropDialogOpen(false)
+      setCropSelection(null)
+      router.refresh()
+    } catch (error) {
+      toast({
+        title: '裁剪失败',
+        description: error instanceof Error ? error.message : '请稍后重试',
+        variant: 'destructive'
+      })
+    } finally {
+      setIsCropping(false)
+    }
+  }
+
+  // 卡片快捷删除图片
+  const handleQuickDeleteImage = useCallback(async (imageId: string) => {
+    const asset = question.image_assets?.find((a) => a.id === imageId)
+    const assetName = asset?.placeholder || '此配图'
+
+    if (!window.confirm(`确定要删除"${assetName}"吗？\n\n此操作将立即生效。`)) {
+      return
+    }
+
+    try {
+      const updatedAssets = (question.image_assets || []).filter((a) => a.id !== imageId)
+      const result = await updateQuestion(question.id, { imageAssets: updatedAssets })
+
+      if (!result.success) {
+        throw new Error(result.error || '删除失败')
+      }
+
+      toast({
+        title: '删除成功',
+        description: '配图已从题目中移除'
+      })
+      router.refresh()
+    } catch (error) {
+      toast({
+        title: '删除失败',
+        description: error instanceof Error ? error.message : '请稍后重试',
+        variant: 'destructive'
+      })
+    }
+  }, [question.id, question.image_assets, toast, router])
+
+  // 卡片快捷增强图片
+  const handleQuickEnhanceImage = useCallback((imageId: string) => {
+    const asset = question.image_assets?.find((a) => a.id === imageId)
+    if (asset) {
+      setSelectedImageForEnhancement(asset)
+      setEnhanceDialogOpen(true)
+    }
+  }, [question.image_assets])
+
   return (
     <>
       <Card className={`border rounded-xl ${lowConfidence ? 'border-yellow-400 bg-yellow-50/50' : ''}`}>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <div className="flex items-center gap-2 flex-wrap">
-            <Badge variant="secondary">{`第 ${questionNumber} 题`}</Badge>
+            <Badge variant="default">{`第 ${questionNumber} 题`}</Badge>
             <Badge>{getQuestionTypeLabel(question.type)}</Badge>
             <Badge variant="outline" className={difficultyColor}>
               {getDifficultyLabel(editedData.tags.difficulty)}
@@ -182,6 +398,22 @@ export function QuestionReviewCard({ question, index, imageUrl }: QuestionReview
                 <CheckCircle2 className="w-3 h-3 mr-1" /> 已选中
               </Badge>
             )}
+            <ReparseButton
+              questionId={question.id}
+              initialStatus={question.reparse_status}
+              reparseCount={question.reparse_count}
+              lastReparseAt={question.last_reparse_at}
+              disabled={!imageUrl}
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCropDialogOpen(true)}
+              disabled={!canManualCrop}
+            >
+              <Crop className="w-4 h-4 mr-1" />
+              框选修复
+            </Button>
             <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
               <Edit className="w-4 h-4 mr-1" />
               编辑
@@ -204,6 +436,9 @@ export function QuestionReviewCard({ question, index, imageUrl }: QuestionReview
             imageUrl={imageUrl}
             questionImageUrl={question.question_image_url}
             imageAssets={question.image_assets}
+            showImageActions={true}
+            onDeleteImage={handleQuickDeleteImage}
+            onEnhanceImage={handleQuickEnhanceImage}
           />
 
           {question.options && question.options.length > 0 && (
@@ -251,12 +486,18 @@ export function QuestionReviewCard({ question, index, imageUrl }: QuestionReview
       </Card>
 
       <Dialog open={isEditing} onOpenChange={setIsEditing}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>编辑题目</DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
+          <Tabs defaultValue="content" className="py-4">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="content">题目内容</TabsTrigger>
+              <TabsTrigger value="images">配图管理 ({editedData.imageAssets.length})</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="content" className="space-y-4 mt-4">
             <div className="space-y-2">
               <Label htmlFor="type">题目类型</Label>
               <Select
@@ -276,14 +517,32 @@ export function QuestionReviewCard({ question, index, imageUrl }: QuestionReview
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="content">题干</Label>
-              <Textarea
-                id="content"
-                value={editedData.content}
-                onChange={(e) => setEditedData({ ...editedData, content: e.target.value })}
-                className="min-h-[150px] font-mono text-sm"
-                placeholder="请输入题干，支持 Markdown/LaTeX，例如：$x^2+1$"
-              />
+              <div className="flex items-center justify-between">
+                <Label htmlFor="content">题干</Label>
+                <Tabs value={contentEditMode} onValueChange={(v) => setContentEditMode(v as 'visual' | 'raw')} className="w-auto">
+                  <TabsList className="h-8">
+                    <TabsTrigger value="visual" className="text-xs px-3 py-1">可视化编辑</TabsTrigger>
+                    <TabsTrigger value="raw" className="text-xs px-3 py-1">原始文本</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
+              {contentEditMode === 'visual' ? (
+                <LatexEditor
+                  value={editedData.content}
+                  onChange={(value) => setEditedData({ ...editedData, content: value })}
+                  showToolbar={true}
+                  height={200}
+                  placeholder="输入题干，支持 LaTeX 公式..."
+                />
+              ) : (
+                <Textarea
+                  id="content"
+                  value={editedData.content}
+                  onChange={(e) => setEditedData({ ...editedData, content: e.target.value })}
+                  className="min-h-[150px] font-mono text-sm"
+                  placeholder="请输入题干，支持 Markdown/LaTeX，例如：$x^2+1$"
+                />
+              )}
               <p className="text-xs text-muted-foreground">提示：LaTeX 行内使用 $表达式$，块级使用 $$表达式$$</p>
             </div>
 
@@ -323,14 +582,32 @@ export function QuestionReviewCard({ question, index, imageUrl }: QuestionReview
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="answer">答案/解析</Label>
-              <Textarea
-                id="answer"
-                value={editedData.answer}
-                onChange={(e) => setEditedData({ ...editedData, answer: e.target.value })}
-                className="min-h-[100px]"
-                placeholder="可输入答案或简要解析"
-              />
+              <div className="flex items-center justify-between">
+                <Label htmlFor="answer">答案/解析</Label>
+                <Tabs value={answerEditMode} onValueChange={(v) => setAnswerEditMode(v as 'visual' | 'raw')} className="w-auto">
+                  <TabsList className="h-8">
+                    <TabsTrigger value="visual" className="text-xs px-3 py-1">可视化编辑</TabsTrigger>
+                    <TabsTrigger value="raw" className="text-xs px-3 py-1">原始文本</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
+              {answerEditMode === 'visual' ? (
+                <LatexEditor
+                  value={editedData.answer}
+                  onChange={(value) => setEditedData({ ...editedData, answer: value })}
+                  showToolbar={true}
+                  height={150}
+                  placeholder="可输入答案或简要解析..."
+                />
+              ) : (
+                <Textarea
+                  id="answer"
+                  value={editedData.answer}
+                  onChange={(e) => setEditedData({ ...editedData, answer: e.target.value })}
+                  className="min-h-[100px]"
+                  placeholder="可输入答案或简要解析"
+                />
+              )}
             </div>
 
             <div className="space-y-2">
@@ -387,7 +664,90 @@ export function QuestionReviewCard({ question, index, imageUrl }: QuestionReview
                 )}
               </div>
             </div>
-          </div>
+            </TabsContent>
+
+            <TabsContent value="images" className="mt-4">
+              <div className="space-y-4">
+                <div className="rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 p-3">
+                  <p className="text-sm text-blue-900 dark:text-blue-100 font-medium mb-1">
+                    配图管理说明
+                  </p>
+                  <ul className="text-xs text-blue-800 dark:text-blue-200 space-y-1 list-disc list-inside">
+                    <li>上方拖拽区域：调整图片顺序</li>
+                    <li>下方操作列表：增强或删除单张图片</li>
+                    <li>删除瑕疵图片后，记得点击"保存修改"按钮</li>
+                  </ul>
+                </div>
+                {editedData.imageAssets.length > 0 ? (
+                  <>
+                    <ImagePositionEditor
+                      images={convertToImageItems(editedData.imageAssets)}
+                      onChange={handleImageReorder}
+                      onDelete={handleImageDelete}
+                      layout="grid"
+                      columns={3}
+                      showDelete={true}
+                      showPreview={true}
+                      imageSize="md"
+                      data-testid="image-position-editor"
+                    />
+
+                    {/* 图片操作列表 */}
+                    <div className="rounded-lg border bg-muted/30 p-4">
+                      <h4 className="text-sm font-medium mb-3">图片操作</h4>
+                      <div className="space-y-2">
+                        {editedData.imageAssets.map((asset, index) => (
+                          <div key={asset.id} className="flex items-center justify-between p-2 rounded-lg bg-background border">
+                            <div className="flex items-center gap-3">
+                              <div className="w-12 h-12 rounded overflow-hidden bg-muted flex-shrink-0">
+                                <img
+                                  src={`/api/image-proxy?url=${encodeURIComponent(asset.url)}`}
+                                  alt={asset.placeholder || `配图 ${index + 1}`}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium">
+                                  {asset.placeholder || `配图 ${index + 1}`}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {asset.source === 'manual' ? '人工修复' : 'AI 截图'}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleImageEnhance(asset.id)}
+                              >
+                                <Sparkles className="w-3 h-3 mr-1" />
+                                增强
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleImageDelete(asset.id)}
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                <Trash2 className="w-3 h-3 mr-1" />
+                                删除
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="rounded-lg border-2 border-dashed p-8 text-center text-muted-foreground">
+                    <p>暂无配图</p>
+                    <p className="text-xs mt-2">可在题目解析过程中自动生成配图</p>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsEditing(false)} disabled={isSaving}>
@@ -418,6 +778,60 @@ export function QuestionReviewCard({ question, index, imageUrl }: QuestionReview
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog
+        open={cropDialogOpen}
+        onOpenChange={(open) => {
+          setCropDialogOpen(open)
+          if (!open) {
+            setCropSelection(null)
+          }
+        }}
+      >
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>人工框选修复</DialogTitle>
+            <p className="text-sm text-muted-foreground">
+              在原始试卷图上框选正确的图像区域，系统会重新裁剪并替换当前配图。
+            </p>
+          </DialogHeader>
+          {imageUrl ? (
+            <ManualImageCropper
+              imageUrl={`/api/image-proxy?url=${encodeURIComponent(imageUrl)}`}
+              onSelectionChange={handleSelectionChange}
+            />
+          ) : (
+            <div className="rounded-lg border border-dashed p-6 text-sm text-muted-foreground">
+              暂无原始图片 URL，无法执行人工裁剪。请刷新页面或重新加载任务。
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setCropDialogOpen(false)
+                setCropSelection(null)
+              }}
+              disabled={isCropping}
+            >
+              取消
+            </Button>
+            <Button onClick={handleManualCrop} disabled={!cropSelection || isCropping || !imageUrl}>
+              {isCropping ? '裁剪中...' : '确认裁剪'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 图片增强对话框 */}
+      {selectedImageForEnhancement && (
+        <ImageEnhancementDialog
+          open={enhanceDialogOpen}
+          onOpenChange={setEnhanceDialogOpen}
+          imageUrl={`/api/image-proxy?url=${encodeURIComponent(selectedImageForEnhancement.url)}`}
+          onSuccess={handleEnhanceSuccess}
+        />
+      )}
     </>
   )
 }

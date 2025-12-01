@@ -5,12 +5,39 @@
 
 'use server';
 
-import { uploadFile, getSignedUrl, FileAccessLevel } from '@/lib/storage';
+import { uploadFile, getSignedUrl, FileAccessLevel, downloadFile } from '@/lib/storage';
 import { inngest } from '../../../inngest/client';
 import { generateFileKey, formatFileSize, normalizeFileName } from '@/lib/ai-question-bank/utils';
 import { BatchSubmitSchema } from '@/lib/ai-question-bank/schemas';
-import type { ActionResult, UploadResult, UploadTask, ParsedQuestionRecord } from '@/lib/ai-question-bank/types';
+import type {
+  ActionResult,
+  UploadResult,
+  UploadTask,
+  ParsedQuestionRecord,
+  QuestionImageAsset
+} from '@/lib/ai-question-bank/types';
 import { createAuthenticatedSupabaseClient, getAccessTokenFromCookies } from '@/lib/server/auth';
+import sharp from 'sharp';
+import { convertBoxToPixelRect } from '@/lib/ai-question-bank/coordinates';
+import { createClient } from '@supabase/supabase-js';
+import type { Database } from '@/types/database';
+
+function createServiceSupabaseClient() {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    throw new Error('缺少 Supabase 服务配置');
+  }
+
+  return createClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY,
+    {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false
+      }
+    }
+  );
+}
 
 /**
  * 上传题目文件（PDF/图片）
@@ -317,6 +344,7 @@ export async function updateQuestion(
     content?: string;
     options?: string[];
     answer?: string;
+    imageAssets?: QuestionImageAsset[];
     tags?: Record<string, unknown>;
   }
 ): Promise<ActionResult<void>> {
@@ -332,10 +360,17 @@ export async function updateQuestion(
       return { success: false, error: '未登录' };
     }
 
+    // 准备数据库更新（转换 imageAssets 为 image_assets）
+    const dbUpdates: Record<string, unknown> = { ...updates };
+    if (updates.imageAssets !== undefined) {
+      dbUpdates.image_assets = updates.imageAssets;
+      delete dbUpdates.imageAssets;
+    }
+
     // 更新题目
     const { error } = await supabase
       .from('parsed_questions')
-      .update(updates)
+      .update(dbUpdates)
       .eq('id', questionId);
 
     if (error) {
@@ -386,6 +421,166 @@ export async function deleteQuestion(questionId: string): Promise<ActionResult<v
     return {
       success: false,
       error: error instanceof Error ? error.message : '未知错误'
+    };
+  }
+}
+
+/**
+ * 人工框选裁剪配图
+ */
+export async function manualCropQuestionImage(params: {
+  questionId: string;
+  taskId: string;
+  box2d: [number, number, number, number];
+  label?: string;
+}): Promise<ActionResult<{ asset: QuestionImageAsset }>> {
+  try {
+    const supabase = createAuthenticatedSupabaseClient();
+    if (!supabase) {
+      return { success: false, error: '未登录' };
+    }
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return { success: false, error: '未登录' };
+    }
+
+    if (!Array.isArray(params.box2d) || params.box2d.length !== 4) {
+      return { success: false, error: '无效的裁剪坐标' };
+    }
+
+    const { data: question, error: questionError } = await supabase
+      .from('parsed_questions')
+      .select('id, upload_task_id, number, original_image_url, image_assets')
+      .eq('id', params.questionId)
+      .eq('upload_task_id', params.taskId)
+      .single();
+
+    if (questionError || !question) {
+      return { success: false, error: '题目不存在或不在当前任务中' };
+    }
+
+    const { data: task, error: taskError } = await supabase
+      .from('upload_tasks')
+      .select('id, user_id, file_url')
+      .eq('id', params.taskId)
+      .single();
+
+    if (taskError || !task) {
+      return { success: false, error: '上传任务不存在' };
+    }
+
+    if (task.user_id !== user.id) {
+      return { success: false, error: '无权操作该题目' };
+    }
+
+    const sourceKey = question.original_image_url || task.file_url;
+    if (!sourceKey) {
+      return { success: false, error: '缺少原始图片，请重新上传文件' };
+    }
+
+    const originalImageBuffer = await downloadFile(sourceKey, FileAccessLevel.PRIVATE);
+    const metadata = await sharp(originalImageBuffer).metadata();
+
+    if (!metadata.width || !metadata.height) {
+      return { success: false, error: '无法读取原图尺寸' };
+    }
+
+    const rect = convertBoxToPixelRect(
+      params.box2d,
+      { width: metadata.width, height: metadata.height },
+      5
+    );
+
+    if (!rect) {
+      return { success: false, error: '裁剪区域无效，请重新框选' };
+    }
+
+    const croppedBuffer = await sharp(originalImageBuffer)
+      .extract({
+        left: rect.left,
+        top: rect.top,
+        width: rect.width,
+        height: rect.height
+      })
+      .png()
+      .toBuffer();
+
+    const serviceClient = createServiceSupabaseClient();
+    const uniqueId = `manual-${params.questionId}-${Date.now()}`;
+    const fileName = `ai-question-bank/${params.taskId}/manual/q${question.number}-${uniqueId}.png`;
+
+    const { error: uploadError } = await serviceClient.storage
+      .from('question-images')
+      .upload(fileName, croppedBuffer, {
+        contentType: 'image/png',
+        upsert: true
+      });
+
+    if (uploadError) {
+      return { success: false, error: `上传截图失败: ${uploadError.message}` };
+    }
+
+    const { data: urlData } = serviceClient.storage
+      .from('question-images')
+      .getPublicUrl(fileName);
+
+    const region = {
+      x: rect.left,
+      y: rect.top,
+      width: rect.width,
+      height: rect.height
+    };
+
+    const questionNumber = question.number || 'unknown';
+
+    const newAsset: QuestionImageAsset = {
+      id: uniqueId,
+      key: fileName,
+      url: urlData.publicUrl,
+      questionNumber,
+      order: 1,
+      placeholder: params.label || '人工修复',
+      used: true,
+      source: 'manual',
+      region
+    };
+
+    const existingAssets: QuestionImageAsset[] = Array.isArray(question.image_assets)
+      ? question.image_assets
+      : [];
+
+    const normalizedAssets = existingAssets.map((asset, index) => ({
+      ...asset,
+      order: index + 2,
+      used: false,
+      source: asset.source ?? 'ai'
+    }));
+
+    const updatedAssets = [newAsset, ...normalizedAssets];
+
+    const { error: updateError } = await supabase
+      .from('parsed_questions')
+      .update({
+        question_image_url: newAsset.url,
+        image_region: JSON.stringify(region),
+        image_assets: updatedAssets
+      })
+      .eq('id', params.questionId);
+
+    if (updateError) {
+      return { success: false, error: `保存配图失败: ${updateError.message}` };
+    }
+
+    return {
+      success: true,
+      data: { asset: newAsset }
+    };
+  } catch (error) {
+    console.error('manualCropQuestionImage错误', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : '裁剪失败，请稍后重试'
     };
   }
 }

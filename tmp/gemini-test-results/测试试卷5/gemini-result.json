@@ -1,92 +1,95 @@
 {
   "questions": [
     {
-      "number": "7",
-      "content": "7.(2025勤学早)如图,在Rt△ABC中,∠ABC=90°, AB=BC=5,E是△ABC内一点,连接AE,CE,F是CE的中点,且∠CBF=∠EAB.若BF=3,则AE的长为",
+      "number": "7.",
+      "content": "(2025勤学早)如图,在$\text{Rt}\triangle ABC$中,$\\angle ABC=90^\\circ$, $AB=BC=5$,$E$是$\triangle ABC$内一点,连接$AE, CE$,$F$是$CE$的中点,且$\\angle CBF=\\angle EAB$.若$BF=3$,则$AE$的长为",
       "options": [],
-      "answer": "",
       "image_regions": [
         {
-          "x": 800,
-          "y": 170,
-          "width": 140,
-          "height": 68,
-          "position": "right",
-          "aspectRatio": 2.06,
-          "description": "几何图形"
+          "box_2d": [
+            112,
+            816,
+            187,
+            989
+          ],
+          "label": "geometry"
         }
       ]
     },
     {
-      "number": "8",
-      "content": "8.(2025勤学早)如图,E是菱形ABCD的对角线BD上一点,连接AE 并延长至点F,使EF =AE,AF交BC于点G,连接BF.若CG=BG=5,BD=12,则BF的长为",
+      "number": "8.",
+      "content": "(2025勤学早)如图,$E$是菱形$ABCD$的对角线$BD$上一点,连接$AE$并延长至点$F$,使$EF =AE$,$AF$交$BC$于点$G$,连接$BF$.若$CG=BG=5$,$BD=12$,则$BF$的长为",
       "options": [],
-      "answer": "",
       "image_regions": [
         {
-          "x": 760,
-          "y": 305,
-          "width": 190,
-          "height": 85,
-          "position": "right",
-          "aspectRatio": 2.24,
-          "description": "几何图形"
+          "box_2d": [
+            216,
+            800,
+            291,
+            989
+          ],
+          "label": "geometry"
         }
       ]
     },
     {
-      "number": "9",
-      "content": "9. (2025勤学早)如图,在菱形ABCD中,∠BAD=60°,E是边BC的中点,EF⊥AE交CD 于点F,则CF/DF的值为",
+      "number": "9.",
+      "content": "(2025勤学早)如图,在菱形$ABCD$中,$\\angle BAD=60^\\circ$,$E$是边$BC$的中点,$EF \\perp AE$交$CD$于点$F$,则$\frac{CF}{DF}$的值为",
       "options": [],
-      "answer": "",
       "image_regions": [
         {
-          "x": 765,
-          "y": 435,
-          "width": 175,
-          "height": 85,
-          "position": "right",
-          "aspectRatio": 2.06,
-          "description": "几何图形"
+          "box_2d": [
+            313,
+            800,
+            388,
+            989
+          ],
+          "label": "geometry"
         }
       ]
     },
     {
-      "number": "10",
-      "content": "10.(2025勤学早)如图,E为正方形ABCD外的一点,且∠AEC=90°,连接BE交AC于点F.若/EAD=∠ACE,BE=2,则BF的长为",
+      "number": "10.",
+      "content": "(2025勤学早)如图,$E$为正方形$ABCD$外的一点,且$\\angle AEC=90^\\circ$,连接$BE$交$AC$于点$F$.若$\\angle EAD=\\angle ACE$,$BE=2$,则$BF$的长为",
       "options": [],
-      "answer": "",
       "image_regions": [
         {
-          "x": 800,
-          "y": 635,
-          "width": 140,
-          "height": 85,
-          "position": "right",
-          "aspectRatio": 1.65,
-          "description": "几何图形"
+          "box_2d": [
+            463,
+            800,
+            537,
+            989
+          ],
+          "label": "geometry"
         }
       ]
     },
     {
-      "number": "11",
-      "content": "11. (2025 勤学早)如图,在Rt△ABC中,∠ACB=90°,BD平分∠ABC交AC于点D,E是BC上的一点,且∠CDE=1/2∠BAC.(1)∠BDE的度数为;(2)若CD=6,BE=10,则DE的长为",
+      "number": "11.",
+      "content": "(2025 勤学早)如图,在$\text{Rt}\triangle ABC$中,$\\angle ACB=90^\\circ$,$BD$平分$\\angle ABC$交$AC$于点$D$,$E$是$BC$上的一点,且$\\angle CDE=\frac{1}{2}\\angle BAC.\n(1)$\\angle BDE$的度数为\n(2)若$CD=6, BE=10$,则$DE$的长为",
       "options": [],
-      "answer": "",
       "image_regions": [
         {
-          "x": 700,
-          "y": 860,
-          "width": 240,
-          "height": 70,
-          "position": "right",
-          "aspectRatio": 3.43,
-          "description": "几何图形"
+          "box_2d": [
+            612,
+            800,
+            687,
+            989
+          ],
+          "label": "geometry"
         }
       ]
     }
   ],
   "model": "gemini-flash",
   "retried": false,
-  "processingTime": 27720
+  "processingTime": 29109,
+  "validation": {
+    "passed": true,
+    "reasons": [],
+    "hasQuestions": true,
+    "hasImageRegions": true,
+    "hasValidCoordinates": true,
+    "hasValidSequence": true
+  }
 }

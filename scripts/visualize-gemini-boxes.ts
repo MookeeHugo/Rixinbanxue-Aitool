@@ -6,9 +6,14 @@
 import sharp from 'sharp';
 import { readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
+import { convertBoxToPixelRect } from '../src/lib/ai-question-bank/coordinates';
 
 // 测试图片路径
 const testImages = [
+  '测试试卷1.png',
+  '测试试卷2.png',
+  '测试试卷3.png',
+  '测试试卷4.png',
   '测试试卷5.png',
   '测试试卷6.png',
   '测试试卷7.png',
@@ -35,29 +40,42 @@ async function visualizeBoxes(imageName: string) {
 
   // 创建SVG overlay来画框
   const boxes: string[] = [];
+  const imageMeta = {
+    width: metadata.width || 0,
+    height: metadata.height || 0
+  };
 
   geminiResult.questions.forEach((question: any, index: number) => {
     if (question.image_regions && question.image_regions.length > 0) {
       question.image_regions.forEach((region: any, regionIndex: number) => {
-        const { x, y, width, height } = region;
+        if (!Array.isArray(region.box_2d) || region.box_2d.length !== 4) {
+          console.warn(`  ⚠️ 题${question.number} 区域${regionIndex + 1} 缺少 box_2d`);
+          return;
+        }
 
-        console.log(`  题${question.number} 区域${regionIndex + 1}: x=${x}, y=${y}, w=${width}, h=${height}`);
+        const rect = convertBoxToPixelRect(region.box_2d, imageMeta);
+        if (!rect) {
+          console.warn(`  ⚠️ 题${question.number} 区域${regionIndex + 1} 映射失败`, { box_2d: region.box_2d });
+          return;
+        }
 
-        // 画红色边框
+        console.log(
+          `  题${question.number} 区域${regionIndex + 1}: box_2d=[${region.box_2d.join(', ')}] -> left=${rect.left}, top=${rect.top}, w=${rect.width}, h=${rect.height}`
+        );
+
         boxes.push(`
           <rect
-            x="${x}" y="${y}"
-            width="${width}" height="${height}"
+            x="${rect.left}" y="${rect.top}"
+            width="${rect.width}" height="${rect.height}"
             fill="none"
             stroke="red"
             stroke-width="3"
           />
         `);
 
-        // 添加标签
         boxes.push(`
           <text
-            x="${x + 5}" y="${y + 20}"
+            x="${rect.left + 5}" y="${rect.top + 20}"
             font-size="16"
             font-weight="bold"
             fill="red"

@@ -1,5 +1,21 @@
 # AI题库系统 - 代码模板使用指南
 
+## ✳️ Gemini Vision V3（默认解析路径）
+
+> 2025-11-30：AI 题库系统已切换到 Google 官方 `@google/generative-ai` Streaming SDK，彻底弃用 IkunCode/OpenAI 兼容路径。所有题目解析、配图裁剪均走新的 Gemini V3 流程。
+
+- **环境变量**：在 `.env.local` 中配置 `GEMINI_API_KEY`、`GEMINI_BASE_URL`（现阶段默认指向 https://api.ikuncode.cc 代理，也可替换为官方 Endpoint）、`GEMINI_MODEL`（默认 `gemini-2.5-flash`）、`GEMINI_REQUEST_TIMEOUT`。示例可参考 `.env.local.example`。
+- **依赖**：`@google/generative-ai`、`sharp`、`zod` 必须保持最新版（仓库已预装）。
+- **流式调用**：`src/lib/ai-question-bank/gemini-vision-client.ts` 通过 `generateContentStream` 获取分片文本，自动拼接 JSON、执行严格 Zod 校验，并对选项进行 `$...$` 包裹验证。
+- **图像预处理**：每个 `box_2d` 会按 `max(20px, 2%)` 扩展 padding，并在本地用 `sharp.trim()` 去除多余底色，裁剪结果以 base64 的形式挂载到 `question.images`。
+- **调试脚本**：`scripts/test-gemini-stream.ts [图片路径]` 一键验证流式解析与 base64 结果，默认样例为 `测试试卷7.png`。
+- **常见错误**：
+  - `Gemini 请求超时`：调大 `GEMINI_REQUEST_TIMEOUT` 或检查图片大小。
+  - `未能在 Gemini 响应中定位 JSON`：通常是模型返回了额外文本，重新请求或降低温度。
+  - `选项未正确包裹 $...$`：脚本会直接抛错，请修订 Prompt 或手动清洗。
+
+仍保留 Qwen 客户端代码以兼容旧任务，但默认流程已经迁至 Gemini。
+
 ## 📁 文件结构
 
 ```
@@ -8,7 +24,8 @@ src/lib/ai-question-bank/
 ├── types.ts              # TypeScript类型定义
 ├── schemas.ts            # Zod验证模式
 ├── prompts.ts            # Qwen Prompt模板
-├── qwen-flash.ts         # Qwen3-VL-Flash API客户端
+├── gemini-vision-client.ts # Gemini Vision V3 客户端（默认）
+├── qwen-flash.ts         # Qwen3-VL-Flash API客户端（兼容保留）
 ├── utils.ts              # 工具函数
 └── README.md             # 本文档
 

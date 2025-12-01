@@ -11,12 +11,13 @@ export interface ParsedQuestionItem {
   options?: string[]
   answer: string
   difficulty?: DifficultyLevel
-  hasImage: boolean
+  hasImage?: boolean
   imageUrl?: string
   reparseCount?: number
   uploadTaskId?: string
   confidenceScore?: number
   createdAt?: string
+  tags?: Array<{ category: string; value: string; id?: string }>
 }
 
 export interface ParseTask {

@@ -46,8 +46,9 @@ export default function ParsePage() {
       setIsComplete(currentTask.status === "completed")
 
       if (currentTask.questions && currentTask.questions.length > 0) {
+        const questions = currentTask.questions
         setParsedQuestions((prev) => {
-          const newIds = currentTask.questions
+          const newIds = questions
             .map((q: any) => q.id)
             .sort()
             .join(",")
@@ -55,12 +56,12 @@ export default function ParsePage() {
             .map((q) => q.id)
             .sort()
             .join(",")
-          return newIds === prevIds ? prev : currentTask.questions
+          return newIds === prevIds ? prev : questions
         })
 
         setSelectedQuestions((prev) => {
           // Get IDs that are currently in the task
-          const currentIds = currentTask.questions.map((q: any) => q.id)
+          const currentIds = questions.map((q: any) => q.id)
 
           // Keep previous selections ONLY if they exist in the current task
           const validPrevSelections = prev.filter((id) => currentIds.includes(id))
@@ -89,7 +90,7 @@ export default function ParsePage() {
           // If the user unselected something, it stays unselected.
           // If a new question appears, we should probably select it.
 
-          const newQuestions = currentTask.questions.filter((q: any) => !prev.includes(q.id))
+          const newQuestions = questions.filter((q: any) => !prev.includes(q.id))
           // Only add new questions if they are genuinely new (not just re-fetched)
           // But how do we know if they are new?
           // We can check if they were in the *previous* currentTask.questions?
@@ -216,7 +217,7 @@ export default function ParsePage() {
       const newTask = await mockAPI.reparseTask(currentTask.taskId)
 
       // Update store with new task
-      setCurrentTask(newTask)
+      setCurrentTask(newTask as any)
 
       // The useMockIngestTask hook will pick up the new taskId and start polling from 0%
     } catch (error) {

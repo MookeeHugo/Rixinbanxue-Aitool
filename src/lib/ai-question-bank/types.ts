@@ -45,6 +45,69 @@ export interface ImageRegion {
 }
 
 /**
+ * 归一化坐标（0-1000 范围�?
+ */
+export type NormalizedBox = [number, number, number, number];
+
+/**
+ * Gemini 解析返回的配图区域（含 padding/trim 元数据�?
+ */
+export interface GeminiImageRegion {
+  anchor_id: string;
+  box_2d: NormalizedBox;
+  padded_box_2d: NormalizedBox;
+  label?: string;
+  description?: string;
+  position?: 'right' | 'bottom' | 'left' | 'inline';
+  base64?: string;
+  asset_url?: string;
+  mime_type?: string;
+  padding: {
+    px: number;
+    ratio: number;
+  };
+  pixel_rect?: ImageRegion;
+  padded_pixel_rect?: ImageRegion;
+  trimmed_rect?: ImageRegion;
+}
+
+/**
+ * Gemini Question 元数据
+ */
+export interface GeminiQuestionMeta {
+  difficulty: DifficultyLevel;
+  tags: string[];
+  type: QuestionType;
+}
+
+/**
+ * Gemini Question 定义
+ */
+export interface GeminiQuestion {
+  number: string;
+  content: string;
+  options?: string[];
+  answer?: string;
+  images: GeminiImageRegion[];
+  image_regions: GeminiImageRegion[];
+  meta: GeminiQuestionMeta;
+}
+
+/**
+ * Gemini QuestionData JSON 根结构
+ */
+export interface QuestionData {
+  meta: {
+    page_summary: string;
+    reasoning: string[];
+    difficulty?: DifficultyLevel;
+    tags?: string[];
+    type?: QuestionType;
+  };
+  questions: GeminiQuestion[];
+}
+
+/**
  * AI解析的题目（来自Qwen3-VL-Flash）
  */
 /**
@@ -69,6 +132,19 @@ export interface QuestionImageAsset {
   used?: boolean;
   /** 裁剪时使用的图像区域 */
   region?: ImageRegion;
+  source?: 'ai' | 'manual';
+  padding?: {
+    px: number;
+    ratio: number;
+  };
+  trimOffset?: {
+    left: number;
+    top: number;
+  };
+  trimmedSize?: {
+    width: number;
+    height: number;
+  };
 }
 
 export interface ParsedQuestion {
@@ -102,6 +178,26 @@ export interface QwenParseResult {
   questions: ParsedQuestion[];
 }
 
+export interface GeminiValidationResult {
+  passed: boolean;
+  reasons: string[];
+  hasQuestions: boolean;
+  hasImageRegions: boolean;
+  hasValidCoordinates: boolean;
+  hasValidSequence: boolean;
+}
+
+export interface GeminiParseResult {
+  meta: QuestionData['meta'];
+  questions: GeminiQuestion[];
+  model: string;
+  requestId: string;
+  retried: boolean;
+  processingTime: number;
+  validation: GeminiValidationResult;
+  rawText: string;
+}
+
 /**
  * 上传任务数据库记录
  */
@@ -120,6 +216,11 @@ export interface UploadTask {
   created_at: string;
   updated_at: string;
 }
+
+/**
+ * 重解析状态
+ */
+export type ReparseStatus = 'idle' | 'pending' | 'processing' | 'completed' | 'failed';
 
 /**
  * 解析题目数据库记录
@@ -141,6 +242,12 @@ export interface ParsedQuestionRecord extends ParsedQuestion {
   image_assets?: QuestionImageAsset[] | null;
   /** 未做占位符替换的原始内容 */
   raw_content?: string | null;
+  /** 重解析次数 */
+  reparse_count?: number;
+  /** 上次重解析时间 */
+  last_reparse_at?: string | null;
+  /** 重解析状态 */
+  reparse_status?: ReparseStatus;
   created_at: string;
 }
 

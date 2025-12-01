@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { logger } from "@/lib/logger";
 import Link from "next/link";
 import { ArrowLeft, Calendar, Clock, FileVideo, Loader2, Download } from "lucide-react";
 

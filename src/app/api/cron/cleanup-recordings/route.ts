@@ -9,7 +9,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { logger } from '@/lib/logger';
 
 // 验证 Cron 请求的密钥
@@ -133,7 +133,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
  * 批量删除录制文件和数据库记录
  */
 async function deleteRecordings(
-  supabase: ReturnType<typeof createClient>,
+  supabase: SupabaseClient,
   recordings: Array<{ id: string; file_path: string; session_id: string; title: string }>,
   category: string
 ): Promise<void> {

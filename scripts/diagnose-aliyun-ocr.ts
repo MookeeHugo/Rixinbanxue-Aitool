@@ -212,14 +212,22 @@ async function testOCRAPICall() {
     const response = await client.recognizeCharacterAdvance(request, runtime);
 
     if (response.body?.data) {
+      const responseData = response.body.data as any;
+      const width = responseData?.width ?? responseData?.imageWidth ?? 'unknown';
+      const height = responseData?.height ?? responseData?.imageHeight ?? 'unknown';
+      const textLength =
+        typeof responseData?.content === 'string'
+          ? responseData.content.length
+          : responseData?.content?.length || 0;
+
       addResult(
         'OCR API调用',
         'pass',
         '✨ API调用成功！服务已正常激活',
         {
           requestId: response.body.requestId || 'N/A',
-          imageSize: `${response.body.data.width}x${response.body.data.height}`,
-          textLength: response.body.data.content?.length || 0
+          imageSize: `${width}x${height}`,
+          textLength
         }
       );
       return true;

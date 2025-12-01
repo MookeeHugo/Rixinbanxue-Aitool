@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useAppStore } from "@/lib/store"
-import { Badge } from "@/components/ui/badge"
+import { Badge } from "../ui/badge"
 import { Clock, FileText, Trash2, Play, CheckCircle } from "lucide-react"
 import { useRouter } from "next/navigation"
 

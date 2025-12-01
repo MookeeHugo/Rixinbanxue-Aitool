@@ -125,7 +125,7 @@ export async function GET(
 
           const connections = activeConnections.get(sessionId);
           if (connections) {
-            connections.delete(writer);
+            connections.delete(controller);
             if (connections.size === 0) {
               activeConnections.delete(sessionId);
             }

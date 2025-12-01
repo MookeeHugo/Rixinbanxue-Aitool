@@ -1,0 +1,25 @@
+{
+  "CPLX-06-crowded-references.jpg": {
+    "scenario": "02_complex",
+    "source": "tmp/gemini-test-results/测试试卷4/question-2-img1.png",
+    "layout": "多栏+批注",
+    "notes": "用于压测多图嵌入的阅读顺序",
+    "addedAt": "2025-12-01T10:56:00+08:00",
+    "expected_count": 1
+  },
+  "CPLX-01-two-column-layout.jpg": {
+    "expected_count": 13
+  },
+  "CPLX-02-dense-small-figures.jpg": {
+    "expected_count": 8
+  },
+  "CPLX-03-embedded-in-text.jpg": {
+    "expected_count": 5
+  },
+  "CPLX-04-composite-diagrams.jpg": {
+    "expected_count": 8
+  },
+  "CPLX-05-proof-heavy-text.jpg": {
+    "expected_count": 2
+  }
+}

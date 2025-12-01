@@ -7,9 +7,10 @@ import { QuestionCard } from '@/components/question-card'
 import { QuestionEditDialog } from '@/components/question-edit-dialog'
 import { CheckCircle2, AlertCircle, Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import type { ParsedQuestionItem } from '@/types/tasks'
 
 // Mock data for demonstration
-const mockQuestions = [
+const mockQuestions: ParsedQuestionItem[] = [
   {
     id: '1',
     type: 'choice',
@@ -71,9 +72,9 @@ export function ParsedQuestions() {
     setEditingQuestion(question)
   }
 
-  const handleSaveQuestion = (updatedQuestion: typeof mockQuestions[0]) => {
+  const handleSaveQuestion = (updatedQuestion: any) => {
     setQuestions((prev) =>
-      prev.map((q) => (q.id === updatedQuestion.id ? updatedQuestion : q))
+      prev.map((q) => (q.id === updatedQuestion.id ? updatedQuestion as ParsedQuestionItem : q))
     )
     setEditingQuestion(null)
   }

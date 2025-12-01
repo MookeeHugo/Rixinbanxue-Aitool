@@ -99,7 +99,9 @@ async function testAliyunOCR() {
         mockQuestions,
         imageRegions,
         questionRegions,
-        ocrResult.PrismWordsInfo
+        ocrResult.PrismWordsInfo,
+        ocrResult.Width,
+        ocrResult.Height
       );
 
       const matchedCount = Object.keys(imageMapping).length;

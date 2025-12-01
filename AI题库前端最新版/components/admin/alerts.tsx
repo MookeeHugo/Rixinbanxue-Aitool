@@ -181,7 +181,7 @@ export function AdminAlerts() {
                       <TableCell>
                         <div className="flex gap-1">
                           {rule.channels.map((channel, idx) => (
-                            <Badge key={idx} variant="secondary" className="text-xs">
+                            <Badge key={idx} variant="default" className="text-xs">
                               {channel}
                             </Badge>
                           ))}

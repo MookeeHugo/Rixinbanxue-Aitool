@@ -1,0 +1,25 @@
+{
+  "EDGE-06-borderless-diagram.jpg": {
+    "scenario": "05_edge_cases",
+    "source": "tmp/gemini-test-results/测试试卷4/question-2025 武汉四调第 15 题-img1.png",
+    "pattern": "整页单图+宽边距",
+    "notes": "验证跨页或超大配图的坐标回写",
+    "addedAt": "2025-12-01T10:56:00+08:00",
+    "expected_count": 1
+  },
+  "EDGE-01-pure-text-only.jpg": {
+    "expected_count": 9
+  },
+  "EDGE-02-cross-page-top.png": {
+    "expected_count": 6
+  },
+  "EDGE-03-cross-page-btm.png": {
+    "expected_count": 4
+  },
+  "EDGE-04-huge-single-fig.jpg": {
+    "expected_count": 1
+  },
+  "EDGE-05-vertical-text.jpg": {
+    "expected_count": 14
+  }
+}

@@ -4,8 +4,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { MarkdownRenderer } from './markdown-renderer'
 import { Button } from './ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog'
-import { ExternalLink, Image as ImageIcon } from 'lucide-react'
+import { ExternalLink, Image as ImageIcon, Sparkles, Trash2 } from 'lucide-react'
 import type { QuestionImageAsset } from '@/lib/ai-question-bank'
+import { Badge } from './ui/badge'
 
 interface QuestionContentRendererProps {
   content: string
@@ -13,6 +14,9 @@ interface QuestionContentRendererProps {
   questionImageUrl?: string | null
   imageAssets?: QuestionImageAsset[] | null
   className?: string
+  onDeleteImage?: (imageId: string) => void
+  onEnhanceImage?: (imageId: string) => void
+  showImageActions?: boolean
 }
 
 /**
@@ -23,7 +27,10 @@ export function QuestionContentRenderer({
   imageUrl,
   questionImageUrl,
   imageAssets,
-  className = ''
+  className = '',
+  onDeleteImage,
+  onEnhanceImage,
+  showImageActions = false
 }: QuestionContentRendererProps) {
   const isDev = process.env.NODE_ENV !== 'production'
   const [originalImageLoadError, setOriginalImageLoadError] = useState(false)
@@ -44,7 +51,8 @@ export function QuestionContentRenderer({
             label: asset.placeholder || `配图 ${order}`,
             proxyUrl: `/api/image-proxy?url=${encodeURIComponent(asset.url)}`,
             rawUrl: asset.url,
-            region: asset.region ?? null
+            region: asset.region ?? null,
+            source: asset.source ?? 'ai'
           }
         }) ?? []
 
@@ -56,7 +64,8 @@ export function QuestionContentRenderer({
           label: '配图 1',
           proxyUrl: `/api/image-proxy?url=${encodeURIComponent(questionImageUrl)}`,
           rawUrl: questionImageUrl,
-          region: null
+          region: null,
+          source: 'ai' as const
         }
       ]
     }
@@ -97,7 +106,7 @@ export function QuestionContentRenderer({
                   key={asset.id}
                   className="snap-start min-w-[220px] max-w-[260px] flex-shrink-0 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 bg-muted/20 p-3 flex flex-col gap-2"
                 >
-                  <div className="relative h-40 rounded-lg bg-background flex items-center justify-center overflow-hidden">
+                  <div className="relative h-40 rounded-lg bg-background flex items-center justify-center overflow-hidden group">
                     {!hasError ? (
                       <img
                         src={asset.proxyUrl}
@@ -109,9 +118,49 @@ export function QuestionContentRenderer({
                     ) : (
                       <span className="text-xs text-red-500 font-medium">配图加载失败</span>
                     )}
+                    {showImageActions && !hasError && (
+                      <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        {onEnhanceImage && (
+                          <Button
+                            variant="secondary"
+                            size="icon"
+                            className="h-7 w-7 bg-white/90 hover:bg-white shadow-sm"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              onEnhanceImage(asset.id)
+                            }}
+                            title="增强图片"
+                          >
+                            <Sparkles className="h-3.5 w-3.5 text-blue-600" />
+                          </Button>
+                        )}
+                        {onDeleteImage && (
+                          <Button
+                            variant="secondary"
+                            size="icon"
+                            className="h-7 w-7 bg-white/90 hover:bg-white shadow-sm"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              onDeleteImage(asset.id)
+                            }}
+                            title="删除图片"
+                          >
+                            <Trash2 className="h-3.5 w-3.5 text-red-600" />
+                          </Button>
+                        )}
+                      </div>
+                    )}
                   </div>
                   <figcaption className="text-xs text-muted-foreground space-y-1">
-                    <div className="font-medium text-foreground">{asset.label}</div>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="font-medium text-foreground">{asset.label}</div>
+                      <Badge
+                        variant={asset.source === 'manual' ? 'outline' : 'secondary'}
+                        className={asset.source === 'manual' ? 'border-blue-500 text-blue-700' : ''}
+                      >
+                        {asset.source === 'manual' ? '人工修复' : 'AI 截图'}
+                      </Badge>
+                    </div>
                     {asset.region && (
                       <div>
                         尺寸：{asset.region.width} × {asset.region.height}

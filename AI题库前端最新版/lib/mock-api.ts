@@ -97,7 +97,7 @@ export async function mockFetchParsedQuestions(taskId: string): Promise<ParsedQu
 
   return new Promise((resolve) => {
     setTimeout(() => {
-      const questions = mockAdvancedQuestionData.slice(0, mockConfig.questionCount).map((q, index) => ({
+      const questions = mockAdvancedQuestionData.slice(0, mockConfig.questionCount).map((q: any, index: number) => ({
         id: `${taskId}-q${index + 1}`,
         uploadTaskId: taskId,
         type: q.type,
@@ -105,13 +105,13 @@ export async function mockFetchParsedQuestions(taskId: string): Promise<ParsedQu
         options: q.options,
         answer: q.answer,
         difficulty: q.difficulty,
-        source: q.source,
         tags: q.tags || [],
         images: q.images || [],
         confidenceScore: q.confidence,
         isSelected: true,
         isSubmitted: false,
         createdAt: new Date().toISOString(),
+        hasImage: !!(q.imageBlocks && q.imageBlocks.length > 0),
       }))
 
       console.log("[v0] mockFetchParsedQuestions returning:", questions)
@@ -128,7 +128,7 @@ export async function mockReparseQuestion(questionId: string): Promise<ParsedQue
 
   return new Promise((resolve) => {
     setTimeout(() => {
-      const mockData = mockAdvancedQuestionData[0]
+      const mockData: any = mockAdvancedQuestionData[0]
 
       resolve({
         id: questionId,
@@ -137,14 +137,11 @@ export async function mockReparseQuestion(questionId: string): Promise<ParsedQue
         content: mockData.content,
         options: mockData.options,
         answer: mockData.answer,
-        difficulty: mockData.difficulty,
-        source: mockData.source,
-        tags: mockData.tags || [],
-        images: mockData.images || [],
         confidenceScore: Math.random() * 0.2 + 0.8, // 0.8-1.0
         isSelected: true,
         isSubmitted: false,
         createdAt: new Date().toISOString(),
+        hasImage: !!(mockData.imageBlocks && mockData.imageBlocks.length > 0),
       })
     }, 3000)
   })
@@ -168,8 +165,7 @@ export async function mockReparseTask(oldTaskId: string): Promise<MockTaskRespon
     progress: 0,
     totalQuestions: mockConfig.questionCount,
     fileName: "reparsed_file.pdf", // 简化处理
-    createdAt: Date.now(),
-  }
+  } as any
 }
 
 export const mockAPI = {

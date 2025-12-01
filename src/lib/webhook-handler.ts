@@ -69,7 +69,7 @@ export interface WebhookEvent {
  * Webhook 处理器
  */
 export class WebhookHandler {
-  private supabase: ReturnType<typeof createClient>;
+  private supabase: any;
 
   constructor() {
     // 初始化 Supabase 客户端（使用 service role key）
@@ -167,7 +167,7 @@ export class WebhookHandler {
         event_type: event.event,
         payload: event,
         processed_at: new Date().toISOString(),
-      });
+      } as any);
 
     if (error) {
       logger.error('Failed to mark event as processed', error);
@@ -195,7 +195,7 @@ export class WebhookHandler {
       .update({
         status: 'live',
         started_at: new Date(event.createdAt).toISOString(),
-      })
+      } as any)
       .eq('id', sessionId);
 
     if (error) {
@@ -222,7 +222,7 @@ export class WebhookHandler {
       .update({
         status: 'ended',
         ended_at: new Date().toISOString(),
-      })
+      } as any)
       .eq('id', sessionId);
 
     if (error) {
@@ -365,7 +365,7 @@ export class WebhookHandler {
             duration_seconds: Math.floor(file!.duration / 1000),
             status: 'completed',
             completed_at: new Date().toISOString(),
-          })
+          } as any)
           .eq('id', existingRecording.id);
 
         logger.info('Recording record updated', {
@@ -392,7 +392,7 @@ export class WebhookHandler {
             recorded_by: session?.created_by,
             status: 'completed',
             completed_at: new Date().toISOString(),
-          });
+          } as any);
 
         logger.info('Recording record created', { sessionId });
       }
@@ -420,7 +420,7 @@ export class WebhookHandler {
         status,
         error_message: error,
         completed_at: new Date().toISOString(),
-      })
+      } as any)
       .eq('session_id', sessionId);
 
     if (updateError) {

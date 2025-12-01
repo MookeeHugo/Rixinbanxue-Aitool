@@ -104,7 +104,7 @@ export function LiveChat({ sessionId, currentUserId }: LiveChatProps) {
   useEffect(() => {
     if (!sessionId) return;
 
-    logger.debug("订阅聊天消息实时更新:", sessionId);
+    logger.debug("订阅聊天消息实时更新:", { sessionId });
 
     // 创建Realtime订阅
     const channel = supabase
@@ -158,7 +158,7 @@ export function LiveChat({ sessionId, currentUserId }: LiveChatProps) {
         }
       )
       .subscribe((status) => {
-        logger.debug("Realtime订阅状态:", status);
+        logger.debug("Realtime订阅状态:", { status });
       });
 
     // 清理订阅

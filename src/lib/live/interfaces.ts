@@ -25,16 +25,20 @@ export interface IssueTokenResult {
 }
 
 export interface StartRecordingInput {
+  sessionId: string;
   roomId: string;
+  userId: string;
   layout?: string;
 }
 
 export interface StartRecordingResult {
   recordingId: string;
+  egressId?: string;
 }
 
 export interface StopRecordingInput {
-  recordingId: string;
+  sessionId: string;
+  recordingId?: string;
 }
 
 export interface ILiveProvider {
@@ -43,4 +47,3 @@ export interface ILiveProvider {
   startRecording(input: StartRecordingInput): Promise<StartRecordingResult>;
   stopRecording(input: StopRecordingInput): Promise<void>;
 }
-

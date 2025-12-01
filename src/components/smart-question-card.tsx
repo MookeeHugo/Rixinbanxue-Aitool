@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Card, CardHeader, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -15,6 +15,10 @@ import {
   formatConfidence,
   isLowConfidence
 } from '@/lib/ai-question-bank/display-helpers'
+import {
+  calculateOptionLayout,
+  calculateQuestionLayout
+} from '@/lib/layout'
 import { cn } from '@/lib/utils'
 
 interface SmartQuestionCardProps {
@@ -60,24 +64,26 @@ export function SmartQuestionCard({
     ? `/api/image-proxy?url=${encodeURIComponent(imageUrl)}`
     : null
 
-  // 智能判断选项网格列数
-  const getOptionGridClass = () => {
-    if (!question.options || question.options.length === 0) return ''
+  // 使用智能排版引擎计算选项布局
+  const optionLayout = useMemo(() => {
+    return calculateOptionLayout(question.options || [])
+  }, [question.options])
 
-    // 计算选项的平均长度
-    const avgLength = question.options.reduce((sum, opt) => sum + opt.length, 0) / question.options.length
+  // 计算题型布局（用于后续题型差异化渲染）
+  const questionLayout = useMemo(() => {
+    return calculateQuestionLayout({
+      type: question.type || 'choice',
+      hasImage,
+      imageCount: question.image_assets?.length || (hasImage ? 1 : 0),
+      optionCount: question.options?.length || 0,
+      contentLength: question.content?.length || 0
+    })
+  }, [question.type, hasImage, question.image_assets, question.options, question.content])
 
-    if (avgLength < 10) {
-      // 极短选项（如 "A. 1"）-> 4列
-      return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'
-    } else if (avgLength < 25) {
-      // 中等选项 -> 2列
-      return 'grid-cols-1 sm:grid-cols-2'
-    } else {
-      // 长选项 -> 1列
-      return 'grid-cols-1'
-    }
-  }
+  // 计算图片容器宽度样式
+  const imageContainerWidth = questionLayout.imageMaxWidthPercent > 0
+    ? `w-[${questionLayout.imageMaxWidthPercent}%]`
+    : 'w-[220px]'
 
   return (
     <Card className={cn(
@@ -190,7 +196,7 @@ export function SmartQuestionCard({
             {question.options && question.options.length > 0 && (
               <div className={cn(
                 'grid gap-3',
-                getOptionGridClass()
+                optionLayout.className
               )}>
                 {question.options.map((opt, i) => (
                   <div
@@ -260,7 +266,7 @@ export function SmartQuestionCard({
 
           {/* 右侧：图片吸附区（仅当有图片时渲染） */}
           {hasImage && proxyImageUrl && (
-            <div className="w-[220px] flex-shrink-0 flex flex-col gap-3">
+            <div className={cn("flex-shrink-0 flex flex-col gap-3 max-w-[280px]", imageContainerWidth)}>
               <ImageThumbnail
                 src={proxyImageUrl}
                 onError={() => setImageLoadError(true)}

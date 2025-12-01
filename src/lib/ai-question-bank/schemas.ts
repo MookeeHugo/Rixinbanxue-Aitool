@@ -24,6 +24,13 @@ export const QuestionTagSchema = z.object({
   type: z.string().min(1, '题型不能为空')
 });
 
+export const ImageRegionSchema = z.object({
+  x: z.number(),
+  y: z.number(),
+  width: z.number(),
+  height: z.number()
+});
+
 /**
  * 题目图片占位符验证
  */
@@ -33,7 +40,9 @@ export const QuestionImagePlaceholderSchema = z.object({
     .min(1, '占位符不能为空')
     .regex(/<<IMG_[^>]+>>/, '必须符合 <<IMG_题号_序号>> 格式'),
   description: z.string().optional(),
-  position: z.string().optional()
+  position: z.string().optional(),
+  region: ImageRegionSchema.optional(),
+  source: z.enum(['ai', 'manual']).optional()
 });
 
 /**
@@ -78,7 +87,9 @@ export const ParsedQuestionSchema = z.object({
   tags: QuestionTagSchema,
   confidence: z.number().min(0).max(1),
   steps: z.array(z.string()).optional(),
-  images: z.array(QuestionImagePlaceholderSchema).optional()
+  images: z.array(QuestionImagePlaceholderSchema).optional(),
+  image_region: ImageRegionSchema.optional(),
+  image_regions: z.array(ImageRegionSchema).optional()
 }).refine(
   (data) => {
     // 选择题必须有options

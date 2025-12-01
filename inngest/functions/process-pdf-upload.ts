@@ -8,13 +8,12 @@ import { parseQuestions } from '@/lib/ai-question-bank/qwen-flash';
 import { bufferToBase64, calculateAverageConfidence, guessImageMimeType } from '@/lib/ai-question-bank/utils';
 import { createClient } from '@supabase/supabase-js';
 import { downloadFile, FileAccessLevel } from '@/lib/storage';
-import type { Database } from '@/types/database';
 
 /**
  * 创建 Supabase Service Client（服务密钥，不持久化会话）
  */
 function createServiceClient() {
-  return createClient<Database>(
+  return createClient<any>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     {
@@ -77,7 +76,7 @@ async function insertParsedQuestions(
     confidence_score: q.confidence,
     is_selected: true,
     is_submitted: false,
-    original_image_url: fileUrl // 保存原始图片URL，用于在题目卡片中显示
+    original_image_url: null // 保存原始图片URL，用于在题目卡片中显示
   }));
 
   const { error } = await supabase.from('parsed_questions').insert(records);
@@ -127,7 +126,7 @@ export const processPdfUpload = inngest.createFunction(
       // Step 3: 转换为 Base64
       const imageBase64 = await step.run('convert-to-base64', async () => {
         await updateTaskStatus(supabase, taskId, { progress: 30 });
-        return bufferToBase64(fileBuffer);
+        return bufferToBase64(fileBuffer as any);
       });
 
       // Step 4: 调用 Qwen3-VL-Flash 解析

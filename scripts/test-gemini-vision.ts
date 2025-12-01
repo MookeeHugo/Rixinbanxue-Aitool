@@ -1,6 +1,7 @@
 import { config } from 'dotenv';
 import { readFileSync, existsSync, mkdirSync, writeFileSync } from 'fs';
 import { resolve, basename, extname, join } from 'path';
+import { convertBoxToPixelRect, isValidImageBox } from '../src/lib/ai-question-bank/coordinates';
 
 config({ path: resolve(process.cwd(), '.env.local') });
 
@@ -10,6 +11,10 @@ type TestImage = {
 };
 
 const testImages: TestImage[] = [
+  { name: '测试试卷1', file: '测试试卷1.png' },
+  { name: '测试试卷2', file: '测试试卷2.png' },
+  { name: '测试试卷3', file: '测试试卷3.png' },
+  { name: '测试试卷4', file: '测试试卷4.png' },
   { name: '测试试卷5', file: '测试试卷5.png' },
   { name: '测试试卷6', file: '测试试卷6.png' },
   { name: '测试试卷7', file: '测试试卷7.png' },
@@ -18,7 +23,7 @@ const testImages: TestImage[] = [
 ];
 
 async function run() {
-  const { parseQuestionWithCascading } = await import('../src/lib/ai-question-bank/gemini-vision-client.ts');
+  const { parseQuestionWithCascading } = await import('../src/lib/ai-question-bank/gemini-vision-client');
   const { createClient } = await import('@supabase/supabase-js');
   const sharp = (await import('sharp')).default;
 
@@ -104,6 +109,10 @@ async function run() {
       console.log(`   图片尺寸: ${metadata.width}x${metadata.height}`);
 
       let cropSuccess = 0;
+      const imageMeta = {
+        width: metadata.width || 0,
+        height: metadata.height || 0
+      };
 
       for (const question of geminiResult.questions) {
         if (!question.image_regions || question.image_regions.length === 0) {
@@ -115,34 +124,38 @@ async function run() {
           const region = question.image_regions[i];
           const filePath = join(outputDir, `question-${question.number}-img${i + 1}.png`);
 
+          if (!Array.isArray(region.box_2d) || region.box_2d.length !== 4) {
+            console.warn(`   ⚠️ 题${question.number}配图${i + 1}缺少 box_2d，跳过`, region);
+            continue;
+          }
+
+          const rect = convertBoxToPixelRect(region.box_2d, imageMeta);
+          if (!rect) {
+            console.warn(`   ⚠️ 题${question.number}配图${i + 1}坐标映射失败`, { box_2d: region.box_2d });
+            continue;
+          }
+
+          if (!isValidImageBox(rect, imageMeta)) {
+            console.warn(`   ⚠️ 题${question.number}配图${i + 1}被启发式过滤`, {
+              box_2d: region.box_2d,
+              mapped: rect
+            });
+            continue;
+          }
+
           try {
-            // 边界检查
-            const left = Math.max(0, Math.round(region.x));
-            const top = Math.max(0, Math.round(region.y));
-            const width = Math.round(region.width);
-            const height = Math.round(region.height);
-
-            // 确保不超出图片边界
-            const maxWidth = Math.min(width, (metadata.width || 1000) - left);
-            const maxHeight = Math.min(height, (metadata.height || 1000) - top);
-
-            if (maxWidth <= 0 || maxHeight <= 0) {
-              console.error(`   ❌ 题${question.number}配图${i + 1}坐标超出边界: x=${region.x}, y=${region.y}, w=${width}, h=${height}`);
-              continue;
-            }
-
             await sharp(supabaseImageBuffer)
               .extract({
-                left,
-                top,
-                width: maxWidth,
-                height: maxHeight
+                left: rect.left,
+                top: rect.top,
+                width: rect.width,
+                height: rect.height
               })
               .png()
               .toFile(filePath);
 
             cropSuccess += 1;
-            console.log(`   ✅ 题${question.number}配图${i + 1}: ${maxWidth}x${maxHeight} -> ${basename(filePath)}`);
+            console.log(`   ✅ 题${question.number}配图${i + 1}: ${rect.width}x${rect.height} -> ${basename(filePath)}`);
           } catch (error) {
             console.error(`   ❌ 裁剪题${question.number}配图${i + 1}失败:`, error instanceof Error ? error.message : error);
           }

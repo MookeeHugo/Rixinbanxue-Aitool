@@ -19,7 +19,7 @@ export interface LogEntry {
   message: string;
   timestamp: Date;
   context?: Record<string, any>;
-  error?: BaseAppError;
+  error?: BaseAppError | Error;
   userId?: string;
   sessionId?: string;
 }
@@ -160,7 +160,7 @@ export class Logger {
   /**
    * 记录日志
    */
-  private log(level: LogLevel, message: string, context?: Record<string, any>, error?: BaseAppError): void {
+  private log(level: LogLevel, message: string, context?: Record<string, any>, error?: BaseAppError | Error): void {
     const entry: LogEntry = {
       level,
       message,
@@ -181,33 +181,61 @@ export class Logger {
     }
   }
 
+  private normalizeContext(context?: unknown): Record<string, any> | undefined {
+    if (typeof context === 'undefined') {
+      return undefined;
+    }
+
+    if (context && typeof context === 'object') {
+      return context as Record<string, any>;
+    }
+
+    return { value: context };
+  }
+
   /**
    * Debug 日志
    */
-  debug(message: string, context?: Record<string, any>): void {
-    this.log(LogLevel.DEBUG, message, context);
+  debug(message: string, context?: unknown): void {
+    this.log(LogLevel.DEBUG, message, this.normalizeContext(context));
   }
 
   /**
    * Info 日志
    */
-  info(message: string, context?: Record<string, any>): void {
-    this.log(LogLevel.INFO, message, context);
+  info(message: string, context?: unknown): void {
+    this.log(LogLevel.INFO, message, this.normalizeContext(context));
   }
 
   /**
    * Warning 日志
    */
-  warn(message: string, context?: Record<string, any>): void {
-    this.log(LogLevel.WARN, message, context);
+  warn(message: string, context?: unknown): void {
+    this.log(LogLevel.WARN, message, this.normalizeContext(context));
   }
 
   /**
    * Error 日志
    */
-  error(message: string, error?: BaseAppError | Error, context?: Record<string, any>): void {
-    const appError = error instanceof BaseAppError ? error : undefined;
-    this.log(LogLevel.ERROR, message, context, appError);
+  error(message: string, errorOrContext?: unknown, context?: Record<string, any>): void {
+    const isAppError = errorOrContext instanceof BaseAppError;
+    const isError = errorOrContext instanceof Error;
+    const isContextObject =
+      !!errorOrContext && typeof errorOrContext === 'object' && !isAppError && !isError;
+
+    if (isContextObject) {
+      const mergedContext = { ...(errorOrContext as Record<string, any>), ...context };
+      this.log(LogLevel.ERROR, message, mergedContext);
+      return;
+    }
+
+    if (!isAppError && !isError && typeof errorOrContext !== 'undefined') {
+      const mergedContext = { error: errorOrContext, ...context };
+      this.log(LogLevel.ERROR, message, mergedContext);
+      return;
+    }
+
+    this.log(LogLevel.ERROR, message, context, isAppError || isError ? (errorOrContext as Error) : undefined);
   }
 
   /**
@@ -240,11 +268,11 @@ export function getLogger(): Logger {
  * 便捷方法
  */
 export const logger = {
-  debug: (message: string, context?: Record<string, any>) => getLogger().debug(message, context),
-  info: (message: string, context?: Record<string, any>) => getLogger().info(message, context),
-  warn: (message: string, context?: Record<string, any>) => getLogger().warn(message, context),
-  error: (message: string, error?: BaseAppError | Error, context?: Record<string, any>) =>
-    getLogger().error(message, error, context),
+  debug: (message: string, context?: unknown) => getLogger().debug(message, context),
+  info: (message: string, context?: unknown) => getLogger().info(message, context),
+  warn: (message: string, context?: unknown) => getLogger().warn(message, context),
+  error: (message: string, errorOrContext?: unknown, context?: Record<string, any>) =>
+    getLogger().error(message, errorOrContext, context),
   child: (context: Record<string, any>) => getLogger().child(context),
   setContext: (context: Record<string, any>) => getLogger().setContext(context),
   setUserId: (userId: string | undefined) => getLogger().setUserId(userId),
@@ -330,8 +358,9 @@ export function withPerformanceLogging<T extends (...args: unknown[]) => unknown
       perfLogger.end(true);
       return result;
     } catch (error: unknown) {
-      perfLogger.endWithError(error);
-      throw error;
+      const err = error instanceof Error ? error : new Error(String(error));
+      perfLogger.endWithError(err);
+      throw err;
     }
   }) as T;
 }

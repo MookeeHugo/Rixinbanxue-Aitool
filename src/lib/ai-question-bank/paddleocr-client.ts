@@ -37,7 +37,8 @@ export async function analyzeImageLayout(imageBuffer: Buffer): Promise<OCRResult
   try {
     // 创建FormData
     const formData = new FormData();
-    const blob = new Blob([imageBuffer], { type: 'image/png' });
+    const uint8Array = imageBuffer instanceof Buffer ? new Uint8Array(imageBuffer) : new Uint8Array(imageBuffer);
+    const blob = new Blob([uint8Array], { type: 'image/png' });
     formData.append('file', blob, 'image.png');
 
     // 调用OCR服务

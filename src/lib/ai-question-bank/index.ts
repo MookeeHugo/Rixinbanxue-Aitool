@@ -8,9 +8,15 @@ export type {
   QuestionType,
   DifficultyLevel,
   TaskStatus,
+  ReparseStatus,
   QuestionTag,
   ParsedQuestion,
+  QuestionData,
   QwenParseResult,
+  GeminiQuestion,
+  GeminiImageRegion,
+  GeminiParseResult,
+  GeminiValidationResult,
   UploadTask,
   ParsedQuestionRecord,
   QuestionImageAsset,
@@ -74,5 +80,15 @@ export {
   getTaskQuestions,
   submitQuestions,
   updateQuestion,
-  deleteQuestion
+  deleteQuestion,
+  manualCropQuestionImage
 } from '@/app/actions/question-upload';
+
+// Reparse Actions
+export {
+  initiateReparse,
+  getReparseStatus,
+  cancelReparse,
+  getQuestionForReparse
+} from '@/app/actions/reparse-question';
+export type { ReparseStatusResponse } from '@/app/actions/reparse-question';

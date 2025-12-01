@@ -6,6 +6,7 @@
 import sharp from 'sharp';
 import { createClient } from '@supabase/supabase-js';
 import type { ImageRegion, QuestionImageAsset } from './types';
+import { isValidImageBox } from './coordinates';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -45,6 +46,11 @@ export async function cropAndUploadQuestionImages(
   let totalRegions = 0;
   let succeededRegions = 0;
 
+  const paddingPx = Math.max(
+    20,
+    Math.round(Math.min(imageWidth || 0, imageHeight || 0) * 0.02)
+  );
+
   for (const question of questions) {
     const regions = question.image_regions ?? [];
     if (regions.length === 0) {
@@ -65,17 +71,17 @@ export async function cropAndUploadQuestionImages(
         height <= 0
       ) {
         console.warn(`[image-crop] q${question.number} region ${index + 1} invalid`, {
+          taskId,
           region
         });
         continue;
       }
 
       try {
-        const PADDING = 10;
-        let left = Math.round(x) - PADDING;
-        let top = Math.round(y) - PADDING;
-        let right = Math.round(x + width) + PADDING;
-        let bottom = Math.round(y + height) + PADDING;
+        let left = Math.round(x) - paddingPx;
+        let top = Math.round(y) - paddingPx;
+        let right = Math.round(x + width) + paddingPx;
+        let bottom = Math.round(y + height) + paddingPx;
 
         left = Math.max(0, left);
         top = Math.max(0, top);
@@ -87,21 +93,33 @@ export async function cropAndUploadQuestionImages(
 
         if (finalWidth <= 0 || finalHeight <= 0) {
           console.warn(`[image-crop] q${question.number} region ${index + 1} adjusted invalid`, {
+            taskId,
             originalRegion: region,
             adjusted: { left, top, width: finalWidth, height: finalHeight }
           });
           continue;
         }
 
-        const croppedBuffer = await sharp(buffer)
+        const pixelRect = { left, top, width: finalWidth, height: finalHeight };
+        if (!isValidImageBox(pixelRect, { width: imageWidth, height: imageHeight })) {
+          console.warn(`[image-crop] q${question.number} region ${index + 1} filtered`, {
+            taskId,
+            originalRegion: region,
+            adjusted: pixelRect
+          });
+          continue;
+        }
+
+        const { data: croppedBuffer, info } = await sharp(buffer)
           .extract({
             left,
             top,
             width: finalWidth,
             height: finalHeight
           })
+          .trim()
           .png()
-          .toBuffer();
+          .toBuffer({ resolveWithObject: true });
 
         const uniqueId = `${taskId}-q${question.number}-${index + 1}-${Date.now()}-${Math.random()
           .toString(36)
@@ -140,7 +158,20 @@ export async function cropAndUploadQuestionImages(
           order: index + 1,
           placeholder: null,
           used: index === 0,
-          region
+          region,
+          source: 'ai',
+          padding: {
+            px: paddingPx,
+            ratio: 0.02
+          },
+          trimOffset: {
+            left: info.trimOffsetLeft,
+            top: info.trimOffsetTop
+          },
+          trimmedSize: {
+            width: info.width,
+            height: info.height
+          }
         };
 
         assetsByQuestion[question.number].push(asset);

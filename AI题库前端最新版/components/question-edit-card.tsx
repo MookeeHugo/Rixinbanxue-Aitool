@@ -148,9 +148,9 @@ export function QuestionEditCard({ question, index, onUpdateTags, isActive = fal
           )}
 
           {question.image && (
-            <div 
+            <div
               className="relative rounded-lg overflow-hidden cursor-pointer group"
-              onClick={() => setZoomImage(question.image)}
+              onClick={() => setZoomImage(question.image ?? null)}
             >
               <img 
                 src={question.image || "/placeholder.svg"} 

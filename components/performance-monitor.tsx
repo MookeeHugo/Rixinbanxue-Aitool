@@ -187,7 +187,7 @@ export function PerformanceMonitor() {
             <Badge variant={
               metrics.fpsStatus === 'good' ? 'default' :
               metrics.fpsStatus === 'warning' ? 'secondary' :
-              'destructive'
+              'error'
             }>
               {metrics.fpsStatus === 'good' ? '流畅' :
                metrics.fpsStatus === 'warning' ? '一般' : '卡顿'}
@@ -210,7 +210,7 @@ export function PerformanceMonitor() {
             <span className="text-muted-foreground">LCP (首次内容绘制)</span>
             <div className="flex items-center gap-2">
               <span className="font-mono">{metrics.lcp}ms</span>
-              <Badge variant={metrics.lcp <= 2500 ? 'default' : metrics.lcp <= 4000 ? 'secondary' : 'destructive'} className="text-xs">
+              <Badge variant={metrics.lcp <= 2500 ? 'default' : metrics.lcp <= 4000 ? 'secondary' : 'error'} className="text-xs">
                 {metrics.lcp <= 2500 ? '优秀' : metrics.lcp <= 4000 ? '需改进' : '差'}
               </Badge>
             </div>
@@ -221,7 +221,7 @@ export function PerformanceMonitor() {
             <span className="text-muted-foreground">FID (首次输入延迟)</span>
             <div className="flex items-center gap-2">
               <span className="font-mono">{metrics.fid}ms</span>
-              <Badge variant={metrics.fid <= 100 ? 'default' : metrics.fid <= 300 ? 'secondary' : 'destructive'} className="text-xs">
+              <Badge variant={metrics.fid <= 100 ? 'default' : metrics.fid <= 300 ? 'secondary' : 'error'} className="text-xs">
                 {metrics.fid <= 100 ? '优秀' : metrics.fid <= 300 ? '需改进' : '差'}
               </Badge>
             </div>
@@ -232,7 +232,7 @@ export function PerformanceMonitor() {
             <span className="text-muted-foreground">CLS (布局偏移)</span>
             <div className="flex items-center gap-2">
               <span className="font-mono">{metrics.cls}</span>
-              <Badge variant={metrics.cls <= 0.1 ? 'default' : metrics.cls <= 0.25 ? 'secondary' : 'destructive'} className="text-xs">
+              <Badge variant={metrics.cls <= 0.1 ? 'default' : metrics.cls <= 0.25 ? 'secondary' : 'error'} className="text-xs">
                 {metrics.cls <= 0.1 ? '优秀' : metrics.cls <= 0.25 ? '需改进' : '差'}
               </Badge>
             </div>

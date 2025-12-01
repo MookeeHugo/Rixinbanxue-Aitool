@@ -3,7 +3,7 @@
  * 处理服务端录制功能
  */
 
-import { EgressClient, EncodedFileOutput, RoomCompositeEgressRequest } from 'livekit-server-sdk';
+import { EgressClient, EncodedFileOutput } from 'livekit-server-sdk';
 import { logger } from '@/lib/logger';
 
 // Egress 输出配置
@@ -37,6 +37,14 @@ export interface EgressRecordingInfo {
   error?: string;
 }
 
+export interface StorageConfig {
+  bucket: string;
+  region?: string;
+  endpoint?: string;
+  accessKey?: string;
+  secret?: string;
+}
+
 /**
  * LiveKit Egress 管理器
  */
@@ -45,19 +53,13 @@ export class EgressManager {
   private apiKey: string;
   private apiSecret: string;
   private livekitUrl: string;
-  private storageConfig: {
-    bucket: string;
-    region?: string;
-    endpoint?: string;
-    accessKey?: string;
-    secret?: string;
-  };
+  private storageConfig: StorageConfig;
 
   constructor(config: {
     livekitUrl: string;
     apiKey: string;
     apiSecret: string;
-    storageConfig?: Record<string, unknown>;
+    storageConfig?: StorageConfig;
   }) {
     this.livekitUrl = config.livekitUrl;
     this.apiKey = config.apiKey;
@@ -88,16 +90,11 @@ export class EgressManager {
       // 构建输出配置
       const outputConfig = this.buildOutputConfig(options);
 
-      // 构建录制请求
-      const request: RoomCompositeEgressRequest = {
-        roomName: options.roomId,
+      perfLogger.debug('Egress request prepared', {
+        roomId: options.roomId,
         layout: this.getLayoutType(options.layout),
-        file: outputConfig,
-        // 可选：添加自定义元数据
-        // customBaseUrl: 'https://your-custom-url.com',
-      };
-
-      perfLogger.debug('Egress request prepared', { request });
+        output: outputConfig,
+      });
 
       // 发起录制
       const egressInfo = await this.egressClient.startRoomCompositeEgress(
@@ -125,8 +122,9 @@ export class EgressManager {
         status: this.mapEgressStatus(egressInfo.status),
       };
     } catch (error: unknown) {
-      perfLogger.error('Failed to start recording', error);
-      throw new Error(`Failed to start recording: ${error.message}`);
+      perfLogger.error('Failed to start recording', { error });
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to start recording: ${message}`);
     }
   }
 
@@ -141,7 +139,8 @@ export class EgressManager {
       logger.info('Recording stopped successfully', { egressId });
     } catch (error: unknown) {
       logger.error('Failed to stop recording', error, { egressId });
-      throw new Error(`Failed to stop recording: ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to stop recording: ${message}`);
     }
   }
 
@@ -161,7 +160,9 @@ export class EgressManager {
         egressId: info.egressId || egressId,
         roomId: info.roomName || '',
         sessionId: '', // 需要从元数据中获取
-        startedAt: new Date(info.startedAt || 0),
+        startedAt: new Date(
+          typeof info.startedAt === 'bigint' ? Number(info.startedAt) : info.startedAt || 0
+        ),
         status: this.mapEgressStatus(info.status),
         outputUrl: this.extractOutputUrl(info),
         error: info.error,
@@ -183,7 +184,9 @@ export class EgressManager {
         egressId: info.egressId || '',
         roomId: info.roomName || roomId,
         sessionId: '',
-        startedAt: new Date(info.startedAt || 0),
+        startedAt: new Date(
+          typeof info.startedAt === 'bigint' ? Number(info.startedAt) : info.startedAt || 0
+        ),
         status: this.mapEgressStatus(info.status),
         outputUrl: this.extractOutputUrl(info),
         error: info.error,
@@ -202,27 +205,17 @@ export class EgressManager {
     const filename = this.generateFilename(options);
 
     // 基础配置
-    const output: EncodedFileOutput = {
+    const output = {
       fileType: this.getFileType(config.format),
       filepath: config.filepath || filename,
-      // 可选：配置直接上传到 S3 或其他存储
+      // 如需输出到自建 S3，请解除下方注释并填入凭证
       // s3: {
+      //   bucket: this.storageConfig.bucket,
       //   accessKey: this.storageConfig.accessKey,
       //   secret: this.storageConfig.secret,
       //   region: this.storageConfig.region,
-      //   bucket: this.storageConfig.bucket,
       // },
-    };
-
-    // 视频编码配置
-    if (config.width || config.height || config.videoBitrate) {
-      output.output = {
-        case: 'file',
-        value: {
-          ...output,
-        },
-      };
-    }
+    } as EncodedFileOutput;
 
     return output;
   }
@@ -297,11 +290,15 @@ export class EgressManager {
    * 提取输出 URL
    */
   private extractOutputUrl(egressInfo: unknown): string | undefined {
-    if (egressInfo.file?.location) {
-      return egressInfo.file.location;
+    const info = egressInfo as {
+      file?: { location?: string };
+      stream?: { url?: string };
+    };
+    if (info.file?.location) {
+      return info.file.location;
     }
-    if (egressInfo.stream?.url) {
-      return egressInfo.stream.url;
+    if (info.stream?.url) {
+      return info.stream.url;
     }
     return undefined;
   }
@@ -349,7 +346,7 @@ export function createEgressManager(config?: {
   livekitUrl?: string;
   apiKey?: string;
   apiSecret?: string;
-  storageConfig?: Record<string, unknown>;
+  storageConfig?: StorageConfig;
 }): EgressManager {
   return new EgressManager({
     livekitUrl: config?.livekitUrl || process.env.LIVEKIT_URL || 'http://localhost:7880',

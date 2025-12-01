@@ -71,7 +71,8 @@ export async function POST(req: Request) {
       expires_in_seconds: maxAge
     })
   } catch (error) {
-    logger.error('[set-session] ❌ 设置失败:', { error: error })
+    const appError = error instanceof Error ? error : undefined
+    logger.error('[set-session] ❌ 设置失败:', appError, { error })
     return NextResponse.json({
       error: '设置 session 失败',
       details: error instanceof Error ? error.message : String(error)

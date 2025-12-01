@@ -210,3 +210,8 @@ export type TableType<T extends TableName> = T extends 'profiles'
   : T extends 'export_tasks'
   ? ExportTask
   : never
+
+/**
+ * Supabase Database schema 类型占位，兼容任意表结构
+ */
+export type Database = any

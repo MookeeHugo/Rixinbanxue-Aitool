@@ -12,7 +12,8 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database';
 import sharp from 'sharp';
 
-import type { GeminiQuestion } from './gemini-vision-client';
+import type { GeminiQuestion } from './types';
+import { convertBoxToPixelRect, isValidImageBox } from './coordinates';
 import { cropAndUploadQuestionImages, type QuestionWithRegions } from './crop-question-images';
 import type { ImageRegion } from './types';
 
@@ -35,67 +36,61 @@ function inferQuestionType(question: any): 'choice' | 'fill' | 'essay' {
   return 'essay';
 }
 
-function getCropRect(
-  box2d: [number, number, number, number],
-  imgWidth: number,
-  imgHeight: number
+function logInvalidRegion(
+  taskId: string,
+  questionNumber: string,
+  reason: string,
+  extra?: Record<string, unknown>
 ) {
-  const [ymin, xmin, ymax, xmax] = box2d;
-
-  let top = Math.floor((ymin / 1000) * imgHeight);
-  let left = Math.floor((xmin / 1000) * imgWidth);
-  let bottom = Math.ceil((ymax / 1000) * imgHeight);
-  let right = Math.ceil((xmax / 1000) * imgWidth);
-
-  const PADDING = 10;
-  top = Math.max(0, top - PADDING);
-  left = Math.max(0, left - PADDING);
-  bottom = Math.min(imgHeight, bottom + PADDING);
-  right = Math.min(imgWidth, right + PADDING);
-
-  const width = right - left;
-  const height = bottom - top;
-
-  if (width <= 0 || height <= 0) {
-    console.error('无效的裁剪区域', { box2d, left, top, width, height });
-    return null;
-  }
-
-  return { left, top, width, height };
+  console.warn('[region-normalize] 配图被丢弃', {
+    taskId,
+    questionNumber,
+    reason,
+    ...extra
+  });
 }
 
 function normalizeRegion(
   region: GeminiQuestion['image_regions'][number],
-  imageWidth: number | null,
-  imageHeight: number | null
+  imageMeta: { width: number; height: number } | null,
+  context: { taskId: string; questionNumber: string }
 ): ImageRegion | null {
-  if (
-    typeof region?.x === 'number' &&
-    typeof region?.y === 'number' &&
-    typeof region?.width === 'number' &&
-    typeof region?.height === 'number'
-  ) {
-    return {
-      x: Math.round(region.x),
-      y: Math.round(region.y),
-      width: Math.round(region.width),
-      height: Math.round(region.height)
-    };
+  if (!imageMeta) {
+    logInvalidRegion(context.taskId, context.questionNumber, '缺少原图尺寸', {
+      box_2d: region?.box_2d
+    });
+    return null;
   }
 
-  if (region?.box_2d && imageWidth && imageHeight) {
-    const rect = getCropRect(region.box_2d, imageWidth, imageHeight);
-    if (rect) {
-      return {
-        x: rect.left,
-        y: rect.top,
-        width: rect.width,
-        height: rect.height
-      };
-    }
+  if (!Array.isArray(region?.box_2d) || region.box_2d.length !== 4) {
+    logInvalidRegion(context.taskId, context.questionNumber, 'box_2d 缺失或格式错误', {
+      box_2d: region?.box_2d
+    });
+    return null;
   }
 
-  return null;
+  const rect = convertBoxToPixelRect(region.box_2d, imageMeta);
+  if (!rect) {
+    logInvalidRegion(context.taskId, context.questionNumber, '归一化坐标无法映射到像素', {
+      box_2d: region.box_2d
+    });
+    return null;
+  }
+
+  if (!isValidImageBox(rect, imageMeta)) {
+    logInvalidRegion(context.taskId, context.questionNumber, '启发式过滤拦截', {
+      box_2d: region.box_2d,
+      mapped: rect
+    });
+    return null;
+  }
+
+  return {
+    x: rect.left,
+    y: rect.top,
+    width: rect.width,
+    height: rect.height
+  };
 }
 
 type ProcessedQuestion = {
@@ -167,9 +162,17 @@ export async function processUploadTask(data: {
 
     const invalidRegionQuestions: string[] = [];
 
+    const imageMeta = imageWidth && imageHeight ? { width: imageWidth, height: imageHeight } : null;
+
     const processedQuestions: ProcessedQuestion[] = geminiResult.questions.map((question) => {
+      const resolvedType = question.meta?.type ?? inferQuestionType(question);
+      const resolvedDifficulty = question.meta?.difficulty ?? 'medium';
+      const resolvedTags = question.meta?.tags ?? [];
+
       const normalizedRegions = (question.image_regions ?? [])
-        .map(region => normalizeRegion(region, imageWidth, imageHeight))
+        .map(region =>
+          normalizeRegion(region, imageMeta, { taskId, questionNumber: question.number })
+        )
         .filter((region): region is ImageRegion => Boolean(region));
 
       if ((question.image_regions?.length ?? 0) > 0 && normalizedRegions.length === 0) {
@@ -178,14 +181,14 @@ export async function processUploadTask(data: {
 
       return {
         number: question.number,
-        type: inferQuestionType(question),
+        type: resolvedType,
         content: question.content,
         options: question.options || [],
         answer: question.answer || '',
         tags: {
-          knowledge: [],
-          difficulty: 'medium',
-          type: inferQuestionType(question)
+          knowledge: resolvedTags,
+          difficulty: resolvedDifficulty,
+          type: resolvedType
         },
         confidence: 0.95,
         image_regions: normalizedRegions

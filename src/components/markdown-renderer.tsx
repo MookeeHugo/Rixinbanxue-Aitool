@@ -42,7 +42,7 @@ export function MarkdownRenderer({ content, className = '' }: MarkdownRendererPr
             />
           ),
           // 自定义代码块渲染
-          code: ({ node, inline, className, children, ...props }) => {
+          code: ({ node, inline, className, children, ...props }: any) => {
             return inline ? (
               <code className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-sm" {...props}>
                 {children}

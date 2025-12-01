@@ -43,7 +43,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    logger.error('File deletion failed', { error })
+    const appError = error instanceof Error ? error : undefined
+    logger.error('File deletion failed', appError, { error })
 
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Deletion failed' },

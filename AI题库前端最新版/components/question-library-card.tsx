@@ -15,8 +15,8 @@ interface Question {
   type: "choice" | "fill" | "solve"
   content: string
   answer: string
-  tags: Array<{ category: string; value: string }>
-  createdAt: string
+  tags?: Array<{ category: string; value: string; id?: string }>
+  createdAt?: string
 }
 
 interface QuestionLibraryCardProps {
@@ -41,7 +41,7 @@ export function QuestionLibraryCard({ question, isSelected, onToggle }: Question
       content: question.content,
       answer: question.answer,
       type: question.type,
-      tags: question.tags,
+      tags: question.tags || [],
       images: [], // Library questions may not have images, use empty array
       confidence: 100, // Library questions are already reviewed, high confidence
       ocrText: question.content, // Use content as OCR text
@@ -67,7 +67,7 @@ export function QuestionLibraryCard({ question, isSelected, onToggle }: Question
               <div className="flex items-start justify-between gap-4 mb-3">
                 <div className="flex items-center gap-2 flex-wrap">
                   <Badge variant="outline">{typeLabels[question.type]}</Badge>
-                  {question.tags.map((tag, idx) => (
+                  {question.tags?.map((tag, idx) => (
                     <Badge key={idx} variant="secondary" className="bg-primary/10 text-primary border-primary/20">
                       {tag.value}
                     </Badge>

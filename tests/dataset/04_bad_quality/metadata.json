@@ -1,0 +1,25 @@
+{
+  "BAD-06-low-contrast-photo.jpg": {
+    "scenario": "04_bad_quality",
+    "source": "tmp/gemini-test-results/测试试卷4/question-4-img1.png",
+    "issue": "手机拍摄导致低对比度",
+    "notes": "评估图像增强或预处理策略",
+    "addedAt": "2025-12-01T10:56:00+08:00",
+    "expected_count": 1
+  },
+  "BAD-01-low-resolution.jpg": {
+    "expected_count": 31
+  },
+  "BAD-02-camera-shadow.jpg": {
+    "expected_count": 6
+  },
+  "BAD-03-skewed-angle.jpg": {
+    "expected_count": 10
+  },
+  "BAD-04-folded-paper.jpg": {
+    "expected_count": 8
+  },
+  "BAD-05-poor-lighting.jpg": {
+    "expected_count": 6
+  }
+}

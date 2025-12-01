@@ -8,7 +8,7 @@ import {
   useTracks,
   RoomAudioRenderer,
   useLocalParticipant,
-  useRoom,
+  useRoomContext,
 } from '@livekit/components-react';
 import { Track, Room } from 'livekit-client';
 import '@/styles/livekit.css';
@@ -364,7 +364,7 @@ function MediaControlsHandler({
  * 显示实时连接状态和质量指示器
  */
 function ConnectionStatusMonitor() {
-  const room = useRoom();
+  const room = useRoomContext();
   const [connectionInfo, setConnectionInfo] = useState<ConnectionInfo>({
     status: 'connecting',
     attempt: 0,
@@ -376,7 +376,7 @@ function ConnectionStatusMonitor() {
     if (!room) return;
 
     // 创建连接管理器
-    const manager = new ConnectionManager(room.room as Room);
+    const manager = new ConnectionManager(room as Room);
     connectionManagerRef.current = manager;
 
     // 订阅状态变化

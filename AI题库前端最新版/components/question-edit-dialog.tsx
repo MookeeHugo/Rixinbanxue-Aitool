@@ -8,17 +8,32 @@ import { AdvancedQuestionEditor } from "@/components/advanced-question-editor"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Sparkles } from "lucide-react"
 
+interface ImageBlock {
+  id: string
+  url: string
+  pageIndex: number
+  position: number
+  width: number
+  align: "left" | "center" | "right"
+  caption?: string
+  confidence: number
+  used: boolean
+}
+
 interface Question {
   id: string
   type: "choice" | "fill" | "solve"
-  content: string
+  content?: string
   options?: string[]
   answer: string
-  difficulty: "easy" | "medium" | "hard"
-  hasImage: boolean
+  difficulty?: "easy" | "medium" | "hard"
+  hasImage?: boolean
   imageUrl?: string
   ocrText?: string
   rawOcrText?: string
+  rawText?: string
+  cleanText?: string
+  images?: ImageBlock[]
   confidence?: number
   lowConfidenceRanges?: Array<{
     start: number
@@ -71,38 +86,9 @@ export function QuestionEditDialog({ question, onSave, onClose }: QuestionEditDi
     onSave(editedQuestion)
   }
 
-  const handleUpdateOcrText = (newText: string) => {
-    setEditedQuestion({ ...editedQuestion, ocrText: newText, content: newText.split("\n\n")[0] })
-  }
-
-  const handleInsertImage = (imageId: string, position: number) => {
-    if (!editedQuestion.imageBlocks) return
-
-    const updatedBlocks = editedQuestion.imageBlocks.map((block) =>
-      block.id === imageId ? { ...block, isUsed: true, insertedAt: position } : block,
-    )
-    setEditedQuestion({ ...editedQuestion, imageBlocks: updatedBlocks })
-  }
-
-  const handleRemoveImage = (imageId: string) => {
-    if (!editedQuestion.imageBlocks) return
-
-    const updatedBlocks = editedQuestion.imageBlocks.map((block) =>
-      block.id === imageId ? { ...block, isUsed: false, insertedAt: undefined, alignment: undefined } : block,
-    )
-    setEditedQuestion({ ...editedQuestion, imageBlocks: updatedBlocks })
-  }
-
-  const handleUpdateImageSettings = (
-    imageId: string,
-    settings: { width?: number; alignment?: string; caption?: string },
-  ) => {
-    if (!editedQuestion.imageBlocks) return
-
-    const updatedBlocks = editedQuestion.imageBlocks.map((block) =>
-      block.id === imageId ? { ...block, ...settings } : block,
-    )
-    setEditedQuestion({ ...editedQuestion, imageBlocks: updatedBlocks })
+  const handleAdvancedSave = (updatedQuestion: Question) => {
+    setEditedQuestion(updatedQuestion)
+    onSave(updatedQuestion)
   }
 
   return (
@@ -125,11 +111,7 @@ export function QuestionEditDialog({ question, onSave, onClose }: QuestionEditDi
           <div className="flex-1 overflow-hidden">
             <AdvancedQuestionEditor
               question={editedQuestion}
-              onUpdateOcrText={handleUpdateOcrText}
-              onInsertImage={handleInsertImage}
-              onRemoveImage={handleRemoveImage}
-              onUpdateImageSettings={handleUpdateImageSettings}
-              onSave={handleSave}
+              onSave={handleAdvancedSave}
               onCancel={onClose}
             />
           </div>
@@ -145,7 +127,7 @@ export function QuestionEditDialog({ question, onSave, onClose }: QuestionEditDi
 
               <TabsContent value="content" className="space-y-4">
                 <textarea
-                  value={editedQuestion.content}
+                  value={editedQuestion.content || ''}
                   onChange={(e) => setEditedQuestion({ ...editedQuestion, content: e.target.value })}
                   className="w-full min-h-[200px] p-4 border rounded-md font-mono text-sm"
                   placeholder="输入题目内容..."

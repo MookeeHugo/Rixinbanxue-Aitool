@@ -70,7 +70,8 @@ export class StorageQuotaManager {
         };
       }
 
-      const currentUsage = data.reduce(
+      const usageRecords = (data as Array<{ file_size?: number }> | null) ?? [];
+      const currentUsage = usageRecords.reduce(
         (sum, rec) => sum + (rec.file_size || 0),
         0
       );
@@ -207,7 +208,8 @@ export class StorageQuotaManager {
         };
       }
 
-      const currentUsage = data.reduce(
+      const usageRecords = (data as Array<{ file_size?: number }> | null) ?? [];
+      const currentUsage = usageRecords.reduce(
         (sum, rec) => sum + (rec.file_size || 0),
         0
       );
@@ -306,9 +308,10 @@ export class StorageQuotaManager {
         return null;
       }
 
-      const totalSize = data.reduce((sum, rec) => sum + (rec.file_size || 0), 0);
-      const recordingCount = data.length;
-      const completedCount = data.filter((rec) => rec.status === 'completed').length;
+      const statsRecords = (data as Array<{ file_size?: number; status?: string }> | null) ?? [];
+      const totalSize = statsRecords.reduce((sum, rec) => sum + (rec.file_size || 0), 0);
+      const recordingCount = statsRecords.length;
+      const completedCount = statsRecords.filter((rec) => rec.status === 'completed').length;
       const quota = QUOTA_CONFIG.PER_USER_QUOTA;
 
       return {

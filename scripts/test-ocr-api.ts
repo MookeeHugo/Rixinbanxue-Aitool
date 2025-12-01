@@ -57,12 +57,12 @@ async function testOCRAPI() {
     // 动态导入SDK
     console.log('[1/5] 加载OCR SDK...');
     const OCR = await import('@alicloud/ocr-api20210707');
-    const OpenApiUtil = await import('@alicloud/openapi-util');
+    const OpenApi = await import('@alicloud/openapi-client');
 
     const Client = OCR.default;
     console.log('✅ SDK加载成功');
     console.log(`   Client类型: ${typeof Client}`);
-    console.log(`   OpenApiUtil类型: ${typeof OpenApiUtil}`);
+    console.log(`   OpenApi类型: ${typeof OpenApi}`);
 
     // 读取测试图片
     console.log('\n[2/5] 读取测试图片...');
@@ -73,7 +73,7 @@ async function testOCRAPI() {
     console.log('\n[3/5] 创建OCR客户端...');
     const endpoint = `ocr-api.${regionId}.aliyuncs.com`;
 
-    const config = new OpenApiUtil.Config({
+    const config = new OpenApi.Config({
       accessKeyId,
       accessKeySecret,
       regionId,
@@ -97,7 +97,8 @@ async function testOCRAPI() {
 
     const startTime = Date.now();
 
-    const response = await client.recognizeAdvanced({
+    const RecognizeAdvancedRequest = (OCR as any).RecognizeAdvancedRequest;
+    const recognizeRequest = new RecognizeAdvancedRequest({
       body: Readable.from(imageBuffer),
       outputCharInfo: true,
       needRotate: false,
@@ -105,6 +106,8 @@ async function testOCRAPI() {
       paragraph: true,
       row: true,
     });
+
+    const response = await client.recognizeAdvanced(recognizeRequest);
 
     const duration = Date.now() - startTime;
 
@@ -117,7 +120,7 @@ async function testOCRAPI() {
       console.log(`   body.data类型: ${typeof response.body.data}`);
 
       if (response.body.data) {
-        const data = response.body.data;
+        const data = response.body.data as any;
         console.log(`   content长度: ${data.content?.length || 0}`);
         console.log(`   width: ${data.width}`);
         console.log(`   height: ${data.height}`);

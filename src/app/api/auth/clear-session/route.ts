@@ -16,7 +16,8 @@ export async function POST() {
       cleared: COOKIE_KEYS,
     })
   } catch (error) {
-    logger.error('[clear-session] 清除失败', { error })
+    const appError = error instanceof Error ? error : undefined
+    logger.error('[clear-session] 清除失败', appError, { error })
     return NextResponse.json(
       {
         error: '清除 session 失败',

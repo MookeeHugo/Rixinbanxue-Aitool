@@ -2,132 +2,134 @@
   "questions": [
     {
       "number": "8",
-      "content": "8. (2025勤学早)(八上教材P40例3改)如图,AB=AC,点D在AB边上(不与点A,B重合),点 E在AC边上(不与点 A,C 重合),连接 BE,CD.若______,则∠B=∠C. 请从这三个选项中选择一个作为条件(写序号),使结论成立,并说明理由.",
+      "content": "(2025勤学早)(八上教材$P_{40}$例3改)如图,$AB=AC$,点$D$在$AB$边上(不与点$A,B$重合),点$E$在$AC$边上(不与点$A,C$重合),连接$BE,CD$.若_______,则$\\angle B=\\angle C$.请从这三个选项中选择一个作为条件(写序号),使结论成立,并说明理由.",
       "options": [
-        "①BE=CD",
-        "②AD=AE",
-        "③BD=CE"
+        "①$BE=CD$",
+        "②$AD=AE$",
+        "③$BD=CE$"
       ],
-      "answer": "",
       "image_regions": [
         {
-          "x": 790,
-          "y": 100,
-          "width": 130,
-          "height": 70,
-          "position": "right",
-          "aspectRatio": 1.86,
-          "description": "几何图形"
+          "box_2d": [
+            95,
+            790,
+            185,
+            900
+          ],
+          "label": "geometry"
         }
       ]
     },
     {
       "number": "9",
-      "content": "9. (2025勤学早)如图,∠1=∠2,AB=AD. 若______,则AE = AC. 请从这三个选项中选择一个作为条件(写序号),使结论成立,并说明理由.",
+      "content": "(2025勤学早)如图,$\\angle 1=\\angle 2$,$AB=AD$.若_______,则$AE=AC$.请从这三个选项中选择一个作为条件(写序号),使结论成立,并说明理由.",
       "options": [
-        "①∠B = ∠D",
-        "②∠C=∠AED",
-        "③BC=DE"
+        "①$\\angle B=\\angle D$",
+        "②$\\angle C=\\angle AED$",
+        "③$BC=DE$"
       ],
-      "answer": "",
       "image_regions": [
         {
-          "x": 780,
-          "y": 250,
-          "width": 140,
-          "height": 70,
-          "position": "right",
-          "aspectRatio": 2,
-          "description": "几何图形"
+          "box_2d": [
+            245,
+            775,
+            330,
+            900
+          ],
+          "label": "geometry"
         }
       ]
     },
     {
       "number": "10",
-      "content": "10. (2025勤学早)如图,AC与BD相交于点O, BO=CO. 若______,则BD = AC. 请从这三个选项中选择一个作为条件(写序号),使结论成立,并说明理由.",
+      "content": "(2025勤学早)如图,$AC$与$BD$相交于点$O$,$BO=CO$.若_______,则$BD=AC$.请从这三个选项中选择一个作为条件(写序号),使结论成立,并说明理由.",
       "options": [
-        "①∠A=∠D",
-        "②∠B=∠C",
-        "③AB=DC"
+        "①$\\angle A=\\angle D$",
+        "②$\\angle B=\\angle C$",
+        "③$AB=DC$"
       ],
-      "answer": "",
       "image_regions": [
         {
-          "x": 760,
-          "y": 420,
-          "width": 140,
-          "height": 70,
-          "position": "right",
-          "aspectRatio": 2,
-          "description": "几何图形"
+          "box_2d": [
+            395,
+            780,
+            475,
+            900
+          ],
+          "label": "geometry"
         }
       ]
     },
     {
       "number": "11",
-      "content": "11. (2025 勤学早)如图,A,D,C,B四点在一条直线上,且AC=BD,∠ADE=∠BCF.若______,则DE=CF.请从这三个选项中选择一个作为条件(写序号),使结论成立,并说明理由.",
+      "content": "(2025 勤学早)如图,$A,D,C,B$四点在一条直线上,且$AC=BD$,$\\angle ADE=\\angle BCF$.若_______,则$DE=CF$.请从这三个选项中选择一个作为条件(写序号),使结论成立,并说明理由.",
       "options": [
-        "①∠A=∠B",
-        "②∠E=∠F",
-        "③AE=BF"
+        "①$\\angle A=\\angle B$",
+        "②$\\angle E=\\angle F$",
+        "③$AE=BF$"
       ],
-      "answer": "",
       "image_regions": [
         {
-          "x": 750,
-          "y": 590,
-          "width": 170,
-          "height": 60,
-          "position": "right",
-          "aspectRatio": 2.83,
-          "description": "几何图形"
+          "box_2d": [
+            560,
+            770,
+            640,
+            900
+          ],
+          "label": "geometry"
         }
       ]
     },
     {
       "number": "12",
-      "content": "12. (2025 勤学早)(八上教材 P37T₁ 改)如图,B 是AD的中点,BC=DE.若______,则AC// BE.请从这三个选项中选择一个作为条件(写序号),使结论成立,并说明理由.",
+      "content": "(2025 勤学早)(八上教材 $P_{37}T_1$ 改)如图,$B$是$AD$的中点,$BC=DE$.若_______,则$AC \\parallel BE$.请从这三个选项中选择一个作为条件(写序号),使结论成立,并说明理由.",
       "options": [
-        "①∠C=∠E",
-        "②BC//BE",
-        "③AC=BE"
+        "①$\\angle C=\\angle E$",
+        "②$BC \\parallel BE$",
+        "③$AC=BE$"
       ],
-      "answer": "",
       "image_regions": [
         {
-          "x": 790,
-          "y": 760,
-          "width": 130,
-          "height": 70,
-          "position": "right",
-          "aspectRatio": 1.86,
-          "description": "几何图形"
+          "box_2d": [
+            740,
+            780,
+            820,
+            900
+          ],
+          "label": "geometry"
         }
       ]
     },
     {
       "number": "13",
-      "content": "13.(2025勤学早)如图,D是AB边上一点,DF交AC于点E,DE=FE.若______,则FC// AB. 请从这三个选项中选择一个作为条件(写序号),使结论成立,并说明理由.",
+      "content": "(2025勤学早)如图,$D$是$AB$边上一点,$DF$交$AC$于点$E$,$DE=FE$.若_______,则$FC \\parallel AB$.请从这三个选项中选择一个作为条件(写序号),使结论成立,并说明理由.",
       "options": [
-        "①AE=CE",
-        "②AD=CF",
-        "③∠AED=∠CEF"
+        "①$AE=CE$",
+        "②$AD=CF$",
+        "③$\\angle AED=\\angle CEF$"
       ],
-      "answer": "",
       "image_regions": [
         {
-          "x": 760,
-          "y": 900,
-          "width": 160,
-          "height": 70,
-          "position": "right",
-          "aspectRatio": 2.29,
-          "description": "几何图形"
+          "box_2d": [
+            890,
+            770,
+            970,
+            900
+          ],
+          "label": "geometry"
         }
       ]
     }
   ],
   "model": "gemini-flash",
   "retried": false,
-  "processingTime": 127207
+  "processingTime": 25916,
+  "validation": {
+    "passed": true,
+    "reasons": [],
+    "hasQuestions": true,
+    "hasImageRegions": true,
+    "hasValidCoordinates": true,
+    "hasValidSequence": true
+  }
 }

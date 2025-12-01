@@ -5,7 +5,7 @@
 
 import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
-import type { Database } from '@/types/supabase'
+import type { Database } from '@/types/database'
 
 /**
  * 创建服务器端 Supabase 客户端

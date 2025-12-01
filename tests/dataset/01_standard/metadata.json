@@ -1,0 +1,25 @@
+{
+  "STD-06-perfect-a4-scan.jpg": {
+    "scenario": "01_standard",
+    "source": "legacy-paper-01.png",
+    "hasHandwriting": false,
+    "notes": "整页 A4 扫描件，用作 Level3 基准，待补题量",
+    "addedAt": "2025-12-01T10:57:00+08:00",
+    "expected_count": 5
+  },
+  "STD-01-linear-equations.jpg": {
+    "expected_count": 10
+  },
+  "STD-02-triangle-geometry.jpg": {
+    "expected_count": 4
+  },
+  "STD-03-quadratic-functions.jpg": {
+    "expected_count": 2
+  },
+  "STD-04-probability-stats.jpg": {
+    "expected_count": 2
+  },
+  "STD-05-mixed-calculation.jpg": {
+    "expected_count": 14
+  }
+}

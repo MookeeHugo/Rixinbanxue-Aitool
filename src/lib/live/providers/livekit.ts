@@ -63,11 +63,12 @@ export class LiveKitAdapter implements ILiveProvider {
 
       return { roomId, provider: "livekit" };
     } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       // 如果房间已存在，直接返回
-      if (error.message?.includes('already exists')) {
+      if (message.includes('already exists')) {
         return { roomId, provider: "livekit" };
       }
-      throw error;
+      throw error instanceof Error ? error : new Error(message);
     }
   }
 
@@ -134,13 +135,14 @@ export class LiveKitAdapter implements ILiveProvider {
         egressId: recordingInfo.egressId,
       });
 
-      return { recordingId: recordingInfo.egressId };
+      return { recordingId: recordingInfo.egressId, egressId: recordingInfo.egressId };
     } catch (error: unknown) {
       logger.error('Failed to start recording', error, {
         sessionId: input.sessionId,
         roomId: input.roomId,
       });
-      throw new Error(`Failed to start recording: ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to start recording: ${message}`);
     }
   }
 
@@ -178,7 +180,8 @@ export class LiveKitAdapter implements ILiveProvider {
       });
       // 即使停止失败，也从活跃录制中移除
       this.activeRecordings.delete(input.sessionId);
-      throw new Error(`Failed to stop recording: ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to stop recording: ${message}`);
     }
   }
 
@@ -196,4 +199,3 @@ export class LiveKitAdapter implements ILiveProvider {
     return new Map(this.activeRecordings);
   }
 }
-

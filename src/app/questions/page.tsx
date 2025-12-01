@@ -3,9 +3,13 @@
 import { useEffect, useMemo, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import type { ColumnsType, TableRowSelection } from 'antd/es/table/interface'
-import { Table, Space, Modal, Radio, Upload } from 'antd'
-import { Input } from 'antd'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Checkbox } from '@/components/ui/checkbox'
+import { X } from 'lucide-react'
 import { logger } from '@/lib/logger'
 import {
   Plus,
@@ -508,7 +512,7 @@ const fetchExportTaskStatus = async (taskId: string) => {
         description: '请先登录',
         variant: 'destructive',
       })
-      return Upload.LIST_IGNORE
+      return
     }
 
     if (!file.name.endsWith('.csv')) {
@@ -517,7 +521,7 @@ const fetchExportTaskStatus = async (taskId: string) => {
         description: '请上传 CSV 文件',
         variant: 'destructive',
       })
-      return Upload.LIST_IGNORE
+      return
     }
 
     try {
@@ -529,7 +533,7 @@ const fetchExportTaskStatus = async (taskId: string) => {
           description: '未解析到题目',
           variant: 'destructive',
         })
-        return Upload.LIST_IGNORE
+        return
       }
 
       const payload = rows.slice(0, 100).map((row) => ({
@@ -557,94 +561,42 @@ const fetchExportTaskStatus = async (taskId: string) => {
         variant: 'destructive',
       })
     }
-
-    return Upload.LIST_IGNORE
   }, [profile, toast])
 
-  const columns: ColumnsType<QuestionRecord> = useMemo(
-    () => [
-      {
-        title: '题干',
-        dataIndex: 'content',
-        key: 'content',
-        render: (text: string) => (
-          <div className="line-clamp-2 text-sm text-foreground/90">
-            {highlightMatch(text || '')}
-          </div>
-        ),
-      },
-      {
-        title: '题型',
-        dataIndex: 'type',
-        key: 'type',
-        render: (type: string) => <Badge variant="secondary">{getTypeLabel(type)}</Badge>,
-      },
-      {
-        title: '难度',
-        dataIndex: 'difficulty',
-        key: 'difficulty',
-        render: (difficulty: string) => (
-          <Badge variant={getDifficultyVariant(difficulty)}>{getDifficultyLabel(difficulty)}</Badge>
-        ),
-      },
-      {
-        title: '知识点',
-        dataIndex: 'knowledge_points',
-        key: 'knowledge_points',
-        render: (points?: string[]) =>
-          points?.length ? (
-            <Space size={[4, 4]} wrap>
-              {points.slice(0, 3).map((kp) => (
-                <Badge key={kp} variant="outline">
-                  {kp}
-                </Badge>
-              ))}
-              {points.length > 3 && <span className="text-xs text-muted-foreground">+{points.length - 3}</span>}
-            </Space>
-          ) : (
-            <span className="text-xs text-muted-foreground">未关联</span>
-          ),
-      },
-      {
-        title: '操作',
-        key: 'action',
-        render: (_, record) => (
-          <Space size="small">
-            <Link href={`/questions/${record.id}`}>
-              <Button variant="outline" size="sm">
-                查看
-              </Button>
-            </Link>
-            <Link href={`/questions/${record.id}/edit`}>
-              <Button variant="secondary" size="sm">
-                编辑
-              </Button>
-            </Link>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleAddToBasketAction(record)}
-              disabled={hasQuestionInBasket(String(record.id))}
-            >
-              {hasQuestionInBasket(String(record.id)) ? '已在题篮' : '加入题篮'}
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => handleDelete(String(record.id))}>
-              删除
-            </Button>
-          </Space>
-        ),
-      },
-    ],
-    [highlightMatch, hasQuestionInBasket, handleAddToBasketAction, handleDelete]
-  )
+  // 分页状态
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
 
-  const rowSelection: TableRowSelection<QuestionRecord> = useMemo(
-    () => ({
-      selectedRowKeys,
-      onChange: setSelectedRowKeys,
-    }),
-    [selectedRowKeys]
-  )
+  // 计算分页数据
+  const paginatedQuestions = useMemo(() => {
+    const start = (currentPage - 1) * pageSize
+    const end = start + pageSize
+    return questions.slice(start, end)
+  }, [questions, currentPage, pageSize])
+
+  const totalPages = Math.ceil(questions.length / pageSize)
+
+  // 处理全选
+  const handleSelectAll = useCallback((checked: boolean) => {
+    if (checked) {
+      setSelectedRowKeys(paginatedQuestions.map(q => String(q.id)))
+    } else {
+      setSelectedRowKeys([])
+    }
+  }, [paginatedQuestions])
+
+  // 处理单选
+  const handleSelectRow = useCallback((id: string, checked: boolean) => {
+    if (checked) {
+      setSelectedRowKeys(prev => [...prev, id])
+    } else {
+      setSelectedRowKeys(prev => prev.filter(key => key !== id))
+    }
+  }, [])
+
+  // 检查是否全选
+  const isAllSelected = paginatedQuestions.length > 0 && paginatedQuestions.every(q => selectedRowKeys.includes(String(q.id)))
+  const isSomeSelected = paginatedQuestions.some(q => selectedRowKeys.includes(String(q.id)))
 
   if (!profile) {
     return (
@@ -738,13 +690,23 @@ const fetchExportTaskStatus = async (taskId: string) => {
                 placeholder="全文搜索题干/答案"
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
-                onPressEnter={() => {
-                  updateSearchHistory(searchText)
-                  void loadQuestions()
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    updateSearchHistory(searchText)
+                    void loadQuestions()
+                  }
                 }}
-                allowClear
+                className="pr-16"
               />
-              <SearchIcon className="absolute right-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              {searchText && (
+                <button
+                  onClick={() => setSearchText('')}
+                  className="absolute right-8 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+              <SearchIcon className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
             </div>
             <Button
               variant="ghost"
@@ -821,16 +783,26 @@ const fetchExportTaskStatus = async (taskId: string) => {
             <Download className="mr-1 h-4 w-4" />
             导出 JSON
           </Button>
-          <Upload
-            showUploadList={false}
-            beforeUpload={handleBulkImport}
-            accept=".csv"
-          >
-            <Button variant="outline" size="sm">
-              <UploadCloud className="mr-1 h-4 w-4" />
-              批量导入
+          <label>
+            <input
+              type="file"
+              accept=".csv"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (file) {
+                  void handleBulkImport(file)
+                  e.target.value = ''
+                }
+              }}
+            />
+            <Button variant="outline" size="sm" asChild>
+              <span className="cursor-pointer">
+                <UploadCloud className="mr-1 h-4 w-4" />
+                批量导入
+              </span>
             </Button>
-          </Upload>
+          </label>
           <span className="text-xs text-muted-foreground">
             已选 {selectedRowKeys.length} / 共 {questions.length}
           </span>
@@ -838,56 +810,199 @@ const fetchExportTaskStatus = async (taskId: string) => {
       </Card>
 
       <Card className="p-6">
-        <Table
-          columns={columns}
-          dataSource={questions}
-          rowKey={(record) => String(record.id)}
-          loading={loading}
-          rowSelection={rowSelection}
-          pagination={{
-            pageSize: 10,
-            showSizeChanger: true,
-            showTotal: (total) => `共 ${total} 道题目`,
-          }}
-          locale={{
-            emptyText: (
-              <div className="py-12 text-center">
-                <p className="text-muted-foreground mb-4">暂无题目</p>
-                <Link href="/questions/create">
-                  <Button>
-                    <Plus className="mr-2 h-4 w-4" />
-                    创建第一道题目
-                  </Button>
-                </Link>
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="text-muted-foreground">加载中...</div>
+          </div>
+        ) : questions.length === 0 ? (
+          <div className="py-12 text-center">
+            <p className="text-muted-foreground mb-4">暂无题目</p>
+            <Link href="/questions/create">
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                创建第一道题目
+              </Button>
+            </Link>
+          </div>
+        ) : (
+          <>
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-12">
+                      <Checkbox
+                        checked={isAllSelected}
+                        onCheckedChange={handleSelectAll}
+                        aria-label="全选"
+                      />
+                    </TableHead>
+                    <TableHead>题干</TableHead>
+                    <TableHead className="w-24">题型</TableHead>
+                    <TableHead className="w-24">难度</TableHead>
+                    <TableHead className="w-48">知识点</TableHead>
+                    <TableHead className="w-80">操作</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedQuestions.map((question) => (
+                    <TableRow key={question.id}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedRowKeys.includes(String(question.id))}
+                          onCheckedChange={(checked) => handleSelectRow(String(question.id), checked as boolean)}
+                          aria-label={`选择题目 ${question.id}`}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <div className="line-clamp-2 text-sm text-foreground/90">
+                          {highlightMatch(question.content || '')}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">{getTypeLabel(question.type)}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={getDifficultyVariant(question.difficulty)}>
+                          {getDifficultyLabel(question.difficulty)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {question.knowledge_points?.length ? (
+                          <div className="flex flex-wrap gap-1">
+                            {question.knowledge_points.slice(0, 3).map((kp) => (
+                              <Badge key={kp} variant="outline">
+                                {kp}
+                              </Badge>
+                            ))}
+                            {question.knowledge_points.length > 3 && (
+                              <span className="text-xs text-muted-foreground">
+                                +{question.knowledge_points.length - 3}
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">未关联</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Link href={`/questions/${question.id}`}>
+                            <Button variant="outline" size="sm">
+                              查看
+                            </Button>
+                          </Link>
+                          <Link href={`/questions/${question.id}/edit`}>
+                            <Button variant="secondary" size="sm">
+                              编辑
+                            </Button>
+                          </Link>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleAddToBasketAction(question)}
+                            disabled={hasQuestionInBasket(String(question.id))}
+                          >
+                            {hasQuestionInBasket(String(question.id)) ? '已在题篮' : '加入题篮'}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDelete(String(question.id))}
+                          >
+                            删除
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* 分页控件 */}
+            <div className="flex items-center justify-between mt-4">
+              <div className="text-sm text-muted-foreground">
+                共 {questions.length} 道题目，第 {currentPage} / {totalPages} 页
               </div>
-            ),
-          }}
-        />
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                >
+                  上一页
+                </Button>
+                <div className="flex items-center gap-2">
+                  <Select
+                    value={String(pageSize)}
+                    onValueChange={(value) => {
+                      setPageSize(Number(value))
+                      setCurrentPage(1)
+                    }}
+                  >
+                    <SelectTrigger className="w-32">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="10">10 条/页</SelectItem>
+                      <SelectItem value="20">20 条/页</SelectItem>
+                      <SelectItem value="50">50 条/页</SelectItem>
+                      <SelectItem value="100">100 条/页</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  下一页
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
       </Card>
 
-      <Modal
-        title="删除题目"
-        open={deleteModalOpen}
-        okText={deleteMode === 'hard' ? '硬删除' : '软删除'}
-        okButtonProps={{ danger: deleteMode === 'hard', loading: bulkLoading }}
-        cancelText="取消"
-        onOk={handleBulkDelete}
-        onCancel={() => {
-          if (!bulkLoading) setDeleteModalOpen(false)
-        }}
-      >
-        <p className="text-sm text-muted-foreground mb-3">
-          软删除会将题目设置为私有并保留数据；硬删除会彻底清除题目及图片。
-        </p>
-        <Radio.Group
-          className="flex flex-col gap-2"
-          value={deleteMode}
-          onChange={(event) => setDeleteMode(event.target.value)}
-        >
-          <Radio value="soft">软删除（可恢复）</Radio>
-          <Radio value="hard">硬删除（不可恢复）</Radio>
-        </Radio.Group>
-      </Modal>
+      <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>删除题目</DialogTitle>
+            <DialogDescription>
+              软删除会将题目设置为私有并保留数据；硬删除会彻底清除题目及图片。
+            </DialogDescription>
+          </DialogHeader>
+          <RadioGroup value={deleteMode} onValueChange={(value) => setDeleteMode(value as 'soft' | 'hard')}>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="soft" id="soft" />
+              <Label htmlFor="soft">软删除（可恢复）</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="hard" id="hard" />
+              <Label htmlFor="hard">硬删除（不可恢复）</Label>
+            </div>
+          </RadioGroup>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteModalOpen(false)}
+              disabled={bulkLoading}
+            >
+              取消
+            </Button>
+            <Button
+              variant={deleteMode === 'hard' ? 'destructive' : 'default'}
+              onClick={handleBulkDelete}
+              disabled={bulkLoading}
+            >
+              {bulkLoading ? '删除中...' : (deleteMode === 'hard' ? '硬删除' : '软删除')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <QuestionBasketDrawer
         open={basketOpen}

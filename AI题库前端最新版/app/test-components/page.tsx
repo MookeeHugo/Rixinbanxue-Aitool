@@ -106,24 +106,22 @@ export default function TestComponentsPage() {
               <Separator className="my-4" />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <Badge variant="destructive" className="mb-2">
+                  <Badge variant="error" className="mb-2">
                     解析失败
                   </Badge>
                   <ErrorState
                     title="解析失败"
                     message="OCR 识别错误，请检查文件格式"
-                    errorCode="OCR_FAILED"
                     onRetry={() => alert("重试解析")}
                   />
                 </div>
                 <div>
-                  <Badge variant="destructive" className="mb-2">
+                  <Badge variant="error" className="mb-2">
                     网络错误
                   </Badge>
                   <ErrorState
                     title="网络连接失败"
                     message="无法连接到服务器，请检查网络连接"
-                    errorCode="NETWORK_ERROR"
                     onRetry={() => alert("重新连接")}
                   />
                 </div>

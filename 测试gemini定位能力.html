@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .container { display: flex; gap: 20px; }
+        .controls { width: 300px; display: flex; flex-direction: column; gap: 10px; }
+        #canvas-wrapper { position: relative; border: 1px solid #ccc; display: inline-block; }
+        canvas { display: block; max-width: 100%; }
+        textarea { height: 200px; }
+        .box-label {
+            position: absolute; color: white; background: red;
+            padding: 2px 5px; font-size: 12px; pointer-events: none;
+        }
+        .box-overlay {
+            position: absolute; border: 2px solid red;
+            background: rgba(255, 0, 0, 0.1); pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <h2>Gemini 坐标验证器 (0-1000 归一化)</h2>
+    <div class="container">
+        <div class="controls">
+            <label>1. 选择试卷图片:</label>
+            <input type="file" id="imgInput" accept="image/*">
+
+            <label>2. 粘贴 Gemini 返回的 JSON:</label>
+            <textarea id="jsonInput" placeholder='{"boxes": [...]}'></textarea>
+
+            <button onclick="drawBoxes()">👉 绘制验证</button>
+        </div>
+
+        <div id="canvas-wrapper">
+            </div>
+    </div>
+
+    <script>
+        let currentImg = null;
+
+        document.getElementById('imgInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    currentImg = img;
+                    drawBoxes(); // 自动刷新
+                }
+                img.src = event.target.result;
+            }
+            reader.readAsDataURL(file);
+        });
+
+        function drawBoxes() {
+            const wrapper = document.getElementById('canvas-wrapper');
+            const jsonText = document.getElementById('jsonInput').value;
+
+            // 清除旧的
+            wrapper.innerHTML = '';
+            if (!currentImg) return;
+
+            // 显示原图
+            wrapper.appendChild(currentImg);
+
+            try {
+                const data = JSON.parse(jsonText);
+                const boxes = data.boxes || [];
+
+                const imgWidth = currentImg.width;
+                const imgHeight = currentImg.height;
+
+                boxes.forEach(item => {
+                    const [ymin, xmin, ymax, xmax] = item.box_2d;
+
+                    // 核心逻辑：将 0-1000 转换为 像素
+                    const top = (ymin / 1000) * imgHeight;
+                    const left = (xmin / 1000) * imgWidth;
+                    const height = ((ymax - ymin) / 1000) * imgHeight;
+                    const width = ((xmax - xmin) / 1000) * imgWidth;
+
+                    // 创建红框
+                    const div = document.createElement('div');
+                    div.className = 'box-overlay';
+                    div.style.top = top + 'px';
+                    div.style.left = left + 'px';
+                    div.style.width = width + 'px';
+                    div.style.height = height + 'px';
+                    wrapper.appendChild(div);
+
+                    // 创建标签
+                    const label = document.createElement('div');
+                    label.className = 'box-label';
+                    label.innerText = item.label;
+                    label.style.top = top + 'px';
+                    label.style.left = left + 'px';
+                    wrapper.appendChild(label);
+                });
+            } catch (e) {
+                console.error("JSON 格式错误，请检查", e);
+            }
+        }
+    </script>
+</body>
+</html>

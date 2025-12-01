@@ -183,7 +183,7 @@ export default function QuestionDetailPage() {
             <Badge variant="secondary">{getTypeLabel(question.type)}</Badge>
             <Badge variant="outline">{getDifficultyLabel(question.difficulty)}</Badge>
             {question.is_public === false && (
-              <Badge variant="destructive">私有</Badge>
+              <Badge variant="error">私有</Badge>
             )}
           </div>
 

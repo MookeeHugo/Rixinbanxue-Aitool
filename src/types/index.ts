@@ -10,8 +10,7 @@ export type {
   SupabaseResponse,
   SupabaseError,
   PaginatedResponse,
-  PaginationMeta,
-  ApiRequestConfig,
+  RequestConfig,
 } from './api'
 
 // 数据库实体类型
