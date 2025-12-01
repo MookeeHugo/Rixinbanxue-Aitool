@@ -1,9 +1,11 @@
 import { randomUUID } from 'crypto';
 import { mkdirSync, writeFileSync } from 'fs';
+import { mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
 import sharp from 'sharp';
 import { z } from 'zod';
+import { jsonrepair } from 'jsonrepair';
 
 import type {
   GeminiImageRegion,
@@ -66,12 +68,12 @@ const QUESTION_RESPONSE_SCHEMA = {
           number: { type: SchemaType.STRING },
           content: {
             type: SchemaType.STRING,
-            description: '???LaTeX ????????????'
+            description: '题干内容，所有数学表达式需转换成 LaTeX 并包裹在 $...$ 中'
           },
           options: {
             type: SchemaType.ARRAY,
             items: { type: SchemaType.STRING },
-            description: '?????????? LaTeX ?? $ ??'
+            description: '选择题选项，必须统一使用 $...$ 包裹的 LaTeX'
           },
           answer: { type: SchemaType.STRING, nullable: true },
           images: {
@@ -98,7 +100,7 @@ const QUESTION_RESPONSE_SCHEMA = {
           meta: {
             type: SchemaType.OBJECT,
             properties: {
-              difficulty: { type: SchemaType.INTEGER, description: '1-5 ????' },
+              difficulty: { type: SchemaType.INTEGER, description: '1-5 难度等级（1=简单，5=困难）' },
               type: {
                 type: SchemaType.STRING,
                 enum: ['choice', 'fill', 'essay', 'proof']
@@ -125,11 +127,14 @@ const GEMINI_BASE_URL =
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 const GEMINI_MODEL = process.env.GEMINI_MODEL?.trim() || 'gemini-2.5-flash';
 const GEMINI_TIMEOUT_MS = Number(process.env.GEMINI_REQUEST_TIMEOUT || 120000);
+const GEMINI_TIMEOUT_BAD = Number(process.env.GEMINI_TIMEOUT_BAD || GEMINI_TIMEOUT_MS);
 const MIN_PADDING_PX = 20;
 const PADDING_RATIO = 0.02;
+const ENABLE_BLACKBOX_LOGGING = process.env.ENABLE_BLACKBOX_LOGGING === 'true';
 const IS_OFFICIAL_GEMINI_ENDPOINT = GEMINI_BASE_URL.includes(
   'generativelanguage.googleapis.com'
 );
+const FAILURE_LOG_ROOT = join(process.cwd(), 'logs', 'failures');
 
 const NormalizedBoxSchema = z
   .tuple([
@@ -157,7 +162,7 @@ const GeminiImageRegionSchema = z.object({
 });
 
 const GeminiQuestionSchema = z.object({
-  number: z.string().min(1),
+  number: z.string().optional().default(''),
   content: z.string().min(1),
   options: z.array(z.string()).optional(),
   answer: z.string().nullable().optional(),
@@ -165,7 +170,9 @@ const GeminiQuestionSchema = z.object({
   images: z.array(GeminiImageRegionSchema).optional(),
   meta: z
     .object({
-      difficulty: z.union([z.enum(['easy', 'medium', 'hard']), z.number().min(1).max(5)]).optional(),
+      difficulty: z
+        .union([z.enum(['easy', 'medium', 'hard']), z.number().min(0).max(5)])
+        .optional(),
       tags: z.array(z.string()).optional(),
       type: z.enum(['choice', 'fill', 'essay', 'proof']).optional()
     })
@@ -179,8 +186,8 @@ const QuestionDataSchema = z.object({
     difficulty: z.enum(['easy', 'medium', 'hard']).optional(),
     tags: z.array(z.string()).optional(),
     type: z.enum(['choice', 'fill', 'essay', 'proof']).optional()
-  }),
-  questions: z.array(GeminiQuestionSchema).min(1)
+  }).optional(),
+  questions: z.array(GeminiQuestionSchema).min(0)
 });
 
 let cachedClient: GoogleGenerativeAI | null = null;
@@ -253,24 +260,88 @@ function applyPadding(rect: PixelRect, meta: ImageMeta): PixelRect {
   };
 }
 
-async function normalizeImageBuffer(imageBuffer: Buffer) {
+async function normalizeImageBuffer(
+  imageBuffer: Buffer,
+  context?: { requestId?: string; fileName?: string }
+) {
   const sharpInstance = sharp(imageBuffer);
   const metadata = await sharpInstance.metadata();
 
-  if (metadata.format === 'png') {
-    return { buffer: imageBuffer, meta: { width: metadata.width!, height: metadata.height! } };
+  let workingBuffer = imageBuffer;
+  let workingMeta = {
+    width: metadata.width || 0,
+    height: metadata.height || 0
+  };
+
+  if (metadata.format !== 'png') {
+    const converted = await sharpInstance.png().toBuffer();
+    const convertedMeta = await sharp(converted).metadata();
+    workingBuffer = converted;
+    workingMeta = {
+      width: convertedMeta.width || workingMeta.width,
+      height: convertedMeta.height || workingMeta.height
+    };
   }
 
-  const converted = await sharpInstance.png().toBuffer();
-  const convertedMeta = await sharp(converted).metadata();
+  const enhanced = await enhanceImageBuffer(workingBuffer, workingMeta, context);
 
   return {
-    buffer: converted,
+    buffer: enhanced.buffer,
     meta: {
-      width: convertedMeta.width || metadata.width || 0,
-      height: convertedMeta.height || metadata.height || 0
+      width: enhanced.meta.width || workingMeta.width,
+      height: enhanced.meta.height || workingMeta.height
     }
   };
+}
+
+async function enhanceImageBuffer(
+  buffer: Buffer,
+  meta: ImageMeta,
+  context?: { requestId?: string; fileName?: string }
+) {
+  const width = meta.width || 0;
+  const height = meta.height || 0;
+  const area = width * height;
+  const shortestEdge = Math.min(width, height);
+  const needsUpscale = shortestEdge > 0 && shortestEdge < 1400;
+  const needsContrastBoost = area > 0 && area < 2_500_000;
+
+  if (!needsUpscale && !needsContrastBoost) {
+    return { buffer, meta };
+  }
+
+  try {
+    let pipeline = sharp(buffer).normalize();
+    if (needsContrastBoost) {
+      pipeline = pipeline.gamma(1.05).modulate({ brightness: 1.05, saturation: 1 });
+    }
+    if (needsUpscale) {
+      const upscaleRatio = Math.min(2, 1600 / Math.max(shortestEdge, 1));
+      pipeline = pipeline.resize({
+        width: Math.round(width * upscaleRatio),
+        height: Math.round(height * upscaleRatio),
+        fit: 'fill',
+        kernel: sharp.kernel.lanczos3
+      });
+    }
+    pipeline = pipeline.sharpen(1, 0.5, 0.5);
+    const enhanced = await pipeline.toBuffer();
+    const enhancedMetaRaw = await sharp(enhanced).metadata();
+    return {
+      buffer: enhanced,
+      meta: {
+        width: enhancedMetaRaw.width || Math.round(width),
+        height: enhancedMetaRaw.height || Math.round(height)
+      }
+    };
+  } catch (error) {
+    console.warn('[Gemini解析] 图片预处理失败', {
+      requestId: context?.requestId,
+      fileName: context?.fileName,
+      message: error instanceof Error ? error.message : String(error)
+    });
+    return { buffer, meta };
+  }
 }
 
 function buildGeminiRequestPayload(base64: string, mimeType = 'image/png') {
@@ -333,7 +404,7 @@ async function streamViaProxy(
   requestId: string
 ) {
   if (!GEMINI_API_KEY) {
-    throw new Error('GEMINI_API_KEY ???????? Gemini ??');
+    throw new Error('GEMINI_API_KEY 未配置，无法调用 Gemini 接口');
   }
 
   const cleanBaseUrl = GEMINI_BASE_URL.replace(/\/+$/, '');
@@ -354,12 +425,12 @@ async function streamViaProxy(
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(
-      `Gemini?????? (${response.status}): ${errorText.slice(0, 400)}`
+      `Gemini 响应异常 (${response.status}): ${errorText.slice(0, 400)}`
     );
   }
 
   if (!response.body) {
-    throw new Error('Gemini???????');
+    throw new Error('Gemini 流式接口返回空 Body');
   }
 
   const reader = response.body.getReader();
@@ -399,7 +470,7 @@ async function streamViaProxy(
         pendingPayload = '';
       } catch (error) {
         pendingPayload = candidatePayload;
-        console.warn('[Gemini??] ????????', {
+        console.warn('[Gemini流式] 片段解析失败，等待下个 chunk', {
           requestId,
           chunkIndex: eventIndex,
           error: error instanceof Error ? error.message : String(error),
@@ -422,7 +493,7 @@ async function streamViaProxy(
         pendingPayload = '';
       } catch (error) {
         pendingPayload = candidatePayload;
-        console.warn('[Gemini??] ?????????', {
+        console.warn('[Gemini流式] 收到残缺片段，等待缓冲', {
           requestId,
           error: error instanceof Error ? error.message : String(error),
           payloadPreview: pendingPayload.slice(0, 200)
@@ -432,11 +503,11 @@ async function streamViaProxy(
   }
 
   if (pendingPayload) {
-    console.error('[Gemini??] ?????????????', {
+    console.error('[Gemini流式] 读取结束但仍有残留数据未解析', {
       requestId,
       pendingPreview: pendingPayload.slice(0, 200)
     });
-    throw new Error('Gemini ?????????????');
+    throw new Error('Gemini 流式响应残留数据无法解析');
   }
 
   const rawText = fragments
@@ -450,7 +521,7 @@ async function streamViaProxy(
           )
           .join('') || '';
       if (!chunkText.trim()) {
-        console.warn('[Gemini??] ???????', { requestId, chunkIndex: index + 1 });
+        console.warn('[Gemini流式] 收到空白 chunk', { requestId, chunkIndex: index + 1 });
       }
       return chunkText;
     })
@@ -465,7 +536,8 @@ function decodeLatexText(value: string): string {
 export function ensureLatexWrapped(option: string): string {
   const trimmed = option.trim();
   if (!trimmed) {
-    throw new Error('选项内容为空，无法转换为 LaTeX');
+    console.warn('[Gemini解析] 检测到空选项，已丢弃');
+    return '';
   }
 
   const fullyWrapped = trimmed.startsWith('$') && trimmed.endsWith('$');
@@ -481,24 +553,139 @@ export function ensureLatexWrapped(option: string): string {
   return `$${trimmed.replace(/^\$|\$$/g, '').trim()}$`;
 }
 
+/**
+ * 从双引号、Markdown 等噪声中提取纯 JSON
+ * 用于修复 Gemini 流式响应掺杂 Markdown/提示语导致的解析问题
+ */
 export function extractJsonFromStream(raw: string): string {
   const cleaned = raw.replace(/```json/gi, '').replace(/```/g, '').trim();
-  const jsonBlockRegex = /\{(?:[^{}]|{(?:[^{}]|{[^{}]*})*})*\}/gs;
-  const matches = cleaned.match(jsonBlockRegex);
-
-  if (matches && matches.length > 0) {
-    return matches[matches.length - 1];
-  }
 
   const firstBrace = cleaned.indexOf('{');
-  const lastBrace = cleaned.lastIndexOf('}');
+  if (firstBrace === -1) {
+    throw new Error('Unable to find JSON start symbol "{" in Gemini response');
+  }
 
-  if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) {
-    throw new Error('未能在 Gemini 响应中定位 JSON');
+  let balance = 0;
+  let lastBrace = -1;
+  let inString = false;
+  let isEscaped = false;
+
+  for (let i = firstBrace; i < cleaned.length; i += 1) {
+    const char = cleaned[i];
+
+    if (isEscaped) {
+      isEscaped = false;
+      continue;
+    }
+    if (char === '\\') {
+      isEscaped = true;
+      continue;
+    }
+
+    if (char === '"') {
+      inString = !inString;
+      continue;
+    }
+
+    if (!inString) {
+      if (char === '{') {
+        balance += 1;
+      } else if (char === '}') {
+        balance -= 1;
+        if (balance === 0) {
+          lastBrace = i;
+          break;
+        }
+      }
+    }
+  }
+
+  if (lastBrace === -1) {
+    const fallbackBrace = cleaned.lastIndexOf('}');
+    if (fallbackBrace <= firstBrace) {
+      throw new Error('JSON braces are unbalanced; cannot extract payload');
+    }
+    return cleaned.slice(firstBrace, fallbackBrace + 1);
   }
 
   return cleaned.slice(firstBrace, lastBrace + 1);
 }
+
+function sanitizeImageRegionsForPayload(
+  regions: unknown,
+  context: { requestId: string; questionIndex: number }
+) {
+  if (!Array.isArray(regions)) {
+    return [];
+  }
+
+  const sanitized: any[] = [];
+
+  regions.forEach((region, index) => {
+    if (!region || typeof region !== 'object') {
+      console.warn('[Gemini解析] 跳过非法配图对象', {
+        requestId: context.requestId,
+        questionIndex: context.questionIndex,
+        regionIndex: index + 1
+      });
+      return;
+    }
+
+    const box = Array.isArray((region as any).box_2d) ? (region as any).box_2d.slice(0, 4) : null;
+    if (!box || box.length < 4) {
+      console.warn('[Gemini解析] box_2d 长度不足，已忽略该配图', {
+        requestId: context.requestId,
+        questionIndex: context.questionIndex,
+        regionIndex: index + 1
+      });
+      return;
+    }
+
+    const normalizedBox = box.map(value => {
+      const num = typeof value === 'number' ? value : Number(value);
+      return clamp(Math.round(Number.isFinite(num) ? num : 0), 0, 1000);
+    }) as NormalizedBox;
+
+    sanitized.push({
+      ...(region as Record<string, unknown>),
+      box_2d: normalizedBox
+    });
+  });
+
+  return sanitized;
+}
+
+function normalizeRawGeminiPayload(payload: unknown, requestId: string): unknown {
+  if (!payload || typeof payload !== 'object') {
+    return payload;
+  }
+
+  const clone: any = Array.isArray(payload)
+    ? payload.map(entry => ({ ...(entry as Record<string, unknown>) }))
+    : { ...(payload as Record<string, unknown>) };
+
+  if (Array.isArray(clone.questions)) {
+    clone.questions = clone.questions.map((question: any, index: number) => {
+      if (!question || typeof question !== 'object') {
+        return question;
+      }
+      return {
+        ...question,
+        image_regions: sanitizeImageRegionsForPayload(question.image_regions, {
+          requestId,
+          questionIndex: index + 1
+        }),
+        images: sanitizeImageRegionsForPayload(question.images, {
+          requestId,
+          questionIndex: index + 1
+        })
+      };
+    });
+  }
+
+  return clone;
+}
+
 
 function sanitizeJsonPayload(payload: string): string {
   return payload.replace(/\\(?!["\\/bfnrtuU])/g, '\\\\');
@@ -563,9 +750,11 @@ function normalizeJsonEscapes(payload: string): string {
 }
 
 function parseJsonWithRepair(payload: string): any {
+  let lastError: unknown;
   try {
     return JSON.parse(payload);
   } catch (error) {
+    lastError = error;
     if (
       error instanceof SyntaxError &&
       /bad escaped character|invalid unicode escape/i.test(error.message)
@@ -575,14 +764,27 @@ function parseJsonWithRepair(payload: string): any {
         try {
           return JSON.parse(repaired);
         } catch (secondError) {
+          lastError = secondError;
           console.error('[Gemini解析] JSON 二次修复失败', {
             error: secondError instanceof Error ? secondError.message : String(secondError)
           });
         }
       }
     }
-    throw error;
   }
+
+  try {
+    const repaired = jsonrepair(payload);
+    return JSON.parse(repaired);
+  } catch (repairError) {
+    console.error('[Gemini解析] jsonrepair 仍失败', {
+      error: repairError instanceof Error ? repairError.message : String(repairError)
+    });
+  }
+
+  throw lastError instanceof Error
+    ? lastError
+    : new Error('无法解析 Gemini JSON 响应');
 }
 
 function logJsonErrorContext(payload: string, requestId: string, error: unknown) {
@@ -616,6 +818,40 @@ function writeDebugFile(requestId: string, content: string) {
     console.warn('[Gemini解析] 写入调试文件失败', {
       requestId,
       error: error instanceof Error ? error.message : String(error)
+    });
+  }
+}
+
+async function saveFailureLog(
+  requestId: string,
+  imageBuffer: Buffer,
+  rawAIResponse: string,
+  error: Error
+): Promise<void> {
+  if (!ENABLE_BLACKBOX_LOGGING) {
+    return;
+  }
+
+  try {
+    const dateKey = new Date().toISOString().slice(0, 10);
+    const logDir = join(FAILURE_LOG_ROOT, dateKey, requestId);
+    await mkdir(logDir, { recursive: true });
+
+    const errorMessage = [
+      `message: ${error.message}`,
+      `name: ${error.name}`,
+      `stack:\n${error.stack ?? 'N/A'}`
+    ].join('\n\n');
+
+    await Promise.all([
+      writeFile(join(logDir, 'source_image.jpg'), imageBuffer),
+      writeFile(join(logDir, 'raw_response.txt'), rawAIResponse ?? '', 'utf8'),
+      writeFile(join(logDir, 'error.log'), errorMessage, 'utf8')
+    ]);
+  } catch (logError) {
+    console.warn('[Gemini黑匣子] 保存失败日志异常', {
+      requestId,
+      error: logError instanceof Error ? logError.message : String(logError)
     });
   }
 }
@@ -666,17 +902,29 @@ function inferQuestionType(
 }
 
 function normalizeQuestionData(parsed: z.infer<typeof QuestionDataSchema>): QuestionData {
+  const rawMeta = parsed.meta ?? {};
+
   return {
     meta: {
-      page_summary: decodeLatexText(parsed.meta.page_summary ?? ''),
-      reasoning: parsed.meta.reasoning ?? [],
-      difficulty: parsed.meta.difficulty,
-      tags: parsed.meta.tags ?? [],
-      type: parsed.meta.type
+      page_summary: decodeLatexText(rawMeta.page_summary ?? ''),
+      reasoning: rawMeta.reasoning ?? [],
+      difficulty: rawMeta.difficulty,
+      tags: rawMeta.tags ?? [],
+      type: rawMeta.type
     },
-    questions: parsed.questions.map(question => {
+    questions: parsed.questions.map((question, index) => {
       const options =
-        question.options?.map(option => ensureLatexWrapped(decodeLatexText(option))) ?? [];
+        question.options
+          ?.map(option => ensureLatexWrapped(decodeLatexText(option)))
+          .filter((value): value is string => Boolean(value)) ?? [];
+      const rawNumber = (question.number ?? '').trim();
+      const fallbackNumber = rawNumber || `Q${index + 1}`;
+      if (!rawNumber) {
+        console.warn('[Gemini解析] 题号为空，已回退为占位编号', {
+          questionIndex: index + 1,
+          fallbackNumber
+        });
+      }
       const difficultyValue = (() => {
         const raw = question.meta?.difficulty;
         if (typeof raw === 'number') {
@@ -698,7 +946,7 @@ function normalizeQuestionData(parsed: z.infer<typeof QuestionDataSchema>): Ques
         });
 
       return {
-        number: question.number.trim(),
+        number: fallbackNumber,
         content: decodeLatexText(question.content.trim()),
         answer: decodeLatexText(question.answer?.trim() ?? ''),
         options,
@@ -845,96 +1093,114 @@ function validateParseResult(data: QuestionData): GeminiValidationResult {
   };
 }
 
-async function runGeminiPipeline(
-  imageBuffer: Buffer,
-  requestContext: { requestId: string; source: 'url' | 'buffer' }
-): Promise<GeminiParseResult> {
-  const { buffer: normalizedBuffer, meta } = await normalizeImageBuffer(imageBuffer);
-  if (!meta.width || !meta.height) {
-    throw new Error('无法获取图片尺寸，无法调用 Gemini Vision');
+function resolveTimeoutHint(meta?: { fileName?: string }) {
+  const current = process.env.CURRENT_REGRESSION_FILE || meta?.fileName || '';
+  if (current.includes('BAD-04-folded-paper')) {
+    return GEMINI_TIMEOUT_BAD;
   }
+  return GEMINI_TIMEOUT_MS;
+}
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => {
-    controller.abort();
-  }, GEMINI_TIMEOUT_MS);
-
-  const base64 = normalizedBuffer.toString('base64');
+async function processImageStream(
+  imageBuffer: Buffer,
+  requestContext: { requestId: string; source: 'url' | 'buffer'; fileName?: string }
+): Promise<GeminiParseResult> {
   let rawText = '';
 
   try {
-    rawText = IS_OFFICIAL_GEMINI_ENDPOINT
-      ? await streamViaGoogleSdk(base64, controller)
-      : await streamViaProxy(base64, controller, requestContext.requestId);
-  } catch (error) {
-    if ((error as Error).name === 'AbortError') {
-      throw new Error(`Gemini 请求超时（${GEMINI_TIMEOUT_MS}ms）`);
-    }
-    throw error;
-  } finally {
-    clearTimeout(timeoutId);
-  }
-
-  if (!rawText.trim()) {
-    throw new Error('Gemini 返回空响应，无法解析');
-  }
-
-  let questionData: QuestionData;
-
-  try {
-    const rawJson = extractJsonFromStream(rawText);
-    const sanitized = sanitizeJsonPayload(rawJson);
-    const normalizedEscapes = normalizeJsonEscapes(sanitized);
-    const repaired = repairUnicodeEscapes(normalizedEscapes);
-    const parsed = parseJsonWithRepair(repaired);
-    const validation = QuestionDataSchema.safeParse(parsed);
-
-    if (!validation.success) {
-      throw validation.error;
+    const { buffer: normalizedBuffer, meta } = await normalizeImageBuffer(imageBuffer, requestContext);
+    if (!meta.width || !meta.height) {
+      throw new Error('无法获取图片尺寸，无法调用 Gemini Vision');
     }
 
-    questionData = normalizeQuestionData(validation.data);
-  } catch (error) {
-    logJsonErrorContext(rawText, requestContext.requestId, error);
-    writeDebugFile(requestContext.requestId, rawText);
-    console.error('[Gemini??] JSON ????', {
+    const controller = new AbortController();
+    const timeoutMs = resolveTimeoutHint({ fileName: requestContext.fileName });
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+    }, timeoutMs);
+
+    const base64 = normalizedBuffer.toString('base64');
+
+    try {
+      rawText = IS_OFFICIAL_GEMINI_ENDPOINT
+        ? await streamViaGoogleSdk(base64, controller)
+        : await streamViaProxy(base64, controller, requestContext.requestId);
+    } catch (error) {
+      if ((error as Error).name === 'AbortError') {
+        throw new Error(`Gemini 请求超时（${timeoutMs}ms）`);
+      }
+      throw error;
+    } finally {
+      clearTimeout(timeoutId);
+    }
+
+    if (!rawText.trim()) {
+      throw new Error('Gemini 返回空响应，无法解析');
+    }
+
+    let questionData: QuestionData;
+
+    try {
+      const rawJson = extractJsonFromStream(rawText);
+      const sanitized = sanitizeJsonPayload(rawJson);
+      const normalizedEscapes = normalizeJsonEscapes(sanitized);
+      const repaired = repairUnicodeEscapes(normalizedEscapes);
+      const parsed = parseJsonWithRepair(repaired);
+      const normalizedPayload = normalizeRawGeminiPayload(parsed, requestContext.requestId);
+      const validation = QuestionDataSchema.safeParse(normalizedPayload);
+
+      if (!validation.success) {
+        throw validation.error;
+      }
+
+      questionData = normalizeQuestionData(validation.data);
+    } catch (error) {
+      logJsonErrorContext(rawText, requestContext.requestId, error);
+      writeDebugFile(requestContext.requestId, rawText);
+      console.error('[Gemini流式] JSON 解析失败', {
+        requestId: requestContext.requestId,
+        preview: rawText.substring(0, 500)
+      });
+      throw new Error(
+        `Gemini 返回内容无法通过 schema 校验: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    }
+
+    const questionsWithImages: GeminiQuestion[] = [];
+    for (const question of questionData.questions) {
+      const images = await enrichImageRegions(question, normalizedBuffer, meta, requestContext.requestId);
+      questionsWithImages.push({
+        ...question,
+        images,
+        image_regions: images
+      });
+    }
+
+    const normalizedResult: QuestionData = {
+      meta: questionData.meta,
+      questions: questionsWithImages
+    };
+
+    const validation = validateParseResult(normalizedResult);
+
+    return {
+      meta: normalizedResult.meta,
+      questions: normalizedResult.questions,
+      model: GEMINI_MODEL,
       requestId: requestContext.requestId,
-      preview: rawText.substring(0, 500)
-    });
-    throw new Error(
-      `Gemini ??????: ${
-        error instanceof Error ? error.message : String(error)
-      }`
-    );
+      retried: false,
+      processingTime: 0,
+      validation,
+      rawText
+    };
+  } catch (error) {
+    const failureError =
+      error instanceof Error ? error : new Error(typeof error === 'string' ? error : '未知错误');
+    await saveFailureLog(requestContext.requestId, imageBuffer, rawText, failureError);
+    throw failureError;
   }
-
-  const questionsWithImages: GeminiQuestion[] = [];
-  for (const question of questionData.questions) {
-    const images = await enrichImageRegions(question, normalizedBuffer, meta, requestContext.requestId);
-    questionsWithImages.push({
-      ...question,
-      images,
-      image_regions: images
-    });
-  }
-
-  const normalizedResult: QuestionData = {
-    meta: questionData.meta,
-    questions: questionsWithImages
-  };
-
-  const validation = validateParseResult(normalizedResult);
-
-  return {
-    meta: normalizedResult.meta,
-    questions: normalizedResult.questions,
-    model: GEMINI_MODEL,
-    requestId: requestContext.requestId,
-    retried: false,
-    processingTime: 0,
-    validation,
-    rawText
-  };
 }
 
 export async function parseQuestionWithCascading(imageUrl: string): Promise<GeminiParseResult> {
@@ -947,7 +1213,7 @@ export async function parseQuestionWithCascading(imageUrl: string): Promise<Gemi
 
   const requestId = randomUUID();
   const start = Date.now();
-  const result = await runGeminiPipeline(buffer, { requestId, source: 'url' });
+  const result = await processImageStream(buffer, { requestId, source: 'url', fileName: imageUrl });
   return {
     ...result,
     processingTime: Date.now() - start
@@ -959,7 +1225,7 @@ export async function parseQuestionWithCascadingFromBuffer(
 ): Promise<GeminiParseResult> {
   const requestId = randomUUID();
   const start = Date.now();
-  const result = await runGeminiPipeline(imageBuffer, { requestId, source: 'buffer' });
+  const result = await processImageStream(imageBuffer, { requestId, source: 'buffer' });
   return {
     ...result,
     processingTime: Date.now() - start

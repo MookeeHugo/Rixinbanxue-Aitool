@@ -18,7 +18,7 @@
 
 ### UI & 设计系统
 - **shadcn/ui** - 基础 UI 组件库 (New York 风格)
-- **Ant Design 5** - 复杂业务组件 (Table, Form, DatePicker)
+
 - **Tailwind CSS 3** - 原子化 CSS + SuperDesign 主题
 - **Lucide Icons** - 图标库
 
@@ -181,6 +181,7 @@ tailwind.config.ts             # Tailwind + SuperDesign 配置
 - [组件使用指南](./docs/COMPONENT_GUIDE.md) - shadcn/ui + Ant Design 使用示例
 - [代码规范](./docs/CODING_STANDARDS.md) - TypeScript、React、Git 提交规范
 - [开发指南](./docs/DEVELOPMENT_GUIDE.md) - 环境配置、项目结构、常见问题
+- [Gemini Vision V3](./src/lib/ai-question-bank/README.md) - AI 题库流式解析、调试脚本与常见错误
 
 ## 📝 开发规范
 
@@ -202,8 +203,25 @@ npm start
 
 ## 📄 许可证
 
+
+## 🤖 Gemini Vision 调试
+
+- 题库解析默认使用 Google Gemini 2.5 Flash Streaming，可通过 `GEMINI_API_KEY`、`GEMINI_BASE_URL`（当前默认 https://api.ikuncode.cc，如需官方 Endpoint 可自行替换）、`GEMINI_MODEL`、`GEMINI_REQUEST_TIMEOUT` 调整。
+- 运行 `node scripts/test-gemini-stream.ts 测试试卷7.png` 可在本地触发流式解析，输出题号、配图校验与 base64 预览。
+- 常见错误：
+  1. **模型不可用 / 403**：检查 `GEMINI_MODEL` 是否生效、Base URL 是否匹配实际服务。
+  2. **JSON 截断**：流式响应可能夹带提示语，可降低温度或重试，并参考脚本输出的截断片段。
+  3. **空内容 / 坐标越界**：确保上传原图，系统已默认附加 20px / 2% padding 并执行 `.trim()` 去除底色。
+
 MIT License
 
 ---
 
 基于 [日新教学平台MVP执行方案v2.4](./日新教学平台MVP执行方案v2.2-关键修正.md) 开发
+
+### 回归与调试提示
+1. 回归前可先运行 `npm run test:std01`，并确认 `.env.local` 中 `GEMINI_MODEL=gemini-2.5-flash`，用 STD-01 样本验证模型链路。
+2. 需要跑整套 `npm run test:regression` 时，建议把 `REGRESSION_CONCURRENCY` 临时设为 1，便于定位单张图的异常输出。
+3. 当 FAIL/WARN 集中在 `EDGE-04-huge-single-fig`、`BAD-04-folded-paper`、`CPLX-02-dense-small-figures` 等样本时，优先比对黑匣子 `raw_response`，必要时用 `jsonrepair` 还原 JSON，并核对 `actualCount` 与 metadata 的期望值。
+4. 如果出现 `model_not_found` 或超时，检查 `.env.local` 中的 `GEMINI_API_KEY`、`GEMINI_BASE_URL`、`GEMINI_MODEL` 是否一致，同时确认代理/官方 Endpoint 的 ID 是否正确。
+
