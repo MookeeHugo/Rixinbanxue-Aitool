@@ -58,6 +58,7 @@ claude-code-workflows/
 logs/
 tmp/
 tests/output/
+*.log
 
 # Python
 venv/
