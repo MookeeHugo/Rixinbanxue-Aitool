@@ -615,7 +615,7 @@ const fetchExportTaskStatus = async (taskId: string) => {
         </div>
         <div className="flex items-center gap-3">
           <Link href="/tools/ingest">
-            <Button variant="secondary" size="lg">
+            <Button variant="outline" size="lg">
               开始录题
             </Button>
           </Link>
@@ -860,7 +860,7 @@ const fetchExportTaskStatus = async (taskId: string) => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="secondary">{getTypeLabel(question.type)}</Badge>
+                        <Badge variant="outline">{getTypeLabel(question.type)}</Badge>
                       </TableCell>
                       <TableCell>
                         <Badge variant={getDifficultyVariant(question.difficulty)}>
@@ -893,7 +893,7 @@ const fetchExportTaskStatus = async (taskId: string) => {
                             </Button>
                           </Link>
                           <Link href={`/questions/${question.id}/edit`}>
-                            <Button variant="secondary" size="sm">
+                            <Button variant="outline" size="sm">
                               编辑
                             </Button>
                           </Link>

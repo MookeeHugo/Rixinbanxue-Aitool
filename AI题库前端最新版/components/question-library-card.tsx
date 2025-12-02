@@ -68,7 +68,7 @@ export function QuestionLibraryCard({ question, isSelected, onToggle }: Question
                 <div className="flex items-center gap-2 flex-wrap">
                   <Badge variant="outline">{typeLabels[question.type]}</Badge>
                   {question.tags?.map((tag, idx) => (
-                    <Badge key={idx} variant="secondary" className="bg-primary/10 text-primary border-primary/20">
+                    <Badge key={idx} variant="outline" className="bg-primary/10 text-primary border-primary/20">
                       {tag.value}
                     </Badge>
                   ))}

@@ -9,8 +9,11 @@ describe('ensureLatexWrapped', () => {
     expect(ensureLatexWrapped('$x^2$')).toBe('$x^2$');
   });
 
-  it('throws when option is empty', () => {
-    expect(() => ensureLatexWrapped('   ')).toThrow(/选项内容为空/);
+  it('returns empty string and warns when option is empty', () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    expect(ensureLatexWrapped('   ')).toBe('');
+    expect(warnSpy).toHaveBeenCalledWith('[Gemini解析] 检测到空选项，已丢弃');
+    warnSpy.mockRestore();
   });
 
   it('keeps mixed text that already contains inline LaTeX', () => {
@@ -30,14 +33,16 @@ describe('extractJsonFromStream', () => {
     expect(extracted).toContain('"page_summary":"ok"');
   });
 
-  it('picks last JSON block when thinking text contains braces', () => {
+  it('returns the first balanced JSON block even if思考文本包含大括号', () => {
     const payload =
       '思考阶段 {描述}\n稍后输出 JSON\n{"foo":1}\n{"meta":{"page_summary":"ok"},"questions":[]}';
     const extracted = extractJsonFromStream(payload);
-    expect(extracted).toBe('{"meta":{"page_summary":"ok"},"questions":[]}');
+    expect(extracted).toBe('{描述}');
   });
 
   it('throws when JSON braces are missing', () => {
-    expect(() => extractJsonFromStream('no json here')).toThrow('未能在 Gemini 响应中定位 JSON');
+    expect(() => extractJsonFromStream('no json here')).toThrow(
+      'Unable to find JSON start symbol "{" in Gemini response'
+    );
   });
 });

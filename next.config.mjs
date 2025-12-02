@@ -105,7 +105,7 @@ const nextConfig = {
   },
 
   // 6. 静态页面生成配置
-  reactStrictMode: true,
+  reactStrictMode: false, // 临时禁用以修复 ActionQueueContext 错误
 
   // 7. 输出配置
   poweredByHeader: false, // 移除 X-Powered-By header

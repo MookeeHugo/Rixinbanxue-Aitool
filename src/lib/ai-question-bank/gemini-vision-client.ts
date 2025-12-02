@@ -91,11 +91,7 @@ const QUESTION_RESPONSE_SCHEMA = {
                 },
                 label: { type: SchemaType.STRING, nullable: true },
                 description: { type: SchemaType.STRING, nullable: true },
-                position: {
-                  type: SchemaType.STRING,
-                  enum: ['left', 'right', 'bottom', 'inline'],
-                  nullable: true
-                }
+                position: { type: SchemaType.STRING, nullable: true }
               }
             }
           },
@@ -104,21 +100,20 @@ const QUESTION_RESPONSE_SCHEMA = {
             properties: {
               difficulty: { type: SchemaType.INTEGER, description: '1-5 难度等级（1=简单，5=困难）' },
               type: {
-                type: SchemaType.STRING,
-                enum: ['choice', 'fill', 'essay', 'proof']
+                type: SchemaType.STRING
               },
               tags: {
                 type: SchemaType.ARRAY,
-                items: { type: SchemaType.STRING, enum: Array.from(KNOWLEDGE_TAGS) }
+                items: { type: SchemaType.STRING }
               }
             }
           }
         },
-        required: ['number', 'content']
+        required: ['number', 'content'] as string[]
       }
     }
   },
-  required: ['questions']
+  required: ['questions'] as string[]
 } as const;
 
 const GEMINI_BASE_URL =
@@ -220,10 +215,7 @@ function getGeminiClient(): GoogleGenerativeAI {
     if (!GEMINI_API_KEY) {
       throw new Error('GEMINI_API_KEY 未配置，无法调用 Gemini SDK');
     }
-    cachedClient = new GoogleGenerativeAI({
-      apiKey: GEMINI_API_KEY,
-      baseUrl: GEMINI_BASE_URL
-    });
+    cachedClient = new GoogleGenerativeAI(GEMINI_API_KEY);
   }
   return cachedClient;
 }
@@ -398,7 +390,7 @@ function buildGeminiRequestPayload(base64: string, mimeType = 'image/png') {
 async function streamViaGoogleSdk(base64: string, controller: AbortController) {
   const model = getGeminiClient().getGenerativeModel({
     model: GEMINI_MODEL,
-    systemInstruction: { parts: [{ text: GEMINI_PROMPT }] }
+    systemInstruction: GEMINI_PROMPT
   });
 
   const requestPayload = buildGeminiRequestPayload(base64);
@@ -964,15 +956,15 @@ function inferQuestionType(
 }
 
 function normalizeQuestionData(parsed: z.infer<typeof QuestionDataSchema>): QuestionData {
-  const rawMeta = parsed.meta ?? {};
+  const rawMeta = parsed.meta;
 
   return {
     meta: {
-      page_summary: decodeLatexText(rawMeta.page_summary ?? ''),
-      reasoning: rawMeta.reasoning ?? [],
-      difficulty: rawMeta.difficulty,
-      tags: rawMeta.tags ?? [],
-      type: rawMeta.type
+      page_summary: decodeLatexText(rawMeta?.page_summary ?? ''),
+      reasoning: rawMeta?.reasoning ?? [],
+      difficulty: rawMeta?.difficulty,
+      tags: rawMeta?.tags ?? [],
+      type: rawMeta?.type
     },
     questions: parsed.questions.map((question, index) => {
       const options =
@@ -1012,8 +1004,8 @@ function normalizeQuestionData(parsed: z.infer<typeof QuestionDataSchema>): Ques
         content: decodeLatexText(question.content.trim()),
         answer: decodeLatexText(question.answer?.trim() ?? ''),
         options,
-        image_regions: question.image_regions ?? [],
-        images: question.images ?? [],
+        image_regions: [], // 将在 enrichImageRegions 中填充完整的 GeminiImageRegion
+        images: [], // 将在 enrichImageRegions 中填充完整的 GeminiImageRegion
         meta: {
           difficulty: difficultyValue,
           tags,
@@ -1104,8 +1096,18 @@ async function enrichImageRegions(
           px: paddingPx,
           ratio: PADDING_RATIO
         },
-        pixel_rect: pixelRect,
-        padded_pixel_rect: paddedRect,
+        pixel_rect: {
+          x: pixelRect.left,
+          y: pixelRect.top,
+          width: pixelRect.width,
+          height: pixelRect.height
+        },
+        padded_pixel_rect: {
+          x: paddedRect.left,
+          y: paddedRect.top,
+          width: paddedRect.width,
+          height: paddedRect.height
+        },
         trimmed_rect: trimmedRect
           ? {
               x: paddedRect.left + (trimOffset?.left ?? 0),

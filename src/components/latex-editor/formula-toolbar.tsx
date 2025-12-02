@@ -167,7 +167,7 @@ export function FormulaToolbar({
   ]
 
   return (
-    <div className={cn('flex items-center gap-1 flex-wrap', className)}>
+    <div className={cn('flex items-center gap-1 flex-wrap w-full max-w-full', className)}>
       {/* 快捷按钮 */}
       {quickButtons.map((btn, idx) => (
         <Button
@@ -196,7 +196,14 @@ export function FormulaToolbar({
             <ChevronDown className="h-3 w-3" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[400px] p-0" align="start">
+        <PopoverContent
+          className="w-[400px] max-w-[calc(100vw-2rem)] min-w-[280px] p-0"
+          align="start"
+          side="bottom"
+          sideOffset={5}
+          avoidCollisions={true}
+          collisionPadding={8}
+        >
           <Tabs defaultValue="basic" className="w-full">
             <ScrollArea className="w-full">
               <TabsList className="w-full justify-start h-auto p-1 flex-wrap">

@@ -122,7 +122,7 @@ export function QuestionContentRenderer({
                       <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         {onEnhanceImage && (
                           <Button
-                            variant="secondary"
+                            variant="outline"
                             size="icon"
                             className="h-7 w-7 bg-white/90 hover:bg-white shadow-sm"
                             onClick={(e) => {
@@ -136,7 +136,7 @@ export function QuestionContentRenderer({
                         )}
                         {onDeleteImage && (
                           <Button
-                            variant="secondary"
+                            variant="outline"
                             size="icon"
                             className="h-7 w-7 bg-white/90 hover:bg-white shadow-sm"
                             onClick={(e) => {
@@ -155,7 +155,7 @@ export function QuestionContentRenderer({
                     <div className="flex items-center justify-between gap-2">
                       <div className="font-medium text-foreground">{asset.label}</div>
                       <Badge
-                        variant={asset.source === 'manual' ? 'outline' : 'secondary'}
+                        variant={asset.source === 'manual' ? 'outline' : 'primary'}
                         className={asset.source === 'manual' ? 'border-primary-500 text-primary-700' : ''}
                       >
                         {asset.source === 'manual' ? '人工修复' : 'AI 截图'}

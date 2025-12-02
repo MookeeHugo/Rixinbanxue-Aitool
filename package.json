@@ -2,7 +2,6 @@
   "name": "rixindemo-codex-m1",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
   "scripts": {
     "dev": "next dev -p 3002",
     "dev:turbo": "next dev -p 3002 --turbo",
@@ -80,6 +79,7 @@
     "@radix-ui/react-toggle-group": "catalog:",
     "@radix-ui/react-tooltip": "catalog:",
     "@supabase/auth-helpers-nextjs": "^0.10.0",
+    "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.81.1",
     "@vercel/analytics": "catalog:",
     "ai": "catalog:",

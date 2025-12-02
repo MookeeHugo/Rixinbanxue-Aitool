@@ -166,7 +166,7 @@ export default function QuestionDetailPage() {
               </Button>
             </Link>
             <Link href={`/questions/${question.id}/edit`}>
-              <Button variant="secondary">
+              <Button variant="outline">
                 <Edit3 className="mr-2 h-4 w-4" />
                 编辑
               </Button>
@@ -180,7 +180,7 @@ export default function QuestionDetailPage() {
 
         <Card className="p-6 space-y-6">
           <div className="flex items-center flex-wrap gap-3">
-            <Badge variant="secondary">{getTypeLabel(question.type)}</Badge>
+            <Badge variant="outline">{getTypeLabel(question.type)}</Badge>
             <Badge variant="outline">{getDifficultyLabel(question.difficulty)}</Badge>
             {question.is_public === false && (
               <Badge variant="error">私有</Badge>
@@ -230,7 +230,7 @@ export default function QuestionDetailPage() {
             <div className="flex flex-wrap gap-2">
               {question.knowledge_points?.length ? (
                 question.knowledge_points.map((kp) => (
-                  <Badge key={kp} variant="secondary">
+                  <Badge key={kp} variant="outline">
                     {kp}
                   </Badge>
                 ))

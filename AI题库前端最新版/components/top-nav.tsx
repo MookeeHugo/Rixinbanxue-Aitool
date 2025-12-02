@@ -31,7 +31,7 @@ export function TopNav() {
             <div className="flex items-center gap-2">
               <User className="w-4 h-4 text-gray-600" />
               <span className="text-sm text-gray-700">管理员</span>
-              <Badge variant="secondary" className="text-xs">在线</Badge>
+              <Badge variant="success" className="text-xs">在线</Badge>
             </div>
             <Button
               variant="outline"

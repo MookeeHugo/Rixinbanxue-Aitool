@@ -17,6 +17,10 @@
 - **目标**：由 Python 预处理服务直接接收前端上传的文件流（多表单字段），完成三路图像生成后再写入 Supabase，并返回 URL/meta 给 Next.js，减少一次“Next.js 下载 → Python 写入 → Node 再下载”的 Ping-Pong。  
 - **基线监控**：在现状方案中记录 `ingest_upload_latency_ms`、`supabase_bandwidth_mb`、`python_processing_ms` 等指标，为直连方案上线后提供对比；当图片 >5 MB 时需单独采样。  
 - **权限与降级**：若未来启用直连，需要最小化 Supabase/R2 写权限，仅允许 Python 服务写入 `ai-question-bank/{taskId}` 前缀，并保留回退路径（Next.js 仍可走旧流程）。
+- **后端集成状态（2025-12-02）**：`process-upload.ts` 已串联 `/api/preprocess/upload` → `/api/refine-bbox` → `/api/anchor-verify`，并将 `final_image_path`、`anchor_verification`、新指标字段写回 `question_images` / `upload_tasks`。若 Python 服务不可用，会自动回退到旧的本地裁剪逻辑。  
+- **基线样本（FastAPI 直连）**：使用 `node scripts/run-image-baseline.mjs --endpoint http://127.0.0.1:8000/api/preprocess/upload --limit 5` 于 2025-12-02 测得（单位: ms）：
+  - `中考专题讲练-金思维数学-001~005`：190、166、149、150、158（均为 1205×1601 像素 JPEG）
+  - 以上结果已写入 `logs/metrics/ingest-baseline.log`，可与 `upload_tasks` 中的新字段对账，后续引入 >5 MB 样本时复用 `tests/image-samples.json`。
 
 ## 2. 坐标规范（统一 0-100，保留 1 位小数）
 
@@ -64,7 +68,8 @@ Zod Schema (`gemini-vision-client.ts`) 保证：
 ### 3.3 数据库（Supabase JSON 列）
 
 - `upload_tasks.parsed_questions` 中的每题 `image_regions[].normalized_bbox` 改为 0-100。
-- `question_images` 表新增 `final_image_path`、`anchor_verified`、`anchor_ocr_text` 字段，用于裁剪成品与锚点审计。
+- `question_images` 表新增 `final_image_path`、`anchor_verification jsonb`（包含 matched/ocr_text/confidence）、`refine_status jsonb` 字段，同步记录 CV/Anchor 过程。
+- `upload_tasks` 表新增 `ingest_upload_latency_ms`、`supabase_bandwidth_mb`、`python_processing_ms`，用于量化 Next.js ↔ Python 往返链路。
 
 ## 4. 服务接口
 

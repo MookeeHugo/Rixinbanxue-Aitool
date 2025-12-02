@@ -80,7 +80,7 @@ export function TagSelector({ selectedTags, onTagsChange }: TagSelectorProps) {
             {selectedTags.map((tag, idx) => (
               <Badge
                 key={idx}
-                variant="secondary"
+                variant="primary"
                 className="bg-primary text-white hover:bg-primary-hover pl-3 pr-1 py-1"
               >
                 <span className="mr-1">

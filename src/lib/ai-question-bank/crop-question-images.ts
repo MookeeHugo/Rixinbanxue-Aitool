@@ -5,7 +5,11 @@
 
 import sharp from 'sharp';
 import { createClient } from '@supabase/supabase-js';
-import type { ImageRegion, QuestionImageAsset } from './types';
+import type {
+  ImageRegion,
+  NormalizedBox,
+  QuestionImageAsset
+} from './types';
 import { isValidImageBox } from './coordinates';
 
 const supabase = createClient(
@@ -13,9 +17,33 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+export interface RegionMeta {
+  anchor_text_prev?: string;
+  anchor_text_next?: string;
+  rough_bbox?: NormalizedBox;
+}
+
 export interface QuestionWithRegions {
   number: string;
   image_regions?: ImageRegion[];
+  region_meta?: RegionMeta[];
+}
+
+export interface CropHookContext {
+  questionNumber: string;
+  regionIndex: number;
+  region: ImageRegion;
+  regionMeta?: RegionMeta;
+  buffer: Buffer;
+}
+
+export interface CropHookResult {
+  buffer?: Buffer;
+  assetOverrides?: Partial<QuestionImageAsset>;
+}
+
+export interface CropOptions {
+  onBeforeUpload?: (context: CropHookContext) => Promise<CropHookResult | void>;
 }
 
 export interface CropSummary {
@@ -28,7 +56,8 @@ export interface CropSummary {
 export async function cropAndUploadQuestionImages(
   taskId: string,
   originalImageBuffer: Buffer,
-  questions: QuestionWithRegions[]
+  questions: QuestionWithRegions[],
+  options?: CropOptions
 ): Promise<CropSummary> {
   console.log('[image-crop] start', {
     taskId,
@@ -121,6 +150,37 @@ export async function cropAndUploadQuestionImages(
           .png()
           .toBuffer({ resolveWithObject: true });
 
+        let uploadBuffer = croppedBuffer;
+        let hookOverrides: Partial<QuestionImageAsset> | undefined;
+        const regionMeta = question.region_meta?.[index];
+
+        if (options?.onBeforeUpload) {
+          try {
+            const hookResult = await options.onBeforeUpload({
+              questionNumber: question.number,
+              regionIndex: index,
+              region,
+              regionMeta,
+              buffer: croppedBuffer
+            });
+            if (hookResult?.buffer) {
+              uploadBuffer = hookResult.buffer;
+            }
+            if (hookResult?.assetOverrides) {
+              hookOverrides = hookResult.assetOverrides;
+            }
+          } catch (hookError) {
+            console.warn(
+              `[image-crop] onBeforeUpload hook failed for q${question.number} region ${
+                index + 1
+              }`,
+              {
+                error: hookError instanceof Error ? hookError.message : String(hookError)
+              }
+            );
+          }
+        }
+
         const uniqueId = `${taskId}-q${question.number}-${index + 1}-${Date.now()}-${Math.random()
           .toString(36)
           .slice(2, 8)}`;
@@ -128,7 +188,7 @@ export async function cropAndUploadQuestionImages(
 
         const { error: uploadError } = await supabase.storage
           .from('question-images')
-          .upload(fileName, croppedBuffer, {
+          .upload(fileName, uploadBuffer, {
             contentType: 'image/png',
             upsert: true
           });
@@ -154,6 +214,7 @@ export async function cropAndUploadQuestionImages(
           id: uniqueId,
           key: fileName,
           url: urlData.publicUrl,
+          final_image_path: fileName,
           questionNumber: question.number,
           order: index + 1,
           placeholder: null,
@@ -165,14 +226,18 @@ export async function cropAndUploadQuestionImages(
             ratio: 0.02
           },
           trimOffset: {
-            left: info.trimOffsetLeft,
-            top: info.trimOffsetTop
+            left: info.trimOffsetLeft ?? 0,
+            top: info.trimOffsetTop ?? 0
           },
           trimmedSize: {
             width: info.width,
             height: info.height
           }
         };
+
+        if (hookOverrides) {
+          Object.assign(asset, hookOverrides);
+        }
 
         assetsByQuestion[question.number].push(asset);
       } catch (error) {

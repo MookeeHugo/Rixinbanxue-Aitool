@@ -408,7 +408,7 @@ export function QuestionReviewCard({ question, index, imageUrl }: QuestionReview
 
   return (
     <>
-      <Card className={`border rounded-xl ${isEditing ? 'border-primary-500 shadow-lg' : lowConfidence ? 'border-yellow-400 bg-yellow-50/50' : ''}`}>
+      <Card className={`border rounded-xl overflow-x-hidden ${isEditing ? 'border-primary-500 shadow-lg' : lowConfidence ? 'border-yellow-400 bg-yellow-50/50' : ''}`}>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <div className="flex items-center gap-2 flex-wrap">
             <Badge variant="default">{`第 ${questionNumber} 题`}</Badge>
@@ -472,7 +472,7 @@ export function QuestionReviewCard({ question, index, imageUrl }: QuestionReview
             </div>
           )}
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 overflow-x-hidden">
           {!isEditing ? (
             <>
               {/* 1. 题干 */}
@@ -517,7 +517,7 @@ export function QuestionReviewCard({ question, index, imageUrl }: QuestionReview
                           />
                           <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                             <Button
-                              variant="secondary"
+                              variant="outline"
                               size="icon"
                               className="h-7 w-7 bg-white/90 hover:bg-white shadow-sm"
                               onClick={(e) => {
@@ -529,7 +529,7 @@ export function QuestionReviewCard({ question, index, imageUrl }: QuestionReview
                               <Sparkles className="h-3.5 w-3.5 text-primary-600" />
                             </Button>
                             <Button
-                              variant="secondary"
+                              variant="outline"
                               size="icon"
                               className="h-7 w-7 bg-white/90 hover:bg-white shadow-sm"
                               onClick={(e) => {
@@ -626,7 +626,7 @@ export function QuestionReviewCard({ question, index, imageUrl }: QuestionReview
                 <TabsTrigger value="images">配图管理 ({editedData.imageAssets.length})</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="content" className="space-y-4 mt-4">
+              <TabsContent value="content" className="space-y-4 mt-4 min-h-[700px] w-full">
                 <div className="space-y-2">
                   <Label htmlFor="type">题目类型</Label>
                   <Select
@@ -812,7 +812,7 @@ export function QuestionReviewCard({ question, index, imageUrl }: QuestionReview
                 </div>
               </TabsContent>
 
-              <TabsContent value="images" className="mt-4">
+              <TabsContent value="images" className="mt-4 min-h-[500px] w-full">
                 <div className="space-y-4">
                   <div className="rounded-lg bg-primary-50 dark:bg-primary-950/20 border border-primary-200 dark:border-primary-800 p-3">
                     <p className="text-sm text-primary-900 dark:text-primary-100 font-medium mb-1">

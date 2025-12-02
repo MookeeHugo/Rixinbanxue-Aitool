@@ -8,15 +8,27 @@
  */
 
 import { appendFileSync, existsSync, mkdirSync } from 'fs';
+import { promises as fsPromises } from 'fs';
 import { join } from 'path';
+import { Blob } from 'buffer';
 import { downloadFile, FileAccessLevel } from '@/lib/storage';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database';
 import sharp from 'sharp';
 
-import type { GeminiQuestion } from './types';
+import type {
+  GeminiImageRegion,
+  GeminiQuestion,
+  NormalizedBox
+} from './types';
 import { convertBoxToPixelRect, isValidImageBox } from './coordinates';
-import { cropAndUploadQuestionImages, type QuestionWithRegions } from './crop-question-images';
+import {
+  cropAndUploadQuestionImages,
+  type CropHookContext,
+  type CropHookResult,
+  type QuestionWithRegions,
+  type RegionMeta
+} from './crop-question-images';
 import type { ImageRegion } from './types';
 
 function createServiceClient() {
@@ -56,6 +68,394 @@ function recordIngestMetrics(entry: IngestMetricsEntry) {
       entry
     });
   }
+}
+
+const PIPELINE_BASE_URL = (process.env.RIXINMATH_PIPELINE_URL || 'http://127.0.0.1:8000').replace(
+  /\/+$/,
+  ''
+);
+const PIPELINE_DISABLED = process.env.RIXINMATH_PIPELINE_DISABLED === 'true';
+const PIPELINE_TIMEOUT_MS = Number(process.env.RIXINMATH_PIPELINE_TIMEOUT || 60000);
+const SHOULD_USE_PIPELINE = !PIPELINE_DISABLED;
+const TMP_ANCHOR_DIR = join(process.cwd(), 'tmp', 'anchor-verify');
+
+interface PipelineArtifactsResponse {
+  task_id: string;
+  meta?: {
+    width?: number;
+    height?: number;
+  };
+  artifacts?: {
+    original_path?: string;
+    grid_path?: string;
+    binary_path?: string;
+  };
+}
+
+interface CoordinateRefineResponse {
+  status: 'ok' | 'fallback';
+  refined_bbox: NormalizedBox;
+  confidence?: number;
+  reason?: string;
+}
+
+interface AnchorVerifyResponse {
+  matched: boolean;
+  confidence?: number;
+  trim_start?: number;
+  ocr_text?: string;
+}
+
+async function readLocalFile(path?: string | null): Promise<Buffer | null> {
+  if (!path) {
+    return null;
+  }
+  try {
+    return await fsPromises.readFile(path);
+  } catch (error) {
+    console.warn('[pipeline] 无法读取文件', {
+      path,
+      message: error instanceof Error ? error.message : String(error)
+    });
+    return null;
+  }
+}
+
+async function callPipelinePreprocess(
+  taskId: string,
+  fileBuffer: Buffer,
+  fileName: string
+): Promise<PipelineArtifactsResponse | null> {
+  if (!SHOULD_USE_PIPELINE) {
+    return null;
+  }
+  const endpoint = `${PIPELINE_BASE_URL}/api/preprocess/upload`;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), PIPELINE_TIMEOUT_MS);
+
+  try {
+    const form = new FormData();
+    form.append('task_id', taskId);
+    form.append('file', new Blob([fileBuffer]) as any, fileName);
+
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      body: form,
+      signal: controller.signal
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP ${response.status}: ${errorText.slice(0, 200)}`);
+    }
+
+    return (await response.json()) as PipelineArtifactsResponse;
+  } catch (error) {
+    if ((error as Error).name === 'AbortError') {
+      console.warn('[pipeline] preprocess 超时', { taskId, endpoint });
+    } else {
+      console.warn('[pipeline] preprocess 请求失败', {
+        taskId,
+        message: error instanceof Error ? error.message : String(error)
+      });
+    }
+    return null;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+async function callCoordinateRefiner(params: {
+  roughBox: NormalizedBox;
+  binaryPath: string;
+  imageMeta: { width: number; height: number };
+}): Promise<CoordinateRefineResponse | null> {
+  if (!SHOULD_USE_PIPELINE) {
+    return null;
+  }
+  const endpoint = new URL(`${PIPELINE_BASE_URL}/api/refine-bbox`);
+  params.roughBox.forEach(value => {
+    endpoint.searchParams.append('rough_bbox', String(value));
+  });
+
+  const form = new FormData();
+  form.append('binary_path', params.binaryPath);
+  form.append('image_width', String(params.imageMeta.width));
+  form.append('image_height', String(params.imageMeta.height));
+
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      body: form
+    });
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP ${response.status}: ${errorText.slice(0, 200)}`);
+    }
+    return (await response.json()) as CoordinateRefineResponse;
+  } catch (error) {
+    console.warn('[pipeline] refine-bbox 请求失败', {
+      message: error instanceof Error ? error.message : String(error)
+    });
+    return null;
+  }
+}
+
+async function callAnchorVerification(params: {
+  anchorTextPrev: string;
+  imagePath: string;
+  stripRatio?: number;
+}): Promise<AnchorVerifyResponse | null> {
+  if (!SHOULD_USE_PIPELINE) {
+    return null;
+  }
+  const endpoint = `${PIPELINE_BASE_URL}/api/anchor-verify`;
+  const form = new FormData();
+  form.append('anchor_text_prev', params.anchorTextPrev);
+  form.append('image_path', params.imagePath);
+  if (typeof params.stripRatio === 'number') {
+    form.append('strip_ratio', String(params.stripRatio));
+  }
+
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      body: form
+    });
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP ${response.status}: ${errorText.slice(0, 200)}`);
+    }
+    return (await response.json()) as AnchorVerifyResponse;
+  } catch (error) {
+    console.warn('[pipeline] anchor-verify 请求失败', {
+      message: error instanceof Error ? error.message : String(error)
+    });
+    return null;
+  }
+}
+
+function sanitizeFileSegment(value: string): string {
+  return value.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 40) || 'segment';
+}
+
+async function ensureAnchorDir() {
+  await fsPromises.mkdir(TMP_ANCHOR_DIR, { recursive: true });
+}
+
+async function persistAnchorTempFile(
+  buffer: Buffer,
+  taskId: string,
+  questionNumber: string,
+  regionIndex: number
+): Promise<string> {
+  await ensureAnchorDir();
+  const safeTask = sanitizeFileSegment(taskId);
+  const safeQuestion = sanitizeFileSegment(questionNumber);
+  const fileName = `${safeTask}-${safeQuestion}-${regionIndex + 1}-${Date.now()}.png`;
+  const filePath = join(TMP_ANCHOR_DIR, fileName);
+  await fsPromises.writeFile(filePath, buffer);
+  return filePath;
+}
+
+async function trimBufferFromTop(
+  buffer: Buffer,
+  trimStart: number
+): Promise<{ buffer: Buffer; width: number; height: number } | null> {
+  try {
+    const metadata = await sharp(buffer).metadata();
+    if (!metadata.width || !metadata.height) {
+      return null;
+    }
+    const safeTrim = Math.min(Math.max(trimStart, 0), Math.max(metadata.height - 1, 1));
+    if (safeTrim <= 0) {
+      return null;
+    }
+    const finalHeight = Math.max(metadata.height - safeTrim, 1);
+    if (finalHeight === metadata.height) {
+      return null;
+    }
+
+    const trimmed = await sharp(buffer)
+      .extract({
+        left: 0,
+        top: safeTrim,
+        width: metadata.width,
+        height: finalHeight
+      })
+      .png()
+      .toBuffer();
+
+    return {
+      buffer: trimmed,
+      width: metadata.width,
+      height: finalHeight
+    };
+  } catch (error) {
+    console.warn('[anchor] 裁剪缓冲失败', {
+      message: error instanceof Error ? error.message : String(error)
+    });
+    return null;
+  }
+}
+
+async function refineGeminiImageRegions(
+  questions: GeminiQuestion[],
+  options: { binaryPath?: string | null; imageMeta?: { width: number; height: number } | null }
+): Promise<GeminiQuestion[]> {
+  if (
+    !options.binaryPath ||
+    !options.imageMeta?.width ||
+    !options.imageMeta?.height ||
+    !SHOULD_USE_PIPELINE
+  ) {
+    return questions;
+  }
+
+  const refined: GeminiQuestion[] = [];
+
+  for (const question of questions) {
+    const regions = question.image_regions ?? [];
+    if (!regions.length) {
+      refined.push(question);
+      continue;
+    }
+
+    const updatedRegions: GeminiImageRegion[] = [];
+
+    for (const region of regions) {
+      const fallbackBox =
+        (Array.isArray(region.rough_bbox) && region.rough_bbox.length === 4
+          ? (region.rough_bbox as NormalizedBox)
+          : undefined) ??
+        (Array.isArray(region.box_2d) && region.box_2d.length === 4
+          ? (region.box_2d as NormalizedBox)
+          : undefined);
+
+      if (!fallbackBox) {
+        updatedRegions.push(region);
+        continue;
+      }
+
+      try {
+        const response = await callCoordinateRefiner({
+          roughBox: fallbackBox,
+          binaryPath: options.binaryPath,
+          imageMeta: options.imageMeta
+        });
+
+        if (response?.status === 'ok' && Array.isArray(response.refined_bbox)) {
+          updatedRegions.push({
+            ...region,
+            rough_bbox: fallbackBox,
+            box_2d: response.refined_bbox as NormalizedBox,
+            source: 'cv'
+          });
+        } else {
+          updatedRegions.push({
+            ...region,
+            rough_bbox: fallbackBox
+          });
+        }
+      } catch (error) {
+        console.warn('[pipeline] refine-bbox 处理单个区域失败', {
+          message: error instanceof Error ? error.message : String(error)
+        });
+        updatedRegions.push({
+          ...region,
+          rough_bbox: fallbackBox
+        });
+      }
+    }
+
+    refined.push({
+      ...question,
+      image_regions: updatedRegions,
+      images: updatedRegions
+    });
+  }
+
+  return refined;
+}
+
+type AnchorHook = (context: CropHookContext) => Promise<CropHookResult | void>;
+
+function createAnchorHook(config: { taskId: string }): AnchorHook | undefined {
+  if (!SHOULD_USE_PIPELINE) {
+    return undefined;
+  }
+
+  return async function anchorHook(context: CropHookContext): Promise<CropHookResult | void> {
+    const anchorText = context.regionMeta?.anchor_text_prev?.trim();
+    if (!anchorText) {
+      return undefined;
+    }
+
+    let tempPath: string | null = null;
+    try {
+      tempPath = await persistAnchorTempFile(
+        context.buffer,
+        config.taskId,
+        context.questionNumber,
+        context.regionIndex
+      );
+      const anchorResult = await callAnchorVerification({
+        anchorTextPrev: anchorText,
+        imagePath: tempPath,
+        stripRatio: 0.12
+      });
+
+      if (!anchorResult) {
+        return {
+          assetOverrides: {
+            anchor_verification: {
+              matched: false,
+              ocr_text: undefined
+            }
+          }
+        };
+      }
+
+      let replacementBuffer: Buffer | undefined;
+      let trimmedSize: { width: number; height: number } | undefined;
+
+      if (anchorResult.matched && typeof anchorResult.trim_start === 'number') {
+        const trimmed = await trimBufferFromTop(context.buffer, anchorResult.trim_start);
+        if (trimmed) {
+          replacementBuffer = trimmed.buffer;
+          trimmedSize = {
+            width: trimmed.width,
+            height: trimmed.height
+          };
+        }
+      }
+
+      const verification = {
+        matched: Boolean(anchorResult.matched),
+        ocr_text: anchorResult.ocr_text,
+        confidence: anchorResult.confidence
+      };
+
+      return {
+        buffer: replacementBuffer,
+        assetOverrides: {
+          anchor_verification: verification,
+          ...(trimmedSize ? { trimmedSize } : {})
+        }
+      };
+    } catch (error) {
+      console.warn('[anchor] inclusion-rejection 失败', {
+        question: context.questionNumber,
+        regionIndex: context.regionIndex + 1,
+        message: error instanceof Error ? error.message : String(error)
+      });
+      return undefined;
+    } finally {
+      if (tempPath) {
+        fsPromises.unlink(tempPath).catch(() => {});
+      }
+    }
+  };
 }
 
 function inferQuestionType(question: any): 'choice' | 'fill' | 'essay' {
@@ -131,7 +531,7 @@ function normalizeRegion(
 
 type ProcessedQuestion = {
   number: string;
-  type: 'choice' | 'fill' | 'essay';
+  type: 'choice' | 'fill' | 'essay' | 'proof';
   content: string;
   options: string[];
   answer: string;
@@ -157,6 +557,9 @@ export async function processUploadTask(data: {
   let uploadCreatedAt: Date | null = null;
   let downloadCompletedAt: number | null = null;
   let downloadedFileBytes: number | null = null;
+  let ingestUploadLatencyMs: number | null = null;
+  let supabaseBandwidthMb: number | null = null;
+  let pythonProcessingMs: number | null = null;
 
   console.log('开始处理上传任务', { taskId, fileName, fileUrl });
 
@@ -173,22 +576,58 @@ export async function processUploadTask(data: {
     }
 
     console.log('开始下载文件', { fileUrl });
-    const fileBuffer = await downloadFile(fileUrl, FileAccessLevel.PRIVATE);
+    const downloadedBuffer = await downloadFile(fileUrl, FileAccessLevel.PRIVATE);
     downloadCompletedAt = Date.now();
-    downloadedFileBytes = fileBuffer.length;
-    console.log('文件下载完成', { size: fileBuffer.length });
+    downloadedFileBytes = downloadedBuffer.length;
+    console.log('文件下载完成', { size: downloadedBuffer.length });
 
-    let imageWidth: number | null = null;
-    let imageHeight: number | null = null;
+    let originalImageBuffer: Buffer = downloadedBuffer;
+    let geminiInputBuffer: Buffer = downloadedBuffer;
+    let binaryImagePath: string | null = null;
+    let imageMeta: { width: number; height: number } | null = null;
 
-    try {
-      const metadata = await sharp(fileBuffer).metadata();
-      imageWidth = metadata.width ?? null;
-      imageHeight = metadata.height ?? null;
-    } catch (error) {
-      console.warn('[数据转换] 读取原图尺寸失败', {
-        error: error instanceof Error ? error.message : String(error)
-      });
+    const pipelineArtifacts = await callPipelinePreprocess(taskId, downloadedBuffer, fileName);
+    if (pipelineArtifacts?.meta?.width && pipelineArtifacts.meta?.height) {
+      imageMeta = {
+        width: pipelineArtifacts.meta.width,
+        height: pipelineArtifacts.meta.height
+      };
+    }
+
+    if (pipelineArtifacts?.artifacts?.original_path) {
+      const buffer = await readLocalFile(pipelineArtifacts.artifacts.original_path);
+      if (buffer) {
+        originalImageBuffer = buffer;
+      }
+    }
+
+    if (pipelineArtifacts?.artifacts?.grid_path) {
+      const buffer = await readLocalFile(pipelineArtifacts.artifacts.grid_path);
+      if (buffer) {
+        geminiInputBuffer = buffer;
+      }
+    } else {
+      geminiInputBuffer = originalImageBuffer;
+    }
+
+    if (pipelineArtifacts?.artifacts?.binary_path) {
+      binaryImagePath = pipelineArtifacts.artifacts.binary_path;
+    }
+
+    if (!imageMeta) {
+      try {
+        const metadata = await sharp(originalImageBuffer).metadata();
+        if (metadata.width && metadata.height) {
+          imageMeta = {
+            width: metadata.width,
+            height: metadata.height
+          };
+        }
+      } catch (error) {
+        console.warn('[数据转换] 读取原图尺寸失败', {
+          error: error instanceof Error ? error.message : String(error)
+        });
+      }
     }
 
     const { parseQuestionWithCascadingFromBuffer } = await import('./gemini-vision-client');
@@ -198,7 +637,7 @@ export async function processUploadTask(data: {
       .update({ progress: 30, updated_at: new Date().toISOString() })
       .eq('id', taskId);
 
-    const geminiResult = await parseQuestionWithCascadingFromBuffer(fileBuffer);
+    const geminiResult = await parseQuestionWithCascadingFromBuffer(geminiInputBuffer);
 
     if (!geminiResult.validation?.passed) {
       throw new Error(`Gemini 数据校验失败: ${geminiResult.validation?.reasons?.join('；') ?? '未知原因'}`);
@@ -208,20 +647,44 @@ export async function processUploadTask(data: {
       throw new Error('Gemini 未识别到任何题目');
     }
 
+    const refinedGeminiQuestions = await refineGeminiImageRegions(geminiResult.questions, {
+      binaryPath: binaryImagePath,
+      imageMeta
+    });
+
     const invalidRegionQuestions: string[] = [];
+    const regionMetaByQuestion: Record<string, RegionMeta[]> = {};
 
-    const imageMeta = imageWidth && imageHeight ? { width: imageWidth, height: imageHeight } : null;
-
-    const processedQuestions: ProcessedQuestion[] = geminiResult.questions.map((question) => {
+    const processedQuestions: ProcessedQuestion[] = refinedGeminiQuestions.map((question) => {
       const resolvedType = question.meta?.type ?? inferQuestionType(question);
       const resolvedDifficulty = question.meta?.difficulty ?? 'medium';
       const resolvedTags = question.meta?.tags ?? [];
 
-      const normalizedRegions = (question.image_regions ?? [])
-        .map(region =>
-          normalizeRegion(region, imageMeta, { taskId, questionNumber: question.number })
-        )
-        .filter((region): region is ImageRegion => Boolean(region));
+      const normalizedRegions: ImageRegion[] = [];
+      const channelMeta: RegionMeta[] = [];
+
+      for (const region of question.image_regions ?? []) {
+        const normalized = normalizeRegion(region, imageMeta, { taskId, questionNumber: question.number });
+        if (!normalized) {
+          continue;
+        }
+        normalizedRegions.push(normalized);
+        channelMeta.push({
+          anchor_text_prev: region.anchor_text_prev ?? undefined,
+          anchor_text_next: region.anchor_text_next ?? undefined,
+          rough_bbox:
+            (Array.isArray(region.rough_bbox) && region.rough_bbox.length === 4
+              ? (region.rough_bbox as NormalizedBox)
+              : undefined) ??
+            (Array.isArray(region.box_2d) && region.box_2d.length === 4
+              ? (region.box_2d as NormalizedBox)
+              : undefined)
+        });
+      }
+
+      if (channelMeta.length) {
+        regionMetaByQuestion[question.number] = channelMeta;
+      }
 
       if ((question.image_regions?.length ?? 0) > 0 && normalizedRegions.length === 0) {
         invalidRegionQuestions.push(question.number);
@@ -254,7 +717,8 @@ export async function processUploadTask(data: {
 
     const cropInput: QuestionWithRegions[] = processedQuestions.map(q => ({
       number: q.number,
-      image_regions: q.image_regions
+      image_regions: q.image_regions,
+      region_meta: regionMetaByQuestion[q.number] ?? []
     }));
 
     await supabase
@@ -262,7 +726,17 @@ export async function processUploadTask(data: {
       .update({ progress: 70, updated_at: new Date().toISOString() })
       .eq('id', taskId);
 
-    const cropSummary = await cropAndUploadQuestionImages(taskId, fileBuffer, cropInput);
+    const anchorHook = createAnchorHook({ taskId });
+    const cropSummary = await cropAndUploadQuestionImages(
+      taskId,
+      originalImageBuffer,
+      cropInput,
+      anchorHook
+        ? {
+            onBeforeUpload: anchorHook
+          }
+        : undefined
+    );
     const questionsWithImages = processedQuestions.filter(q => q.image_regions.length > 0);
     const questionsWithAssets = questionsWithImages.filter(q => (cropSummary.assetsByQuestion[q.number]?.length ?? 0) > 0);
 
@@ -326,12 +800,27 @@ export async function processUploadTask(data: {
       ? Math.round((questionsWithAssets.length / imageQuestionCount) * 100)
       : 100;
 
+    if (downloadCompletedAt != null) {
+      ingestUploadLatencyMs = uploadCreatedAt
+        ? downloadCompletedAt - uploadCreatedAt.getTime()
+        : downloadCompletedAt - processingStartTime;
+    }
+
+    if (downloadedFileBytes != null) {
+      supabaseBandwidthMb = Number((downloadedFileBytes / (1024 * 1024)).toFixed(3));
+    }
+
+    pythonProcessingMs = Date.now() - processingStartTime;
+
     const updatePayload: Record<string, unknown> = {
       status: 'completed',
       progress: 100,
       total_questions: totalQuestions,
       image_questions: imageQuestionCount,
       image_success_rate: imageSuccessRate,
+      ingest_upload_latency_ms: ingestUploadLatencyMs,
+      supabase_bandwidth_mb: supabaseBandwidthMb,
+      python_processing_ms: pythonProcessingMs,
       updated_at: new Date().toISOString()
     };
 
@@ -368,17 +857,23 @@ export async function processUploadTask(data: {
 
     throw error;
   } finally {
-    const pythonProcessingMs = Date.now() - processingStartTime;
-    const supabaseBandwidthMb =
-      downloadedFileBytes != null
-        ? Number((downloadedFileBytes / (1024 * 1024)).toFixed(3))
-        : null;
-    const ingestUploadLatencyMs =
-      downloadCompletedAt != null
-        ? uploadCreatedAt
-          ? downloadCompletedAt - uploadCreatedAt.getTime()
-          : downloadCompletedAt - processingStartTime
-        : null;
+    if (pythonProcessingMs == null) {
+      pythonProcessingMs = Date.now() - processingStartTime;
+    }
+    if (supabaseBandwidthMb == null) {
+      supabaseBandwidthMb =
+        downloadedFileBytes != null
+          ? Number((downloadedFileBytes / (1024 * 1024)).toFixed(3))
+          : null;
+    }
+    if (ingestUploadLatencyMs == null) {
+      ingestUploadLatencyMs =
+        downloadCompletedAt != null
+          ? uploadCreatedAt
+            ? downloadCompletedAt - uploadCreatedAt.getTime()
+            : downloadCompletedAt - processingStartTime
+          : null;
+    }
 
     recordIngestMetrics({
       timestamp: new Date().toISOString(),

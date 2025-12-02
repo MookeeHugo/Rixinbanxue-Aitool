@@ -209,7 +209,7 @@ function SortableImageItem({
       >
         {showPreview && (
           <Button
-            variant="secondary"
+            variant="outline"
             size="icon"
             className="h-6 w-6"
             onClick={(e) => {

@@ -242,7 +242,7 @@ export function AdminMembership() {
                       <TableCell>
                         <Badge
                           variant={
-                            user.plan === "Pro" ? "default" : user.plan === "Enterprise" ? "secondary" : "outline"
+                            user.plan === "Pro" ? "default" : user.plan === "Enterprise" ? "primary" : "outline"
                           }
                         >
                           {user.plan}

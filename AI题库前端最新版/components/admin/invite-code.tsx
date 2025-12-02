@@ -149,7 +149,7 @@ export function AdminInviteCode() {
                 <TableRow key={item.id}>
                   <TableCell className="font-mono font-semibold">{item.code}</TableCell>
                   <TableCell>
-                    <Badge variant={item.status === "active" ? "default" : "secondary"}>
+                    <Badge variant={item.status === "active" ? "default" : "outline"}>
                       {item.status === "active" ? "启用" : "停用"}
                     </Badge>
                   </TableCell>

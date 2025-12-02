@@ -185,9 +185,9 @@ export function QuestionEditCard({ question, index, onUpdateTags, isActive = fal
               </div>
               <div className="flex flex-wrap gap-2">
                 {question.tags.map((tag, idx) => (
-                  <Badge 
-                    key={idx} 
-                    variant="secondary"
+                  <Badge
+                    key={idx}
+                    variant="outline"
                     className="text-sm py-1 px-3 bg-white border-blue-300 text-blue-700 shadow-sm"
                   >
                     {tag.value}

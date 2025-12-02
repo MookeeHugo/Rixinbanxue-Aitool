@@ -21,7 +21,7 @@ const meta = {
   argTypes: {
     variant: {
       control: 'select',
-      options: ['default', 'secondary', 'outline', 'ghost', 'link', 'destructive', 'success', 'ai'],
+      options: ['default', 'primary', 'outline', 'ghost', 'link', 'destructive', 'success', 'ai'],
       description: '按钮变体',
       table: {
         type: { summary: 'string' },
@@ -58,10 +58,10 @@ export const Default: Story = {
   },
 };
 
-export const Secondary: Story = {
+export const Primary: Story = {
   args: {
     children: '预览',
-    variant: 'secondary',
+    variant: 'primary',
   },
 };
 
@@ -171,7 +171,7 @@ export const AllVariants: Story = {
     <div className="flex flex-col gap-4">
       <div className="flex gap-4">
         <Button variant="default">主按钮</Button>
-        <Button variant="secondary">次要</Button>
+        <Button variant="outline">次要</Button>
         <Button variant="outline">轮廓</Button>
         <Button variant="ghost">幽灵</Button>
       </div>

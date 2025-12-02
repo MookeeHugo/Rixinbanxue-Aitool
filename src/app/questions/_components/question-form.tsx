@@ -430,7 +430,7 @@ export function QuestionForm({
                     />
                     <Button
                       size="sm"
-                      variant="secondary"
+                      variant="outline"
                       className="absolute top-3 right-3"
                       onClick={handleRemoveImage}
                     >
@@ -546,7 +546,7 @@ export function QuestionForm({
                 </div>
                 <div className="mt-2 flex flex-wrap gap-1">
                   {selectedKnowledgePoints.map((kp) => (
-                    <Badge key={kp} variant="secondary">
+                    <Badge key={kp} variant="outline">
                       {kp}
                       <X
                         className="ml-1 h-3 w-3 cursor-pointer"

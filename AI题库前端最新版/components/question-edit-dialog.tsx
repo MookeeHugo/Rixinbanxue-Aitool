@@ -99,7 +99,7 @@ export function QuestionEditDialog({ question, onSave, onClose }: QuestionEditDi
             编辑题目
             <Badge variant="outline">{typeLabels[question.type]}</Badge>
             {question.confidence && question.confidence < 0.9 && (
-              <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+              <Badge variant="warning" className="bg-yellow-100 text-yellow-800">
                 <Sparkles className="h-3 w-3 mr-1" />
                 AI 识别 {Math.round(question.confidence * 100)}%
               </Badge>

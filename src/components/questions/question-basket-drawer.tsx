@@ -206,7 +206,7 @@ export function QuestionBasketDrawer({
                               checked={isSelected}
                               onChange={() => toggleSelection(question.id)}
                             />
-                            <Badge variant="secondary">{question.type}</Badge>
+                            <Badge variant="outline">{question.type}</Badge>
                             <Badge variant={difficultyVariant(question.difficulty)}>
                               {getDifficultyLabel(question.difficulty)}
                             </Badge>

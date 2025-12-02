@@ -369,7 +369,7 @@ export function ThemeCustomizer() {
               <p className="text-sm font-medium mb-3">按钮样式</p>
               <div className="flex flex-wrap gap-3">
                 <Button>主按钮</Button>
-                <Button variant="secondary">次要按钮</Button>
+                <Button variant="outline">次要按钮</Button>
                 <Button variant="outline">轮廓按钮</Button>
                 <Button variant="ghost">幽灵按钮</Button>
                 <Button variant="destructive">危险按钮</Button>
@@ -381,7 +381,7 @@ export function ThemeCustomizer() {
               <p className="text-sm font-medium mb-3">徽章样式</p>
               <div className="flex flex-wrap gap-2">
                 <Badge variant="default">默认</Badge>
-                <Badge variant="secondary">次要</Badge>
+                <Badge variant="outline">次要</Badge>
                 <Badge variant="error">危险</Badge>
                 <Badge variant="outline">轮廓</Badge>
               </div>

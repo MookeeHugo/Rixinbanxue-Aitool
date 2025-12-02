@@ -58,3 +58,10 @@ claude-code-workflows/
 logs/
 tmp/
 tests/output/
+
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.backup

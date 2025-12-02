@@ -167,7 +167,7 @@ export function LatexEditor({
   }, [])
 
   return (
-    <div className={cn('space-y-2', className)}>
+    <div className={cn('space-y-2 w-full overflow-x-hidden', className)}>
       {showToolbar && (
         <FormulaToolbar
           onInsert={handleInsert}
@@ -195,7 +195,7 @@ export function LatexEditor({
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="visual" className="mt-2">
+        <TabsContent value="visual" className="mt-2 w-full">
           {loadError ? (
             <div className="text-sm text-muted-foreground p-4 border rounded-md">
               {loadError}
@@ -207,12 +207,13 @@ export function LatexEditor({
           ) : (
             <div
               ref={containerRef}
-              className="math-field-container"
+              className="math-field-container w-full overflow-x-auto"
+              style={{ minHeight: typeof height === 'number' ? `${height}px` : height }}
             />
           )}
         </TabsContent>
 
-        <TabsContent value="code" className="mt-2">
+        <TabsContent value="code" className="mt-2 w-full">
           <Textarea
             ref={textareaRef}
             value={value}
@@ -226,7 +227,7 @@ export function LatexEditor({
           />
         </TabsContent>
 
-        <TabsContent value="preview" className="mt-2">
+        <TabsContent value="preview" className="mt-2 w-full">
           <FormulaPreview
             latex={value}
             displayMode="block"

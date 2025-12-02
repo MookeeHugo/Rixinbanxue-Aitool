@@ -259,7 +259,7 @@ export function TagSelector({
           selectedTags.map(qt => (
             <Badge
               key={qt.id}
-              variant="secondary"
+              variant="outline"
               className="flex items-center gap-1 px-2 py-1 pr-1"
             >
               {qt.tag?.displayName || '未知标签'}

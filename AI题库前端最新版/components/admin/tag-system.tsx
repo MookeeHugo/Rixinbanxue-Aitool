@@ -102,7 +102,7 @@ export function AdminTagSystem() {
                       </TableCell>
                       <TableCell className="text-sm text-gray-600">{tag.parent}</TableCell>
                       <TableCell>
-                        <Badge variant="secondary">{tag.usageCount} 次</Badge>
+                        <Badge variant="outline">{tag.usageCount} 次</Badge>
                       </TableCell>
                       <TableCell>
                         <Badge className="bg-green-100 text-green-700">启用</Badge>
@@ -139,7 +139,7 @@ export function AdminTagSystem() {
                       <TableCell className="font-medium">{tag.name}</TableCell>
                       <TableCell>Level {tag.level}</TableCell>
                       <TableCell>
-                        <Badge variant="secondary">{tag.usageCount} 次</Badge>
+                        <Badge variant="outline">{tag.usageCount} 次</Badge>
                       </TableCell>
                       <TableCell>
                         <Button size="sm" variant="ghost">
@@ -166,7 +166,7 @@ export function AdminTagSystem() {
                     <TableRow key={tag.id}>
                       <TableCell className="font-medium">{tag.name}</TableCell>
                       <TableCell>
-                        <Badge variant="secondary">{tag.usageCount} 次</Badge>
+                        <Badge variant="outline">{tag.usageCount} 次</Badge>
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-2">

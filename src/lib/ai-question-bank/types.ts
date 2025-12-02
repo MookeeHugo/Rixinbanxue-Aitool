@@ -49,9 +49,9 @@ export interface ImageRegion {
  */
 export type NormalizedBox = [number, number, number, number];
 
-/**
- * Gemini image region metadata (with padding/trim info)
- */
+/**
+ * Gemini image region metadata (with padding/trim info)
+ */
 export interface GeminiImageRegion {
   anchor_id: string;
   box_2d: NormalizedBox;
@@ -226,6 +226,9 @@ export interface UploadTask {
   total_questions?: number;
   image_questions?: number | null;
   image_success_rate?: number | null;
+  ingest_upload_latency_ms?: number | null;
+  supabase_bandwidth_mb?: number | null;
+  python_processing_ms?: number | null;
   trace_id: string;
   error_message?: string;
   created_at: string;

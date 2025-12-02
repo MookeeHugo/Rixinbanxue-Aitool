@@ -93,6 +93,9 @@ export interface UploadTask {
   status: UploadTaskStatus
   progress: number
   totalQuestions: number
+  ingestUploadLatencyMs?: number | null
+  supabaseBandwidthMb?: number | null
+  pythonProcessingMs?: number | null
   errorMessage?: string
   createdAt: string
   updatedAt: string

@@ -154,7 +154,7 @@ export function AdminProviderManagement() {
                         <div>
                           <div className="flex items-center gap-2">
                             <h4 className="font-semibold">{provider.name}</h4>
-                            <Badge variant="secondary" className="text-xs">
+                            <Badge variant="outline" className="text-xs">
                               优先级 {provider.priority}
                             </Badge>
                           </div>

@@ -233,7 +233,7 @@ export function AdminQuestionBank() {
                     <TableCell>
                       <div className="flex gap-1">
                         {question.tags.map((tag, idx) => (
-                          <Badge key={idx} variant="secondary" className="text-xs">
+                          <Badge key={idx} variant="outline" className="text-xs">
                             {tag}
                           </Badge>
                         ))}
@@ -303,7 +303,7 @@ export function AdminQuestionBank() {
                                   <div className="flex items-center gap-2 mb-2">
                                     <Sparkles className="w-4 h-4 text-purple-600" />
                                     <h4 className="font-semibold">AI 建议标签</h4>
-                                    <Badge variant="secondary" className="text-xs">
+                                    <Badge variant="outline" className="text-xs">
                                       仅供参考
                                     </Badge>
                                   </div>
