@@ -39,14 +39,16 @@ const KNOWLEDGE_TAGS = [
 
 const GEMINI_PROMPT = `
 You are a professional math content digitizer working on exam papers.
+Each page contains a 20x20 red grid with axes labeled 0-100 (step 5). Use the grid lines as your ruler.
 Read the entire math page image and output STRICT JSON in UTF-8.
 
 Rules:
 1. OCR all math expressions into LaTeX and wrap them with $...$.
 2. For multiple-choice questions, every option must be in LaTeX form (e.g. $
 rac{1}{2}$). Never leave math symbols as plain text.
-3. Detect diagrams/figures precisely. Use normalized coordinates [ymin, xmin, ymax, xmax] in the 0-1000 space where (0,0) is top-left and (1000,1000) is bottom-right.
-4. JSON must match the provided schema exactly. Do not output Markdown fences or explanations.
+3. Detect diagrams/figures precisely. Use normalized coordinates [ymin, xmin, ymax, xmax] in the 0-100 space (one decimal precision, example: [12.5, 30.0, 36.2, 55.1]). Provide generous rough boxes with at least 10% padding (err on the larger side; downstream CV will shrink them).
+4. Always capture anchor_text_prev and anchor_text_next (10 UTF-8 chars immediately above/below the figure) for coordinate validation and later inclusion-rejection trimming.
+5. JSON must match the provided schema exactly. Do not output Markdown fences or explanations.
 `.trim();
 
 const QUESTION_RESPONSE_SCHEMA = {
@@ -84,8 +86,8 @@ const QUESTION_RESPONSE_SCHEMA = {
                 anchor_id: { type: SchemaType.STRING, nullable: true },
                 box_2d: {
                   type: SchemaType.ARRAY,
-                  items: { type: SchemaType.INTEGER },
-                  description: '[ymin, xmin, ymax, xmax], 0-1000 integers'
+                  items: { type: SchemaType.NUMBER },
+                  description: '[ymin, xmin, ymax, xmax], normalized 0-100 with max one decimal'
                 },
                 label: { type: SchemaType.STRING, nullable: true },
                 description: { type: SchemaType.STRING, nullable: true },
@@ -135,13 +137,29 @@ const IS_OFFICIAL_GEMINI_ENDPOINT = GEMINI_BASE_URL.includes(
   'generativelanguage.googleapis.com'
 );
 const FAILURE_LOG_ROOT = join(process.cwd(), 'logs', 'failures');
+const NORMALIZED_SCALE = 100;
+const ANCHOR_CONTEXT_CHARS = 10;
+
+const NormalizedCoordinateSchema = z
+  .number()
+  .min(0)
+  .max(NORMALIZED_SCALE)
+  .superRefine((value, ctx) => {
+    const scaled = Math.round(value * 10);
+    if (Math.abs(value * 10 - scaled) > 1e-6) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: '坐标最多一位小数'
+      });
+    }
+  });
 
 const NormalizedBoxSchema = z
   .tuple([
-    z.number().min(0).max(1000),
-    z.number().min(0).max(1000),
-    z.number().min(0).max(1000),
-    z.number().min(0).max(1000)
+    NormalizedCoordinateSchema,
+    NormalizedCoordinateSchema,
+    NormalizedCoordinateSchema,
+    NormalizedCoordinateSchema
   ])
   .superRefine((value, ctx) => {
     const [ymin, xmin, ymax, xmax] = value;
@@ -156,9 +174,14 @@ const NormalizedBoxSchema = z
 const GeminiImageRegionSchema = z.object({
   anchor_id: z.string().nullable().optional(),
   box_2d: NormalizedBoxSchema,
+  rough_bbox: NormalizedBoxSchema.optional(),
+  anchor_text_prev: z.string().max(40).nullable().optional(),
+  anchor_text_next: z.string().max(40).nullable().optional(),
   label: z.string().nullable().optional(),
   description: z.string().nullable().optional(),
-  position: z.enum(['right', 'bottom', 'left', 'inline']).nullable().optional()
+  position: z.enum(['right', 'bottom', 'left', 'inline']).nullable().optional(),
+  confidence: z.number().min(0).max(1).nullable().optional(),
+  source: z.enum(['llm', 'cv']).nullable().optional()
 });
 
 const GeminiQuestionSchema = z.object({
@@ -214,10 +237,10 @@ function normalizedToPixelRect(box: NormalizedBox, meta: ImageMeta): PixelRect {
   }
 
   const [ymin, xmin, ymax, xmax] = box;
-  const left = Math.round((xmin / 1000) * meta.width);
-  const top = Math.round((ymin / 1000) * meta.height);
-  const right = Math.round((xmax / 1000) * meta.width);
-  const bottom = Math.round((ymax / 1000) * meta.height);
+  const left = Math.round((xmin / NORMALIZED_SCALE) * meta.width);
+  const top = Math.round((ymin / NORMALIZED_SCALE) * meta.height);
+  const right = Math.round((xmax / NORMALIZED_SCALE) * meta.width);
+  const bottom = Math.round((ymax / NORMALIZED_SCALE) * meta.height);
 
   return {
     left,
@@ -230,13 +253,14 @@ function normalizedToPixelRect(box: NormalizedBox, meta: ImageMeta): PixelRect {
 function pixelRectToNormalized(rect: PixelRect, meta: ImageMeta): NormalizedBox {
   const width = Math.max(meta.width, 1);
   const height = Math.max(meta.height, 1);
-  const scaleX = 1000 / width;
-  const scaleY = 1000 / height;
+  const scaleX = NORMALIZED_SCALE / width;
+  const scaleY = NORMALIZED_SCALE / height;
+  const roundToOneDecimal = (value: number) => Math.round(value * 10) / 10;
 
-  const ymin = Math.round(clamp(rect.top * scaleY, 0, 1000));
-  const xmin = Math.round(clamp(rect.left * scaleX, 0, 1000));
-  const ymax = Math.round(clamp((rect.top + rect.height) * scaleY, 0, 1000));
-  const xmax = Math.round(clamp((rect.left + rect.width) * scaleX, 0, 1000));
+  const ymin = clamp(roundToOneDecimal(rect.top * scaleY), 0, NORMALIZED_SCALE);
+  const xmin = clamp(roundToOneDecimal(rect.left * scaleX), 0, NORMALIZED_SCALE);
+  const ymax = clamp(roundToOneDecimal((rect.top + rect.height) * scaleY), 0, NORMALIZED_SCALE);
+  const xmax = clamp(roundToOneDecimal((rect.left + rect.width) * scaleX), 0, NORMALIZED_SCALE);
 
   return [ymin, xmin, ymax, xmax];
 }
@@ -611,6 +635,41 @@ export function extractJsonFromStream(raw: string): string {
   return cleaned.slice(firstBrace, lastBrace + 1);
 }
 
+function normalizeAnchorText(value: unknown, mode: 'prev' | 'next'): string | undefined {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return undefined;
+  }
+  const chars = Array.from(trimmed);
+  if (!chars.length) {
+    return undefined;
+  }
+  if (mode === 'prev') {
+    return chars.slice(Math.max(0, chars.length - ANCHOR_CONTEXT_CHARS)).join('');
+  }
+  return chars.slice(0, ANCHOR_CONTEXT_CHARS).join('');
+}
+
+function sanitizeNormalizedBoxCandidate(candidate: unknown): NormalizedBox | null {
+  if (!Array.isArray(candidate) || candidate.length < 4) {
+    return null;
+  }
+  const sanitized = candidate.slice(0, 4).map(value => {
+    const num = typeof value === 'number' ? value : Number(value);
+    const safe = Number.isFinite(num) ? num : 0;
+    const rounded = Math.round(safe * 10) / 10;
+    return clamp(rounded, 0, NORMALIZED_SCALE);
+  }) as NormalizedBox;
+
+  if (sanitized[2] <= sanitized[0] || sanitized[3] <= sanitized[1]) {
+    return null;
+  }
+  return sanitized;
+}
+
 function sanitizeImageRegionsForPayload(
   regions: unknown,
   context: { requestId: string; questionIndex: number }
@@ -631,8 +690,8 @@ function sanitizeImageRegionsForPayload(
       return;
     }
 
-    const box = Array.isArray((region as any).box_2d) ? (region as any).box_2d.slice(0, 4) : null;
-    if (!box || box.length < 4) {
+    const normalizedBox = sanitizeNormalizedBoxCandidate((region as any).box_2d);
+    if (!normalizedBox) {
       console.warn('[Gemini解析] box_2d 长度不足，已忽略该配图', {
         requestId: context.requestId,
         questionIndex: context.questionIndex,
@@ -641,14 +700,17 @@ function sanitizeImageRegionsForPayload(
       return;
     }
 
-    const normalizedBox = box.map(value => {
-      const num = typeof value === 'number' ? value : Number(value);
-      return clamp(Math.round(Number.isFinite(num) ? num : 0), 0, 1000);
-    }) as NormalizedBox;
+    const roughBox =
+      sanitizeNormalizedBoxCandidate((region as any).rough_bbox) ?? (normalizedBox as NormalizedBox);
+    const anchorPrev = normalizeAnchorText((region as any).anchor_text_prev, 'prev');
+    const anchorNext = normalizeAnchorText((region as any).anchor_text_next, 'next');
 
     sanitized.push({
       ...(region as Record<string, unknown>),
-      box_2d: normalizedBox
+      box_2d: normalizedBox,
+      rough_bbox: roughBox,
+      anchor_text_prev: anchorPrev,
+      anchor_text_next: anchorNext
     });
   });
 
@@ -987,6 +1049,9 @@ async function enrichImageRegions(
     const region = rawRegions[index];
     try {
       const anchorId = region.anchor_id || `q${question.number}-img${index + 1}`;
+      const anchorPrev = normalizeAnchorText(region.anchor_text_prev, 'prev');
+      const anchorNext = normalizeAnchorText(region.anchor_text_next, 'next');
+      const roughBox = region.rough_bbox ?? region.box_2d;
       const pixelRect = normalizedToPixelRect(region.box_2d, meta);
       const paddedRect = applyPadding(pixelRect, meta);
       const paddedBox2d = pixelRectToNormalized(paddedRect, meta);
@@ -1020,13 +1085,22 @@ async function enrichImageRegions(
       enriched.push({
         anchor_id: anchorId,
         box_2d: region.box_2d,
+        rough_bbox: roughBox,
         padded_box_2d: paddedBox2d,
         label: region.label,
         description: region.description,
         position: region.position,
+        anchor_text_prev: anchorPrev,
+        anchor_text_next: anchorNext,
+        confidence: region.confidence,
+        source: region.source ?? 'llm',
         base64: dataUrl,
         mime_type: 'image/png',
         padding: {
+          px: paddingPx,
+          ratio: PADDING_RATIO
+        },
+        rough_padding: region.rough_padding ?? {
           px: paddingPx,
           ratio: PADDING_RATIO
         },
@@ -1074,7 +1148,7 @@ function validateParseResult(data: QuestionData): GeminiValidationResult {
         if (!region.box_2d || region.box_2d.length !== 4) {
           return false;
         }
-        return region.box_2d.every(value => Number.isFinite(value) && value >= 0 && value <= 1000);
+        return region.box_2d.every(value => Number.isFinite(value) && value >= 0 && value <= 100);
       })
     );
 

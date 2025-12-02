@@ -251,7 +251,7 @@ export function TaskListSection({ refreshTrigger = 0 }: TaskListSectionProps) {
             <CardDescription>最近 {MAX_TASKS} 条任务，实时更新 {realtimeReady ? '（实时）' : '（轮询）'}</CardDescription>
           </div>
           {hasProcessingTasks && (
-            <Badge variant="secondary" className="bg-blue-50 text-blue-700">
+            <Badge variant="secondary" className="bg-primary-50 text-primary-700">
               正在解析
             </Badge>
           )}

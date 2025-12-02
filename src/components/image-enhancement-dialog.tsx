@@ -178,11 +178,11 @@ export function ImageEnhancementDialog({
           </div>
 
           {/* 参数说明 */}
-          <div className="rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 p-4 space-y-2">
-            <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
+          <div className="rounded-lg bg-primary-50 dark:bg-primary-950/20 border border-primary-200 dark:border-primary-800 p-4 space-y-2">
+            <p className="text-sm font-medium text-primary-900 dark:text-primary-100">
               增强效果说明
             </p>
-            <ul className="text-xs text-blue-800 dark:text-blue-200 space-y-1 list-disc list-inside">
+            <ul className="text-xs text-primary-800 dark:text-primary-200 space-y-1 list-disc list-inside">
               <li>锐化强度：适合模糊的扫描图片，建议值 20-40</li>
               <li>降噪强度：适合有噪点的图片，建议值 10-30</li>
               <li>处理后图片将自动保存，原图不受影响</li>

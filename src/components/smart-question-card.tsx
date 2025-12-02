@@ -106,7 +106,7 @@ export function SmartQuestionCard({
 
           {/* 题型 Badge */}
           <Badge
-            className="bg-blue-50 text-blue-700 border-blue-200/50 font-medium px-3 py-1"
+            className="bg-primary-50 text-primary-700 border-primary-200/50 font-medium px-3 py-1"
           >
             {getQuestionTypeLabel(question.type)}
           </Badge>
@@ -235,7 +235,7 @@ export function SmartQuestionCard({
                 <ul className="space-y-2">
                   {question.steps.map((step, i) => (
                     <li key={i} className="flex gap-3 text-sm text-gray-700 leading-relaxed">
-                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-medium">
+                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-xs font-medium">
                         {i + 1}
                       </span>
                       <span className="flex-1">{step}</span>

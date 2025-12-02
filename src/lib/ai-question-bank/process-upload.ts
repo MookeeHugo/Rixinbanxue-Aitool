@@ -7,6 +7,8 @@
  * - 不再依赖 OCR + 空白区域检测 + 智能匹配的复杂流程
  */
 
+import { appendFileSync, existsSync, mkdirSync } from 'fs';
+import { join } from 'path';
 import { downloadFile, FileAccessLevel } from '@/lib/storage';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database';
@@ -28,6 +30,32 @@ function createServiceClient() {
       }
     }
   );
+}
+
+const METRICS_DIR = join(process.cwd(), 'logs', 'metrics');
+const INGEST_METRICS_FILE = join(METRICS_DIR, 'ingest-baseline.log');
+
+interface IngestMetricsEntry {
+  timestamp: string;
+  taskId: string;
+  fileName: string;
+  ingest_upload_latency_ms: number | null;
+  supabase_bandwidth_mb: number | null;
+  python_processing_ms: number | null;
+}
+
+function recordIngestMetrics(entry: IngestMetricsEntry) {
+  try {
+    if (!existsSync(METRICS_DIR)) {
+      mkdirSync(METRICS_DIR, { recursive: true });
+    }
+    appendFileSync(INGEST_METRICS_FILE, `${JSON.stringify(entry)}\n`, { encoding: 'utf8' });
+  } catch (error) {
+    console.warn('[ingest-metrics] 写入失败', {
+      error: error instanceof Error ? error.message : String(error),
+      entry
+    });
+  }
 }
 
 function inferQuestionType(question: any): 'choice' | 'fill' | 'essay' {
@@ -62,24 +90,32 @@ function normalizeRegion(
     return null;
   }
 
-  if (!Array.isArray(region?.box_2d) || region.box_2d.length !== 4) {
+  const normalizedBox =
+    (Array.isArray(region?.box_2d) && region.box_2d.length === 4
+      ? region.box_2d
+      : undefined) ??
+    (Array.isArray(region?.rough_bbox) && region.rough_bbox.length === 4
+      ? region.rough_bbox
+      : undefined);
+  if (!normalizedBox) {
     logInvalidRegion(context.taskId, context.questionNumber, 'box_2d 缺失或格式错误', {
-      box_2d: region?.box_2d
+      box_2d: region?.box_2d,
+      rough_bbox: region?.rough_bbox
     });
     return null;
   }
 
-  const rect = convertBoxToPixelRect(region.box_2d, imageMeta);
+  const rect = convertBoxToPixelRect(normalizedBox, imageMeta);
   if (!rect) {
     logInvalidRegion(context.taskId, context.questionNumber, '归一化坐标无法映射到像素', {
-      box_2d: region.box_2d
+      box_2d: normalizedBox
     });
     return null;
   }
 
   if (!isValidImageBox(rect, imageMeta)) {
     logInvalidRegion(context.taskId, context.questionNumber, '启发式过滤拦截', {
-      box_2d: region.box_2d,
+      box_2d: normalizedBox,
       mapped: rect
     });
     return null;
@@ -117,17 +153,29 @@ export async function processUploadTask(data: {
 }) {
   const { taskId, fileName, fileUrl } = data;
   const supabase = createServiceClient();
+  const processingStartTime = Date.now();
+  let uploadCreatedAt: Date | null = null;
+  let downloadCompletedAt: number | null = null;
+  let downloadedFileBytes: number | null = null;
 
   console.log('开始处理上传任务', { taskId, fileName, fileUrl });
 
   try {
-    await supabase
+    const { data: processingTaskRecord } = await supabase
       .from('upload_tasks')
       .update({ status: 'processing', progress: 10, updated_at: new Date().toISOString() })
-      .eq('id', taskId);
+      .eq('id', taskId)
+      .select('id, created_at')
+      .single();
+
+    if (processingTaskRecord?.created_at) {
+      uploadCreatedAt = new Date(processingTaskRecord.created_at);
+    }
 
     console.log('开始下载文件', { fileUrl });
     const fileBuffer = await downloadFile(fileUrl, FileAccessLevel.PRIVATE);
+    downloadCompletedAt = Date.now();
+    downloadedFileBytes = fileBuffer.length;
     console.log('文件下载完成', { size: fileBuffer.length });
 
     let imageWidth: number | null = null;
@@ -319,5 +367,26 @@ export async function processUploadTask(data: {
       .eq('id', taskId);
 
     throw error;
+  } finally {
+    const pythonProcessingMs = Date.now() - processingStartTime;
+    const supabaseBandwidthMb =
+      downloadedFileBytes != null
+        ? Number((downloadedFileBytes / (1024 * 1024)).toFixed(3))
+        : null;
+    const ingestUploadLatencyMs =
+      downloadCompletedAt != null
+        ? uploadCreatedAt
+          ? downloadCompletedAt - uploadCreatedAt.getTime()
+          : downloadCompletedAt - processingStartTime
+        : null;
+
+    recordIngestMetrics({
+      timestamp: new Date().toISOString(),
+      taskId,
+      fileName,
+      ingest_upload_latency_ms: ingestUploadLatencyMs,
+      supabase_bandwidth_mb: supabaseBandwidthMb,
+      python_processing_ms: pythonProcessingMs
+    });
   }
 }

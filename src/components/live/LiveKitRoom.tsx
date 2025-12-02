@@ -108,7 +108,7 @@ export function LiveKitRoomComponent({
           <div className="text-sm mt-2">{error}</div>
           <button
             onClick={() => window.location.reload()}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            className="mt-4 px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700"
           >
             重新尝试
           </button>
@@ -429,7 +429,7 @@ function ConnectionStatusMonitor() {
       default:
         return {
           text: '连接中',
-          color: 'bg-blue-500',
+          color: 'bg-primary-500',
           icon: '📡',
         };
     }
@@ -484,7 +484,7 @@ function ConnectionStatusMonitor() {
                 onClick={() => {
                   connectionManagerRef.current?.reconnect().catch(console.error);
                 }}
-                className="mt-3 w-full px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded transition-colors"
+                className="mt-3 w-full px-3 py-1.5 bg-primary-600 hover:bg-primary-700 text-white text-xs rounded transition-colors"
               >
                 手动重连
               </button>

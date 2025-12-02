@@ -6,9 +6,7 @@
  * 提供标签的增删改查、批量操作、AI推荐等功能
  */
 
-import { createClient } from '@supabase/supabase-js'
-import { cookies } from 'next/headers'
-import { createServerClient } from '@supabase/ssr'
+import { createAuthenticatedServerClient } from '@/lib/server/supabase'
 import type {
   TagCategory,
   TagSubcategory,
@@ -31,29 +29,9 @@ interface ActionResult<T = void> {
  * 创建认证的 Supabase 客户端
  */
 async function createAuthenticatedClient() {
-  const cookieStore = await cookies()
-
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll()
-        },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            )
-          } catch {
-            // Server Component 中忽略
-          }
-        },
-      },
-    }
-  )
+  return createAuthenticatedServerClient()
 }
+
 
 /**
  * 获取所有标签分类和标签（树形结构）

@@ -46,20 +46,18 @@ export async function createAuthenticatedServerClient() {
     cookieStore.get('sb-access-token')?.value ||
     cookieStore.get('supabase-auth-token')?.value
 
-  if (!accessToken) {
-    throw new Error('No authentication token found')
-  }
-
   const client = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     auth: {
       persistSession: false,
       autoRefreshToken: false,
     },
-    global: {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    },
+    global: accessToken
+      ? {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      : undefined,
   })
 
   return client

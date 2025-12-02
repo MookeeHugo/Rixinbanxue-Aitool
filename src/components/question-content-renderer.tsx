@@ -131,7 +131,7 @@ export function QuestionContentRenderer({
                             }}
                             title="增强图片"
                           >
-                            <Sparkles className="h-3.5 w-3.5 text-blue-600" />
+                            <Sparkles className="h-3.5 w-3.5 text-primary-600" />
                           </Button>
                         )}
                         {onDeleteImage && (
@@ -156,7 +156,7 @@ export function QuestionContentRenderer({
                       <div className="font-medium text-foreground">{asset.label}</div>
                       <Badge
                         variant={asset.source === 'manual' ? 'outline' : 'secondary'}
-                        className={asset.source === 'manual' ? 'border-blue-500 text-blue-700' : ''}
+                        className={asset.source === 'manual' ? 'border-primary-500 text-primary-700' : ''}
                       >
                         {asset.source === 'manual' ? '人工修复' : 'AI 截图'}
                       </Badge>

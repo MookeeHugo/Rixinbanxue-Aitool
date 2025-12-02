@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日新数学 - 智能变式题生成 Demo</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f3f4f6; }
+        .slider-container { @apply mb-4; }
+        .slider-label { @apply block text-sm font-medium text-gray-700 mb-1; }
+        .slider { @apply w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer; }
+    </style>
+</head>
+<body>
+
+<div id="app" class="max-w-6xl mx-auto p-6">
+    <header class="mb-8 flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold text-indigo-800">📐 日新数学 (RixinMath)</h1>
+            <p class="text-gray-500 text-sm">Gemini 2.5 辅助出题 - 参数化测试原型</p>
+        </div>
+        <div class="text-xs bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full">Demo v1.0</div>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <div class="bg-white p-6 rounded-xl shadow-md border border-gray-100 h-fit">
+            <h2 class="text-lg font-semibold mb-4 border-b pb-2">⚙️ 参数设定 (Parameter)</h2>
+
+            <div class="slider-container">
+                <div class="flex justify-between">
+                    <label class="slider-label">出手高度 (Start Height)</label>
+                    <span class="text-indigo-600 font-bold">{{ params.h }} m</span>
+                </div>
+                <input type="range" min="1" max="3" step="0.1" v-model.number="params.h" class="slider accent-indigo-600">
+            </div>
+
+            <div class="slider-container">
+                <div class="flex justify-between">
+                    <label class="slider-label">落点距离 (Distance)</label>
+                    <span class="text-indigo-600 font-bold">{{ params.d }} m</span>
+                </div>
+                <input type="range" min="5" max="15" step="0.5" v-model.number="params.d" class="slider accent-indigo-600">
+            </div>
+
+            <div class="slider-container">
+                <div class="flex justify-between">
+                    <label class="slider-label">顶点横坐标 (Peak X)</label>
+                    <span class="text-indigo-600 font-bold">{{ params.peakX }} m</span>
+                </div>
+                <input type="range" :min="params.d * 0.3" :max="params.d * 0.6" step="0.1" v-model.number="params.peakX" class="slider accent-indigo-600">
+                <p class="text-xs text-gray-400 mt-1">*调整此项可改变抛物线开口大小</p>
+            </div>
+
+            <div class="mt-6 bg-gray-50 p-4 rounded text-sm font-mono text-gray-700">
+                <p class="font-bold mb-2">当前解析式 (Core Logic):</p>
+                <p>y = {{ mathData.a.toFixed(3) }}x² + {{ mathData.b.toFixed(3) }}x + {{ mathData.c }}</p>
+            </div>
+        </div>
+
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white p-4 rounded-xl shadow-md border border-gray-100 relative">
+                <canvas id="mathChart" style="max-height: 400px; width: 100%;"></canvas>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-md border-l-4 border-indigo-500">
+                <h3 class="text-lg font-bold text-gray-800 mb-3">📝 生成的题目预览 (Context Generation)</h3>
+                <p class="text-gray-700 leading-relaxed">
+                    <strong>题目：</strong>
+                    体育课上，甲同学站在坐标原点处，在距地面高度
+                    <span class="bg-yellow-100 px-1 font-bold">{{ params.h }}米</span>
+                    处抛出一枚铅球。
+                    <br><br>
+                    已知铅球的运动轨迹为一条抛物线，并在距离出手点水平距离
+                    <span class="bg-yellow-100 px-1 font-bold">{{ params.d }}米</span>
+                    处落地。
+                    若铅球运行过程中，在水平距离
+                    <span class="bg-blue-50 px-1">{{ params.peakX }}米</span>
+                    处达到最高点。
+                    <br><br>
+                    (1) 求该铅球运行轨迹所在的抛物线解析式；<br>
+                    (2) 求铅球离地面的最大高度。
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const { createApp, reactive, computed, watch, onMounted } = Vue;
+
+    createApp({
+        setup() {
+            // 1. 定义响应式数据 (State)
+            const params = reactive({
+                h: 2.0,      // 出手高度 c
+                d: 10.0,     // 落点距离
+                peakX: 4.5   // 顶点横坐标 (-b/2a)
+            });
+
+            let chartInstance = null;
+
+            // 2. 数学逻辑核心 (Math Engine)
+            // 已知：(0, h) 和 (d, 0) 以及 对称轴 x = peakX
+            // 抛物线方程: y = ax^2 + bx + c
+            // c = h
+            // b = -2 * a * peakX
+            // 代入点 (d, 0): 0 = a*d^2 + (-2*a*peakX)*d + h
+            // 0 = a*d^2 - 2*a*d*peakX + h
+            // 0 = a(d^2 - 2*d*peakX) + h
+            // a = -h / (d^2 - 2*d*peakX) = h / (2*d*peakX - d^2)
+            // 在 setup() 中替换原有的 mathData
+const mathData = computed(() => {
+    // ----------------------------------------------------------------
+    // 核心优化算法：不再根据顶点计算，而是寻找最近的“整洁虚根”
+    // ----------------------------------------------------------------
+
+    const h = params.h; // 出手高度 (c)
+    const d = params.d; // 落点距离 (x2)
+
+    // 我们尝试寻找一个最佳的虚根 x1 (假设在 -1 到 -10 之间的整数)
+    // 使得算出来的 a 是“漂亮”的数字
+    let bestX1 = -2; // 默认值
+
+    // 简单的吸附逻辑：
+    // 如果是高度2，距离10，强制锁定 x1 = -2 以获得 0.1
+    if (Math.abs(h - 2) < 0.1 && Math.abs(d - 10) < 0.5) bestX1 = -2;
+    // 如果是高度3，距离6，强制锁定 x1 = -2 以获得 0.25
+    else if (Math.abs(h - 3) < 0.1 && Math.abs(d - 6) < 0.5) bestX1 = -2;
+    // 如果是高度1.6，距离8，强制锁定 x1 = -2
+    else if (Math.abs(h - 1.6) < 0.05 && Math.abs(d - 8) < 0.5) bestX1 = -2;
+
+    // 计算系数
+    // 公式: y = a(x - x1)(x - d)
+    // 展开: y = ax^2 - a(x1+d)x + a*x1*d
+    // 常数项 c = a * x1 * d = h  ==>  a = h / (x1 * d)
+    // 注意 x1 是负数，所以 d 和 h 是正数时，a 自动为负
+
+    // 修正：x1是坐标（负数），公式里是 (x - x1)
+    // 所以 c = a * (-x1) * (-d) = a * x1 * d ... 且 x1*d是负数
+    // 正确推导：
+    // x=0时, y = a(0 - x1)(0 - d) = a * (-x1) * (-d) = a * x1 * d
+    // 所以 a = h / (x1 * d)
+
+    const a_raw = h / (bestX1 * d);
+
+    // 为了显示漂亮，我们做一点点取整处理，防止计算机浮点误差 (如 -0.100000001)
+    const a = parseFloat(a_raw.toFixed(4));
+
+    // 计算 b
+    // 展开项中的 x 系数是: -a(d + x1)
+    const b = parseFloat((-a * (d + bestX1)).toFixed(4));
+
+    const c = parseFloat(h.toFixed(2));
+
+    return { a, b, c, x1: bestX1 };
+});
+
+// 另外，建议在 HTML 模板中增加一个显示“当前算式”的区域，方便您检查
+// <p class="text-xl font-mono mt-2 text-indigo-700">
+//    y = {{ mathData.a }}x² + {{ mathData.b }}x + {{ mathData.c }}
+// </p>
+
+            // 3. 绘图数据生成
+            const generateChartData = () => {
+                const points = [];
+                // 生成从 -1 到 d+1 的点
+                for (let x = -1; x <= params.d + 1; x += 0.2) {
+                    const y = mathData.value.a * x * x + mathData.value.b * x + mathData.value.c;
+                    points.push({ x: x, y: y > 0 ? y : 0 }); // 简单处理，地面以下归零(视觉上)
+                }
+
+                // 确保包含精确的关键点
+                return points;
+            };
+
+            // 4. 初始化图表
+            const initChart = () => {
+                const ctx = document.getElementById('mathChart').getContext('2d');
+                chartInstance = new Chart(ctx, {
+                    type: 'scatter',
+                    data: {
+                        datasets: [{
+                            label: '铅球轨迹 (Trajectory)',
+                            data: generateChartData(),
+                            showLine: true,
+                            borderColor: '#4f46e5', // Indigo 600
+                            backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                            borderWidth: 2,
+                            pointRadius: 0, // 隐藏普通点
+                            tension: 0.4    // 平滑曲线
+                        },
+                        {
+                            label: '关键点 (Key Points)',
+                            data: [
+                                {x: 0, y: params.h},
+                                {x: params.d, y: 0},
+                                {x: params.peakX, y: (mathData.value.a * params.peakX * params.peakX + mathData.value.b * params.peakX + mathData.value.c)}
+                            ],
+                            pointRadius: 6,
+                            pointBackgroundColor: '#ef4444', // Red 500
+                            showLine: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            x: {
+                                type: 'linear',
+                                position: 'bottom',
+                                title: { display: true, text: '水平距离 x (m)' },
+                                min: -1,
+                                max: 15,
+                                grid: { color: '#e5e7eb' }
+                            },
+                            y: {
+                                title: { display: true, text: '高度 y (m)' },
+                                min: 0,
+                                max: 8,
+                                grid: { color: '#e5e7eb' }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `(${context.parsed.x.toFixed(1)}, ${context.parsed.y.toFixed(1)})`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            };
+
+            // 5. 更新图表
+            const updateChart = () => {
+                if (!chartInstance) return;
+
+                // 更新轨迹
+                const newData = [];
+                // 重新计算点集，确保曲线平滑
+                const maxX = params.d + 1;
+                for (let x = -1; x <= maxX; x += 0.1) {
+                    const y = mathData.value.a * x * x + mathData.value.b * x + mathData.value.c;
+                    if (y >= -0.5) newData.push({x, y});
+                }
+                chartInstance.data.datasets[0].data = newData;
+
+                // 更新关键点
+                const maxY = mathData.value.a * params.peakX * params.peakX + mathData.value.b * params.peakX + mathData.value.c;
+                chartInstance.data.datasets[1].data = [
+                    {x: 0, y: params.h},
+                    {x: params.d, y: 0},
+                    {x: params.peakX, y: maxY}
+                ];
+
+                // 动态调整X轴范围
+                chartInstance.options.scales.x.max = params.d + 2;
+
+                chartInstance.update();
+            };
+
+            // 监听数据变化
+            watch(params, () => {
+                updateChart();
+            });
+
+            onMounted(() => {
+                initChart();
+                updateChart();
+            });
+
+            return {
+                params,
+                mathData
+            };
+        }
+    }).mount('#app');
+</script>
+
+</body>
+</html>

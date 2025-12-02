@@ -45,24 +45,33 @@ export interface ImageRegion {
 }
 
 /**
- * 归一化坐标（0-1000 范围�?
+ * 归一化坐标（0-100 范围，允许 0.1 精度）
  */
 export type NormalizedBox = [number, number, number, number];
 
-/**
- * Gemini 解析返回的配图区域（含 padding/trim 元数据�?
- */
+/**
+ * Gemini image region metadata (with padding/trim info)
+ */
 export interface GeminiImageRegion {
   anchor_id: string;
   box_2d: NormalizedBox;
   padded_box_2d: NormalizedBox;
+  rough_bbox?: NormalizedBox;
   label?: string;
   description?: string;
   position?: 'right' | 'bottom' | 'left' | 'inline';
   base64?: string;
   asset_url?: string;
   mime_type?: string;
+  anchor_text_prev?: string;
+  anchor_text_next?: string;
+  confidence?: number;
+  source?: 'llm' | 'cv';
   padding: {
+    px: number;
+    ratio: number;
+  };
+  rough_padding?: {
     px: number;
     ratio: number;
   };
@@ -126,6 +135,7 @@ export interface QuestionImageAsset {
   id: string;
   url: string;
   key?: string | null;
+  final_image_path?: string | null;
   questionNumber?: string;
   order?: number;
   placeholder?: string | null;
@@ -144,6 +154,11 @@ export interface QuestionImageAsset {
   trimmedSize?: {
     width: number;
     height: number;
+  };
+  anchor_verification?: {
+    matched: boolean;
+    ocr_text?: string;
+    confidence?: number;
   };
 }
 

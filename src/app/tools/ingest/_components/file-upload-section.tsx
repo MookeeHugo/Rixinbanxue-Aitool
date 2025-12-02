@@ -122,7 +122,7 @@ export function FileUploadSection({ onSuccess }: FileUploadSectionProps) {
     if (file.type === 'application/pdf') {
       return <FileText className="h-8 w-8 text-red-500" />
     }
-    return <FileImage className="h-8 w-8 text-blue-500" />
+    return <FileImage className="h-8 w-8 text-primary-500" />
   }
 
   return (

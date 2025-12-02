@@ -92,7 +92,7 @@ function decodeLatin1ToUtf8(input: string): string {
 }
 
 /**
- * ���й����ļ����ƣ�����ģ�涴����UTF-8�ַ���
+ * Normalize suspicious mojibake file names and coerce them to UTF-8 when possible.
  */
 export function normalizeFileName(fileName?: string | null): string {
   if (!fileName) return '';

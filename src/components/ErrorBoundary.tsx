@@ -150,7 +150,7 @@ function DefaultErrorFallback({ error, onReset }: {
         <div className="flex gap-3">
           <button
             onClick={onReset}
-            className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+            className="flex-1 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors"
           >
             重试
           </button>
@@ -165,7 +165,7 @@ function DefaultErrorFallback({ error, onReset }: {
         {/* 帮助文本 */}
         <p className="text-xs text-gray-500 text-center mt-4">
           如果问题持续存在，请
-          <a href="/support" className="text-blue-400 hover:text-blue-300 ml-1">
+          <a href="/support" className="text-primary-400 hover:text-primary-300 ml-1">
             联系支持
           </a>
         </p>

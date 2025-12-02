@@ -250,7 +250,7 @@ export function ReparseButton({
       case 'error':
         return <XCircle className="w-5 h-5 text-red-500" />
       default:
-        return <Loader2 className="w-5 h-5 animate-spin text-blue-500" />
+        return <Loader2 className="w-5 h-5 animate-spin text-primary-500" />
     }
   }
 

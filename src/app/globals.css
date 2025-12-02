@@ -202,7 +202,7 @@
   }
 
   .gauthmath-badge-info {
-    @apply bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-semibold;
+    @apply bg-info-500 text-white px-3 py-1 rounded-full text-xs font-semibold;
   }
 }
 

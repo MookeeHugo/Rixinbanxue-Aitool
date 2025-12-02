@@ -16,9 +16,10 @@ export interface PixelRect {
 
 const MIN_PADDING = 20;
 const PADDING_RATIO = 0.02;
+const NORMALIZED_SCALE = 100;
 
 /**
- * 归一化坐标（0-1000）转换为像素裁剪区域，并自动追加 padding
+ * 归一化坐标（0-100）转换为像素裁剪区域，并自动追加 padding
  */
 export function convertBoxToPixelRect(
   box: NormalizedBox,
@@ -34,16 +35,16 @@ export function convertBoxToPixelRect(
     return null;
   }
 
-  const clampValue = (value: number) => Math.min(1000, Math.max(0, value));
+  const clampValue = (value: number) => Math.min(NORMALIZED_SCALE, Math.max(0, value));
   const safeYmin = clampValue(ymin);
   const safeXmin = clampValue(xmin);
   const safeYmax = clampValue(ymax);
   const safeXmax = clampValue(xmax);
 
-  let top = Math.round((safeYmin / 1000) * meta.height);
-  let left = Math.round((safeXmin / 1000) * meta.width);
-  let bottom = Math.round((safeYmax / 1000) * meta.height);
-  let right = Math.round((safeXmax / 1000) * meta.width);
+  let top = Math.round((safeYmin / NORMALIZED_SCALE) * meta.height);
+  let left = Math.round((safeXmin / NORMALIZED_SCALE) * meta.width);
+  let bottom = Math.round((safeYmax / NORMALIZED_SCALE) * meta.height);
+  let right = Math.round((safeXmax / NORMALIZED_SCALE) * meta.width);
 
   const effectivePadding =
     typeof padding === 'number'

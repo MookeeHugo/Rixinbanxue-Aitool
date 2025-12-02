@@ -158,7 +158,7 @@ export function ManualImageCropper({ imageUrl, onSelectionChange }: ManualImageC
         />
         {renderRect && imageLoaded && (
           <div
-            className="absolute border-2 border-blue-500 bg-blue-500/20 pointer-events-none"
+            className="absolute border-2 border-primary-500 bg-primary-500/20 pointer-events-none"
             style={{
               left: renderRect.left,
               top: renderRect.top,
@@ -170,14 +170,14 @@ export function ManualImageCropper({ imageUrl, onSelectionChange }: ManualImageC
       </div>
 
       <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-        <Badge variant="outline" className="border-blue-400 text-blue-700 bg-blue-50">
+        <Badge variant="outline" className="border-primary-400 text-primary-700 bg-primary-50">
           {selectedBox
             ? `ymin=${selectedBox[0]} xmin=${selectedBox[1]} ymax=${selectedBox[2]} xmax=${selectedBox[3]}`
             : '请在原图上拖拽以选择区域'}
         </Badge>
         <button
           type="button"
-          className="text-xs text-blue-600 hover:text-blue-700 underline"
+          className="text-xs text-primary-600 hover:text-primary-700 underline"
           onClick={handleClear}
         >
           清除选区
