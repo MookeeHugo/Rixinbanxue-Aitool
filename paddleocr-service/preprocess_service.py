@@ -13,6 +13,7 @@ import io
 import math
 from dataclasses import dataclass
 from pathlib import Path
+import time
 from typing import List, Optional
 
 import cv2
@@ -26,6 +27,7 @@ app = FastAPI(title="RixinMath Pipeline Service", version="0.1.0")
 ROOT_DIR = Path(__file__).resolve().parents[1]
 STORAGE_DIR = ROOT_DIR / "tmp" / "image-pipeline"
 STORAGE_DIR.mkdir(parents=True, exist_ok=True)
+SERVICE_START_TIME = time.time()
 
 try:
     from paddle.base import libpaddle as _libpaddle  # type: ignore[import-not-found]
@@ -247,10 +249,13 @@ async def anchor_verify(
 @app.get("/health")
 async def health():
     """
-    Readiness endpoint for PM2/Supervisor probes.
+    Ready/Liveness probe that is safe for cron or PM2 checks.
     """
     return {
         "status": "ok",
         "ocr_loaded": _OCR_INSTANCE is not None,
-        "storage_ready": STORAGE_DIR.exists()
+        "ocr_import_error": OCR_IMPORT_ERROR,
+        "storage_ready": STORAGE_DIR.exists(),
+        "artifacts_dir": str(STORAGE_DIR),
+        "uptime_seconds": round(time.time() - SERVICE_START_TIME, 1),
     }
