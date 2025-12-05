@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getCurrentUser } from '@/lib/auth'
@@ -23,11 +23,7 @@ export default function MyMistakesPage() {
   const [selectedKnowledge, setSelectedKnowledge] = useState<string>('all')
   const [knowledgePoints, setKnowledgePoints] = useState<string[]>([])
 
-  useEffect(() => {
-    loadMistakes()
-  }, [])
-
-  const loadMistakes = async () => {
+  const loadMistakes = useCallback(async () => {
     try {
       const user = await getCurrentUser()
       if (!user) {
@@ -101,7 +97,11 @@ export default function MyMistakesPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [router])
+
+  useEffect(() => {
+    loadMistakes()
+  }, [loadMistakes])
 
   const filteredMistakes = selectedKnowledge === 'all'
     ? mistakes

@@ -151,3 +151,57 @@ Zod Schema (`gemini-vision-client.ts`) 保证：
 - **Prompt Snippet**：`Anchor OCR uses an inclusion-rejection rule: OCR the top 10-15% strip of the cropped image; if anchor_text_prev is found inside that strip (fuzzy match >80%), shrink the crop to start below the detected text, otherwise flag the region for manual review.`
 
 > 注：上述 Addendum 需同步写入 Codex/Cursor Prompt 模板和代码评审清单，确保所有协作者在实现时自动遵循。
+
+## 8. 部署验证与运行记录
+
+### 8.1 后端运行快照
+
+- **Supabase 栈**：`npx supabase status` 显示所有容器在线（API 54321 / DB 54322 / Studio 54323），`docker ps` 中 `supabase_db_Rixindemo-codex-m1` 等 12 个容器均处于 `Up` 状态。
+- **FastAPI/PM2**：`pm2 status rixinmath-pipeline` 返回 `online`，`pm2 logs rixinmath-pipeline --lines 20` 仅含正常启动日志。`curl http://127.0.0.1:8000/health` 返回 `{"status":"ok","ocr_loaded":true,"storage_ready":true,"uptime_seconds":81.4,...}`，表明 PaddleOCR 模型已加载成功。
+- **基线脚本**：`node scripts/run-image-baseline.mjs --endpoint http://127.0.0.1:8000/api/preprocess/upload --limit 5` 结果示例：
+
+| 样本 ID | 分辨率 | 状态 | 耗时 (ms) |
+| --- | --- | --- | --- |
+| 中考专题讲练-金思维数学-001 | 1205×1601 | ok | 147 |
+| 中考专题讲练-金思维数学-002 | 1205×1601 | ok | 144 |
+| 中考专题讲练-金思维数学-003 | 1205×1601 | ok | 140 |
+| 中考专题讲练-金思维数学-004 | 1205×1601 | ok | 143 |
+| 中考专题讲练-金思维数学-005 | 1205×1601 | ok | 163 |
+
+平均耗时 147.4ms，最慢 163ms，脚本会在 `tmp/baseline/` 目录写入 JSON/CSV，供后续版本对比。
+
+### 8.2 基准脚本增强
+
+- **命令**：`node scripts/run-image-baseline.mjs [--endpoint URL] [--limit 5] [--json out.json] [--csv out.csv] [--compare history.json]`
+- **输出**：默认写入 `tmp/baseline/baseline-<timestamp>.json/csv`。JSON 结构包含 `metadata.stats`（avg/min/max/p95/成功数），结果数组与旧格式兼容；CSV 包括 `id,status,elapsed_ms,width,height,error` 列。
+- **对比报表**：`--compare` 参数可加载历史 JSON，脚本会以 `console.table` 形式输出“耗时差值 Top10”和“历史 vs 当前统计”，便于快速检视性能回退。
+- **文档记录**：建议在同一目录保留两份结果（旧/新），并在 PR 中将 `metadata.stats` 摘录到本章节，形成可复现的性能基线。
+
+### 8.3 监控与运维指南
+
+- **健康检查**  
+  - `curl http://127.0.0.1:8000/health`：直接观察 JSON（`status`、`ocr_loaded`、`storage_ready`、`uptime_seconds`）。  
+  - `node scripts/check-pipeline-health.mjs`：封装 5 秒超时、状态校验，方便 cron/PM2 调用（示例：`pm2 start scripts/check-pipeline-health.mjs --name pipeline-health --cron \"*/1 * * * *\"`）。
+- **PM2 管理**  
+  - 启动：`cd paddleocr-service && pm2 start pm2.config.cjs && pm2 save`  
+  - 重启：`pm2 restart rixinmath-pipeline`（模型更新后使用）  
+  - 日志：`pm2 logs rixinmath-pipeline --lines 100`，故障时重点关注 `error.log`。
+- **PaddleOCR 模型缓存**  
+  - 首次加载会自动下载到 `C:\Users\<username>\.paddleocr\`，包含 `det/rec/cls` 模型。  
+  - 若需要离线部署，可预先将该目录打包到目标机器再启动服务。
+- **Supabase 本地栈**  
+  - 启动：`npx supabase start`；停止：`npx supabase stop --no-backup`；`npx supabase status` 可查看端口与 API URL。  
+  - 迁移：`npx supabase db push`；验证：`docker exec -i supabase_db_Rixindemo-codex-m1 psql -U postgres -c "SELECT version,name FROM supabase_migrations.schema_migrations;"`.
+- **编码守则**：所有脚本与日志保持 UTF-8；每次新增脚本后执行 `rg "\\uFFFD" -n`，确保无乱码。
+### 8.4 `enrichImageRegions` 配图标注验证
+1. **样本选取**：复盘 2025-12-03 系列基准测试（采用 `fd2c3f41e73c4b33*.jpg` 图片，`logs/metrics/ingest-baseline.log` 中 `taskId=45060bc1-*`、`8a8d49d3-*`、`d33c7cb1-*`、`30317367-*`、`9c60c433-*` 日志号）。对对应的原图、网格图、二值图输出已写入 `tmp/image-pipeline/<taskId>-{original,grid,binary}.png`，需要时可直接打开对比标注位置。
+2. **Gemini 出参校验**：选取 `tmp/gemini-debug/e5e88472-6688-42fa-99f5-715b469d3117.txt` 等试验原结果，观察每个 `images[].box_2d` 已被整体归一化到 0-100 区间并精度保留 1 位小数，与 `grid.png` 中的可视网格对齐。
+3. **后端增强调对**：`src/lib/ai-question-bank/gemini-vision-client.ts:1089-1189` 的 `enrichImageRegions` 会综合 `applyPadding` 取得 `padded_box_2d`/`padded_pixel_rect` 并直接上传 base64 THUMB，本轮实测上述样本中无 fallback 日志，所有图块均入库成功。
+
+| `taskId` | 对应原图 | 观测轨迹 | 记录 |
+| --- | --- | --- | --- |
+| `45060bc1-a4a3-4f3e-9e63-4dbe87804599` | `fd2c3f41(41).jpg` | `grid.png` 中 4 个矩形与 `[9,64,21,96]` 等 `box_2d` 完全对应 | `tmp/image-pipeline/45060bc1-*` + `tmp/gemini-debug/e5e88472-*.txt` |
+| `8a8d49d3-3354-4fe8-bcd6-ff805aae8b93` | `fd2c3f41(51).jpg` | 小学算术图、数论图自然分布，padding 阻止边缘被截断 | `tmp/image-pipeline/8a8d49d3-*` |
+| `d33c7cb1-d084-40bb-9f97-d9abbcb92a3f` | `fd2c3f41(14).jpg` | 重新验证 `anchor_text_prev/next` 字符提取有效 | `tmp/image-pipeline/d33c7cb1-*` |
+| `30317367-2250-4560-aa80-d56a8bec51dc` | `fd2c3f41(63).jpg` | 图形在二值图中形状光滑，padding=2% 保障 ROI | `tmp/image-pipeline/30317367-*` |
+| `9c60c433-debf-4589-b3bc-a2f0c153373e` | `fd2c3f41(64).jpg` | 原图中的标尺与标注顶端文本并列显示 | `tmp/image-pipeline/9c60c433-*` |

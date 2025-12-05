@@ -16,7 +16,7 @@ from PIL import Image
 
 DEFAULT_PATTERN = "中考专题讲练-金思维数学-*.jpg"
 REPO_ROOT = Path(__file__).resolve().parents[1]
-SAMPLE_ROOT = REPO_ROOT / "shijuanceshi"
+SAMPLE_ROOT = REPO_ROOT / "legacy/shijuanceshi"
 OUTPUT_PATH = REPO_ROOT / "tests" / "image-samples.json"
 
 

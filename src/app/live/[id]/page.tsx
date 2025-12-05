@@ -1,6 +1,6 @@
 "use client";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { LiveRoomProvider } from "@/components/live/LiveRoomProvider";
 import { LiveVideoDisplay } from "@/components/live/LiveVideoDisplay";
 import { LiveChat } from "@/components/live/LiveChat";
@@ -134,14 +134,7 @@ export default function LiveSessionDetail() {
     };
   }, [params?.id]);
 
-  // 自动上传录制完成的内容
-  useEffect(() => {
-    if (recordedBlob && !isRecording && currentUserId && session) {
-      handleUploadRecording();
-    }
-  }, [recordedBlob, isRecording]);
-
-  async function handleUploadRecording() {
+  const handleUploadRecording = useCallback(async () => {
     if (!recordedBlob || !currentUserId || !session) return;
 
     setUploadingRecording(true);
@@ -161,7 +154,14 @@ export default function LiveSessionDetail() {
     } finally {
       setUploadingRecording(false);
     }
-  }
+  }, [recordedBlob, currentUserId, session, uploadRecording]);
+
+  // 自动上传录制完成的内容
+  useEffect(() => {
+    if (recordedBlob && !isRecording && currentUserId && session) {
+      void handleUploadRecording();
+    }
+  }, [recordedBlob, isRecording, currentUserId, session, handleUploadRecording]);
 
   async function handleRecordingToggle() {
     if (isRecording) {

@@ -20,6 +20,12 @@ export function useMediaRecorder() {
   const startTimeRef = useRef<number>(0);
   const streamRef = useRef<MediaStream | null>(null);
 
+  const stopRecording = useCallback(() => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      mediaRecorderRef.current.stop();
+    }
+  }, []);
+
   const startRecording = useCallback(async () => {
     try {
       // 获取屏幕共享流
@@ -138,13 +144,7 @@ export function useMediaRecorder() {
 
       return { success: false, error: error.message };
     }
-  }, [isRecording]);
-
-  const stopRecording = useCallback(() => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-      mediaRecorderRef.current.stop();
-    }
-  }, []);
+  }, [isRecording, stopRecording]);
 
   const uploadRecording = useCallback(async (
     sessionId: string,

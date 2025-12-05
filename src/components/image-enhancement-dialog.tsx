@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
+import Image from 'next/image'
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -114,11 +115,16 @@ export function ImageEnhancementDialog({
           <div className="space-y-2">
             <Label>原图</Label>
             <div className="rounded-lg border bg-muted p-4 flex items-center justify-center">
-              <img
-                src={imageUrl}
-                alt="原图"
-                className="max-w-full max-h-[300px] object-contain"
-              />
+              <div className="relative w-full h-[300px]">
+                <Image
+                  src={imageUrl}
+                  alt="原图"
+                  fill
+                  sizes="(max-width: 768px) 90vw, 480px"
+                  className="object-contain"
+                  draggable={false}
+                />
+              </div>
             </div>
           </div>
 

@@ -28,9 +28,19 @@ export function LatexEditor({
   const mathfieldRef = useRef<MathfieldElement | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const latestValueRef = useRef(value)
+  const latestOnChangeRef = useRef(onChange)
   const [activeTab, setActiveTab] = useState<'visual' | 'code'>('visual')
   const [mathLiveLoaded, setMathLiveLoaded] = useState(false)
   const [loadError, setLoadError] = useState<string | null>(null)
+
+  useEffect(() => {
+    latestValueRef.current = value
+  }, [value])
+
+  useEffect(() => {
+    latestOnChangeRef.current = onChange
+  }, [onChange])
 
   // 动态加载 MathLive
   useEffect(() => {
@@ -70,16 +80,18 @@ export function LatexEditor({
   useEffect(() => {
     if (!mathLiveLoaded || activeTab !== 'visual' || !containerRef.current) return
 
+    const container = containerRef.current
+
     const initMathfield = async () => {
       try {
         // 清除现有内容
-        if (containerRef.current) {
-          containerRef.current.innerHTML = ''
+        if (container) {
+          container.innerHTML = ''
         }
 
         // 创建 math-field 元素
         const mathfield = document.createElement('math-field') as MathfieldElement
-        mathfield.value = value
+        mathfield.value = latestValueRef.current
         mathfield.style.width = '100%'
         mathfield.style.minHeight = typeof height === 'number' ? `${height}px` : height
         mathfield.style.fontSize = '18px'
@@ -94,16 +106,12 @@ export function LatexEditor({
 
         // 监听值变化
         mathfield.addEventListener('input', () => {
-          onChange(mathfield.value)
+          latestOnChangeRef.current(mathfield.value)
         })
 
-        containerRef.current?.appendChild(mathfield)
+        container?.appendChild(mathfield)
         mathfieldRef.current = mathfield
 
-        // 设置初始值
-        if (value) {
-          mathfield.value = value
-        }
       } catch (err) {
         console.error('Failed to initialize mathfield:', err)
         setLoadError('初始化数学编辑器失败')
@@ -114,8 +122,8 @@ export function LatexEditor({
     initMathfield()
 
     return () => {
-      if (containerRef.current) {
-        containerRef.current.innerHTML = ''
+      if (container) {
+        container.innerHTML = ''
       }
       mathfieldRef.current = null
     }

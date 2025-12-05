@@ -223,8 +223,8 @@ Rixindemo-codex-m1/
 ├── docs/
 │   ├── README.md                   # ✅ 项目说明
 │   ├── QUICK_START.md              # ✅ 快速开始
-│   ├── TESTING.md                  # ✅ 完整测试指南
-│   ├── 测试启动检查清单.md        # ✅ 5分钟快速验证
+│   ├── [TESTING.md](../../../standards/TESTING.md)                  # ✅ 完整测试指南
+│   ├── ../../operations/测试启动检查清单.md        # ✅ 5分钟快速验证
 │   ├── PROJECT_STATUS.md           # ✅ 项目状态
 │   ├── PROJECT_PROGRESS.md         # ✅ 本文档
 │   ├── M4_COMPLETED.md             # ✅ M4完成报告

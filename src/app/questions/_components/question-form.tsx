@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from 'react'
+import Image from 'next/image'
 import { Form, Input, Radio, Upload, message as antMessage } from 'antd'
 import type { UploadFile } from 'antd'
 import { Save, Upload as UploadIcon, X } from 'lucide-react'
@@ -421,13 +422,15 @@ export function QuestionForm({
 
               <div className="space-y-3">
                 <label className="block text-sm font-medium">题目图片</label>
-                {imageUrl ? (
-                  <div className="relative">
-                    <img
-                      src={imageUrl}
-                      alt="题目图片"
-                      className="rounded-lg border object-contain max-h-64"
-                    />
+                  {imageUrl ? (
+                    <div className="relative h-64">
+                      <Image
+                        src={imageUrl}
+                        alt="题目图片"
+                        fill
+                        sizes="(max-width: 768px) 100vw, 600px"
+                        className="rounded-lg border object-contain"
+                      />
                     <Button
                       size="sm"
                       variant="outline"

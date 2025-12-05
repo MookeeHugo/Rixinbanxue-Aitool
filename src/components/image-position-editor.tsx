@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useState, useId } from 'react'
+import Image from 'next/image'
 import {
   DndContext,
   closestCenter,
@@ -173,10 +174,12 @@ function SortableImageItem({
         onClick={() => onClick?.(image)}
       >
         {image.url ? (
-          <img
+          <Image
             src={image.url}
             alt={image.title || '图片'}
-            className="w-full h-full object-cover cursor-pointer"
+            fill
+            sizes="(max-width: 768px) 33vw, 120px"
+            className="object-cover cursor-pointer"
             draggable={false}
           />
         ) : (
@@ -255,10 +258,12 @@ function DragOverlayItem({ image, imageSize = 'md' }: { image: ImageItem; imageS
     <div className="rounded-lg border-2 border-primary bg-card shadow-2xl overflow-hidden">
       <div className={cn('relative', sizeClasses[imageSize])}>
         {image.url ? (
-          <img
+          <Image
             src={image.url}
             alt={image.title || '图片'}
-            className="w-full h-full object-cover"
+            fill
+            sizes="(max-width: 768px) 33vw, 192px"
+            className="object-cover"
             draggable={false}
           />
         ) : (
@@ -416,11 +421,19 @@ export function ImagePositionEditor({
           </DialogHeader>
           {previewImage && (
             <div className="flex items-center justify-center p-4 bg-muted rounded-lg">
-              <img
-                src={previewImage.url}
-                alt={previewImage.title || '图片'}
-                className="max-w-full max-h-[60vh] object-contain"
-              />
+              <div
+                className="relative w-full max-w-full"
+                style={{ height: Math.min(previewImage.height ?? 480, 600) }}
+              >
+                <Image
+                  src={previewImage.url}
+                  alt={previewImage.title || '图片'}
+                  fill
+                  sizes="(max-width: 1024px) 90vw, 800px"
+                  className="object-contain"
+                  draggable={false}
+                />
+              </div>
             </div>
           )}
           {previewImage?.width && previewImage?.height && (

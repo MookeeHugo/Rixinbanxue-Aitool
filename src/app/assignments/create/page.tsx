@@ -113,6 +113,12 @@ function CreateAssignmentPageContent() {
       return
     }
 
+    const parsedDeadline = new Date(deadline)
+    if (Number.isNaN(parsedDeadline.getTime())) {
+      setError('截止时间格式不正确，请重新选择时间')
+      return
+    }
+
     setLoading(true)
     setError(null)
     try {
@@ -121,7 +127,7 @@ function CreateAssignmentPageContent() {
         .insert({
           class_id: selectedClassId,
           paper_id: selectedPaperId,
-          deadline: new Date(deadline).toISOString(),
+          deadline: parsedDeadline.toISOString(),
           status: status,
           created_by: user.id
         })
@@ -294,7 +300,7 @@ function CreateAssignmentPageContent() {
 
             <div className="bg-background rounded-lg p-4 mb-6 border border-border">
               <p className="text-foreground-secondary text-sm">
-                <span className="text-primary-600">💡 提示:</span> 发布后，学生可以在"我的作业"中看到并完成作业。您可以在作业详情页面查看学生提交情况和进行批改。
+                <span className="text-primary-600">💡 提示:</span> 发布后，学生可以在“我的作业”中看到并完成作业。您可以在作业详情页面查看学生提交情况和进行批改。
               </p>
             </div>
 

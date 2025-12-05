@@ -80,6 +80,23 @@ export interface GeminiImageRegion {
   trimmed_rect?: ImageRegion;
 }
 
+export interface GeminiImageRegionCandidate {
+  anchor_id?: string | null;
+  box_2d: NormalizedBox;
+  rough_bbox?: NormalizedBox;
+  label?: string | null;
+  description?: string | null;
+  position?: 'right' | 'bottom' | 'left' | 'inline' | null;
+  anchor_text_prev?: string | null;
+  anchor_text_next?: string | null;
+  confidence?: number | null;
+  source?: 'llm' | 'cv' | null;
+  rough_padding?: {
+    px: number;
+    ratio: number;
+  } | null;
+}
+
 /**
  * Gemini Question 元数据
  */
@@ -99,6 +116,8 @@ export interface GeminiQuestion {
   answer?: string;
   images: GeminiImageRegion[];
   image_regions: GeminiImageRegion[];
+  raw_images?: GeminiImageRegionCandidate[];
+  raw_image_regions?: GeminiImageRegionCandidate[];
   meta: GeminiQuestionMeta;
 }
 

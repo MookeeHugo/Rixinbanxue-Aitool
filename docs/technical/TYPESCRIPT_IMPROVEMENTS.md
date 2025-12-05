@@ -263,7 +263,7 @@ interface ApiResponse<T> {
 
 - [TypeScript Handbook - Unknown Type](https://www.typescriptlang.org/docs/handbook/2/functions.html#unknown)
 - [TypeScript Best Practices](https://www.typescriptlang.org/docs/handbook/declaration-files/do-s-and-don-ts.html)
-- [单元测试指南](./TESTING.md)
+- [单元测试指南](../standards/TESTING.md)
 
 ---
 

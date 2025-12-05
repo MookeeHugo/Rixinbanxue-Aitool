@@ -9,7 +9,7 @@
 
 ### 步骤 1: 修复类型错误（5分钟）
 
-**文件**: `rixinworksuperdesign/src/webview/hooks/useChat.ts`
+**文件**: `legacy/rixinworksuperdesign/src/webview/hooks/useChat.ts`
 **行号**: 302
 
 **当前代码**（第 294-305 行）:
@@ -47,7 +47,7 @@
 ```
 
 **操作**:
-1. 打开文件 `rixinworksuperdesign/src/webview/hooks/useChat.ts`
+1. 打开文件 `legacy/rixinworksuperdesign/src/webview/hooks/useChat.ts`
 2. 定位到第 304 行 `}]`
 3. 将 `}]` 修改为 `} as any]`
 4. 保存文件

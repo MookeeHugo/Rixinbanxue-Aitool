@@ -121,7 +121,7 @@ function resolveDatasetRoots(): string[] {
     .filter(Boolean);
   const fallback = [
     path.resolve(process.cwd(), 'tests', 'dataset'),
-    path.resolve(process.cwd(), 'shijuanceshi')
+    path.resolve(process.cwd(), 'legacy/shijuanceshi')
   ];
   const raw = configured && configured.length ? configured : fallback;
   const deduped: string[] = [];

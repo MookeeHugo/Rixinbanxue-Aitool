@@ -76,17 +76,28 @@ export function rectFromImageRegion(region: ImageRegion): PixelRect {
 }
 
 export function isValidImageBox(rect: PixelRect, meta: ImageMeta): boolean {
-  if (rect.width < 50 || rect.height < 50) {
+  const hasMeta = meta.width > 0 && meta.height > 0;
+  const minDimension = hasMeta
+    ? Math.max(24, Math.round(Math.min(meta.width, meta.height) * 0.025))
+    : 24;
+
+  if (rect.width < minDimension || rect.height < minDimension) {
     return false;
   }
 
-  const ratio = rect.width / rect.height;
-  if (ratio > 4 || ratio < 0.25) {
+  const ratio = rect.width / Math.max(1, rect.height);
+  // 允许更加细长/扁平的题干，只要不是极端值
+  const MAX_RATIO = 6;
+  const MIN_RATIO = 1 / MAX_RATIO;
+  if (ratio > MAX_RATIO || ratio < MIN_RATIO) {
     return false;
   }
 
-  if (meta.width > 0 && meta.height > 0) {
-    if (rect.width > meta.width * 0.9 && rect.height > meta.height * 0.9) {
+  if (hasMeta) {
+    const almostFullWidth = rect.width >= meta.width * 0.98;
+    const almostFullHeight = rect.height >= meta.height * 0.98;
+
+    if (almostFullWidth && almostFullHeight) {
       return false;
     }
   }

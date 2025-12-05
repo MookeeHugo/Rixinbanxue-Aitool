@@ -262,7 +262,7 @@ theme={{
 ## 🎨 设计系统升级
 
 ### 背景
-用户要求: "重新调整前端设计标准,利用superdesign和chrome-devtools-tool-reference.md,分析https://www.gauthmath.com/更新为https://www.gauthmath.com/的设计样式和组件等,作为新的项目前端标准"
+用户要求: "重新调整前端设计标准,利用superdesign和[chrome-devtools-tool-reference.md](../technical/chrome-devtools-tool-reference.md),分析https://www.gauthmath.com/更新为https://www.gauthmath.com/的设计样式和组件等,作为新的项目前端标准"
 
 ### 成果
 

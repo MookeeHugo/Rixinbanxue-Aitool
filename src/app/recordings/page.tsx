@@ -135,7 +135,7 @@ export default function RecordingsPage() {
               还没有录制
             </h3>
             <p className="text-slate-500 mb-6">
-              在直播课堂中点击"开始录制"按钮来录制您的课程
+              在直播课堂中点击“开始录制”按钮来录制您的课程
             </p>
             <Link
               href="/live/new"

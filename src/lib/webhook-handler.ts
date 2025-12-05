@@ -14,8 +14,8 @@ let broadcastRecordingStatus: ((sessionId: string, status: any) => void) | null 
 function getBroadcastFunction() {
   if (!broadcastRecordingStatus) {
     try {
-      const module = require('../app/api/live-sessions/[id]/recording-status/stream/route');
-      broadcastRecordingStatus = module.broadcastRecordingStatus;
+      const routeModule = require('../app/api/live-sessions/[id]/recording-status/stream/route');
+      broadcastRecordingStatus = routeModule.broadcastRecordingStatus;
     } catch (error) {
       logger.warn('Failed to load broadcastRecordingStatus function', error);
     }

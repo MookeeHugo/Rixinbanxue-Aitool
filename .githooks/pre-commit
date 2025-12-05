@@ -1,0 +1,13 @@
+#!/bin/sh
+
+echo "[pre-commit] Running UTF-8 replacement scan..."
+
+node scripts/check-encoding.mjs
+RESULT=$?
+
+if [ $RESULT -ne 0 ]; then
+  echo "[pre-commit] Encoding scan failed. Please fix the files listed above."
+  exit $RESULT
+fi
+
+exit 0

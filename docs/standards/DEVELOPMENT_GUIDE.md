@@ -435,8 +435,8 @@ npm run type-check
   "exclude": [
     "node_modules",
     "**/*.stories.tsx",
-    "rixinworksuperdesign/**",
-    "superdesign/**"
+    "**/*.stories.ts",
+    "legacy/**"
   ]
 }
 ```

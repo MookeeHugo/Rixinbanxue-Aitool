@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useState, useMemo } from 'react'
 import { Card, CardHeader, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -291,12 +292,14 @@ export function SmartQuestionCard({
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-6xl max-h-[90vh] overflow-auto bg-white">
-                <div className="relative">
-                  <img
+                <div className="relative w-full min-h-[360px] rounded-lg border border-gray-200/60 overflow-hidden">
+                  <Image
                     src={proxyOriginalImageUrl}
                     alt="题目原图"
-                    className="w-full h-auto rounded-lg border border-gray-200/60"
+                    fill
                     loading="lazy"
+                    sizes="(max-width: 1024px) 100vw, 1024px"
+                    className="object-contain"
                   />
                 </div>
                 <p className="text-sm text-gray-500 mt-4">
@@ -327,7 +330,7 @@ function ImageThumbnail({
     <Dialog>
       <DialogTrigger asChild>
         <div className={cn(
-          'relative group cursor-zoom-in',
+          'relative group cursor-zoom-in min-h-[220px] max-h-[240px]',
           'border border-gray-200/60 rounded-xl overflow-hidden',
           'bg-gray-50/50 hover:border-gray-300/80',
           'transition-all duration-200',
@@ -336,13 +339,19 @@ function ImageThumbnail({
         )}>
           {!hasError ? (
             <>
-              <img
-                src={src}
-                alt="题目配图"
-                loading="lazy"
-                className="w-full h-auto object-contain max-h-[220px] p-2"
-                onError={onError}
-              />
+              <div className="absolute inset-0 p-2">
+                <div className="relative w-full h-full">
+                  <Image
+                    src={src}
+                    alt="题目配图"
+                    fill
+                    loading="lazy"
+                    sizes="(max-width: 1024px) 100vw, 280px"
+                    className="object-contain"
+                    onError={() => onError()}
+                  />
+                </div>
+              </div>
               {/* 悬停遮罩 - 优化交互反馈 */}
               <div className={cn(
                 'absolute inset-0 bg-gray-900/0 group-hover:bg-gray-900/5',
@@ -375,11 +384,15 @@ function ImageThumbnail({
         'p-0 overflow-hidden'
       )}>
         <div className="p-6">
-          <img
-            src={src}
-            alt="大图预览"
-            className="w-full h-auto rounded-lg border border-gray-200/60"
-          />
+          <div className="relative w-full min-h-[360px] rounded-lg border border-gray-200/60 overflow-hidden">
+            <Image
+              src={src}
+              alt="大图预览"
+              fill
+              sizes="(max-width: 1024px) 100vw, 1024px"
+              className="object-contain"
+            />
+          </div>
         </div>
       </DialogContent>
     </Dialog>

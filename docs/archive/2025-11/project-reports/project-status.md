@@ -135,8 +135,8 @@ Rixindemo-codex-m1/
 ├── docs/
 │   ├── README.md                # ✅ 项目说明
 │   ├── QUICK_START.md           # ✅ 快速开始
-│   ├── TESTING.md               # ✅ 完整测试指南
-│   ├── 测试启动检查清单.md      # ✅ 5分钟快速验证
+│   ├── [TESTING.md](../../../standards/TESTING.md)               # ✅ 完整测试指南
+│   ├── ../../operations/测试启动检查清单.md      # ✅ 5分钟快速验证
 │   └── PROJECT_STATUS.md        # ✅ 本文档
 ├── package.json                 # ✅ 依赖配置（端口3002）
 ├── next.config.mjs              # ✅ Next.js 配置（已修复警告）
@@ -279,8 +279,8 @@ API响应: <300ms
 ### ✅ 已完成文档
 - [x] README.md - 项目概述
 - [x] QUICK_START.md - 快速开始（详细）
-- [x] TESTING.md - 完整测试指南（7阶段）
-- [x] 测试启动检查清单.md - 5分钟快速验证
+- [x] [TESTING.md](../../../standards/TESTING.md) - 完整测试指南（7阶段）
+- [x] ../../operations/测试启动检查清单.md - 5分钟快速验证
 - [x] PROJECT_STATUS.md - 本文档
 - [x] db/README.md - 数据库配置
 - [x] .env.local.example - 环境变量模板
@@ -297,8 +297,8 @@ API响应: <300ms
 ## 🎯 下一步计划
 
 ### 立即执行
-1. **验证环境**: 按照 `测试启动检查清单.md` 进行5分钟快速验证
-2. **完整测试**: 按照 `TESTING.md` 完成7个阶段测试
+1. **验证环境**: 按照 `../../operations/测试启动检查清单.md` 进行5分钟快速验证
+2. **完整测试**: 按照 [`TESTING.md`](../../../standards/TESTING.md) 完成7个阶段测试
 3. **记录问题**: 发现的问题记录到 GitHub Issues
 
 ### 本周计划（Week 5-6）

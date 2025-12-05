@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useCallback, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
@@ -509,11 +510,13 @@ export function QuestionReviewCard({ question, index, imageUrl }: QuestionReview
                         className="snap-start min-w-[220px] max-w-[260px] flex-shrink-0 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 bg-muted/20 p-3 flex flex-col gap-2"
                       >
                         <div className="relative h-40 rounded-lg bg-background flex items-center justify-center overflow-hidden group">
-                          <img
+                          <Image
                             src={`/api/image-proxy?url=${encodeURIComponent(asset.url)}`}
                             alt={asset.placeholder || `配图 ${index + 1}`}
+                            fill
                             loading="lazy"
-                            className="w-full h-full object-contain"
+                            sizes="(max-width: 768px) 220px, 260px"
+                            className="object-contain"
                           />
                           <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                             <Button
@@ -821,7 +824,7 @@ export function QuestionReviewCard({ question, index, imageUrl }: QuestionReview
                     <ul className="text-xs text-primary-800 dark:text-primary-200 space-y-1 list-disc list-inside">
                       <li>上方拖拽区域：调整图片顺序</li>
                       <li>下方操作列表：增强或删除单张图片</li>
-                      <li>删除瑕疵图片后，记得点击"保存修改"按钮</li>
+                      <li>删除瑕疵图片后，记得点击“保存修改”按钮</li>
                     </ul>
                   </div>
                   {editedData.imageAssets.length > 0 ? (
@@ -844,11 +847,13 @@ export function QuestionReviewCard({ question, index, imageUrl }: QuestionReview
                         <div className="space-y-2">
                           {editedData.imageAssets.map((asset, index) => (
                             <div key={asset.id} className="flex items-center gap-3 p-2 rounded-lg bg-background border">
-                              <div className="w-12 h-12 rounded overflow-hidden bg-muted flex-shrink-0">
-                                <img
+                              <div className="w-12 h-12 rounded overflow-hidden bg-muted flex-shrink-0 relative">
+                                <Image
                                   src={`/api/image-proxy?url=${encodeURIComponent(asset.url)}`}
                                   alt={asset.placeholder || `配图 ${index + 1}`}
-                                  className="w-full h-full object-cover"
+                                  fill
+                                  sizes="48px"
+                                  className="object-cover"
                                 />
                               </div>
                               <div className="flex-1 min-w-0">

@@ -1047,6 +1047,75 @@ theme={{
 
 ---
 
+## 附录：RealTime Colors 方案（Legacy 合并）
+
+> 以下内容来自旧的 `src/styles/design-system.md`，用于记录 2025-11-28 基于 RealTime Colors 的实验性主题，可在需要更柔和、科幻感的调色板时参考。
+
+### A.1 主色板
+
+| 名称 | HEX | 用途 |
+| --- | --- | --- |
+| Text | `#090813` | 主要文字 |
+| Background | `#f8f7fc` | 默认背景 |
+| Primary | `#483ece` | 主按钮/链接 |
+| Secondary | `#8881e9` | 次级操作 |
+| Accent | `#564cec` | 强调元素 |
+
+推荐 Tailwind 片段：
+
+```ts
+colors: {
+  primary: {
+    DEFAULT: '#483ece',
+    800: '#483ece',
+    900: '#3d2ba8',
+  },
+  secondary: {
+    DEFAULT: '#8881e9',
+  },
+  accent: {
+    DEFAULT: '#564cec',
+  },
+}
+```
+
+语义色：
+
+| Success | Warning | Error | Info |
+| --- | --- | --- | --- |
+| `#10b981` | `#f59e0b` | `#ef4444` | `#3b82f6` |
+
+Slate 中性色：`slate-50 = #f8f7fc`、`slate-200 = #e4e2f3`、`slate-500 = #8881e9`、`slate-950 = #090813` 等，用于背景/边框/弱化文字。
+
+对比度：Text/Background = 19.8:1，Primary/White = 7.2:1，满足 WCAG AA。
+
+### A.2 排版与网格
+
+- 字体：Inter 为主，备选 `-apple-system`、`PingFang SC`、`Microsoft YaHei`。
+- 字号：xs=12px、sm=14px、base=16px、lg=18px、xl=20px、2xl=24px、3xl=30px、4xl=36px、5xl=48px。
+- 8px 间距系统，常用间距：标题 `mb-6`、段落 `mb-4`、卡片 `p-6`。
+
+### A.3 组件速查
+
+- Button：
+  - Primary: `bg-primary-600 text-white hover:bg-primary-700`.
+  - Outline: `border border-slate-200 text-slate-700`.
+  - Ghost: `text-slate-700 hover:bg-slate-100`.
+- Badge：`bg-slate-100 text-slate-700` 或使用语义色。
+- Card：`bg-white border border-slate-200/60 rounded-xl shadow-[0_2px_10px_rgba(0,0,0,0.03)]`.
+- Input：默认 `border-slate-200 rounded-lg px-4 py-3`，聚焦 `focus:border-primary-500 focus:ring-primary-500/20`。
+
+### A.4 辅助规则
+
+- 阴影层级：`xs (0 1px 2px)`、`md (0 2px 10px)`、`xl (0 8px 40px)`。
+- 圆角：`rounded-lg=8px`、`rounded-xl=12px`、`rounded-2xl=16px`。
+- 动画：150ms/200ms/300ms，使用 `ease-out`。
+- Swiss Spa 风格：增加留白、柔和阴影、200ms 过渡。
+
+> 若后续主题切换或需要准备“亮色/柔和”变体，可直接引用该附录中的变量，避免再维护多份 markdown。
+
+---
+
 **文档维护**: 前端开发团队
 **最后更新**: 2025-11-17
 **版本**: v1.0.0

@@ -1,10 +1,11 @@
-'use client'
+"use client"
 
 import React from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
-import 'katex/dist/katex.min.css' // 必须导入KaTeX样式
+import 'katex/dist/katex.min.css'
+import { CanvasImage } from '@/components/canvas-image'
 
 interface MarkdownRendererProps {
   content: string
@@ -15,12 +16,10 @@ interface MarkdownRendererProps {
  * Markdown + LaTeX 渲染组件
  *
  * 特性：
- * - 支持LaTeX公式（行内 $...$ 和块级 $$...$$）
- * - 完整的Markdown语法支持
- * - 自动渲染数学符号
+ * - 支持 LaTeX 公式
+ * - 使用 CanvasImage 渲染图片，保持尺寸自适应并复用统一懒加载策略
  */
 export function MarkdownRenderer({ content, className = '' }: MarkdownRendererProps) {
-  // 预处理：某些OCR工具返回的是 \( ... \) 格式，需要转换为 $ ... $
   const formattedContent = content
     .replace(/\\\(/g, '$')
     .replace(/\\\)/g, '$')
@@ -33,26 +32,32 @@ export function MarkdownRenderer({ content, className = '' }: MarkdownRendererPr
         remarkPlugins={[remarkMath]}
         rehypePlugins={[rehypeKatex]}
         components={{
-          // 自定义图片渲染
-          img: ({ node, ...props }) => (
-            <img
-              {...props}
-              className="max-w-full h-auto rounded-lg my-2 border border-gray-200 dark:border-gray-700"
-              loading="lazy"
-            />
-          ),
-          // 自定义代码块渲染
-          code: ({ node, inline, className, children, ...props }: any) => {
+          img: ({ src, alt }) => {
+            const resolvedSrc = typeof src === 'string' ? src : ''
+            if (!resolvedSrc) {
+              return <span className="text-xs text-muted-foreground">（图片缺失）</span>
+            }
+            return (
+              <CanvasImage
+                src={resolvedSrc}
+                alt={alt || 'Markdown image'}
+                className="my-2"
+                loadingFallback="图片加载中…"
+                errorFallback={<span className="text-xs text-destructive">图片加载失败</span>}
+              />
+            )
+          },
+          code: ({ node, inline, className: codeClassName, children, ...props }: any) => {
             return inline ? (
               <code className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-sm" {...props}>
                 {children}
               </code>
             ) : (
-              <code className={className} {...props}>
+              <code className={codeClassName} {...props}>
                 {children}
               </code>
             )
-          }
+          },
         }}
       >
         {formattedContent}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getCurrentUser } from '@/lib/auth'
@@ -13,18 +13,18 @@ export default function CreateClassPage() {
   const [grade, setGrade] = useState('')
   const [loading, setLoading] = useState(false)
 
-  useEffect(() => {
-    checkUser()
-  }, [])
-
-  const checkUser = async () => {
+  const checkUser = useCallback(async () => {
     const currentUser = await getCurrentUser()
     if (!currentUser) {
       router.push('/login')
       return
     }
     setUser(currentUser)
-  }
+  }, [router])
+
+  useEffect(() => {
+    checkUser()
+  }, [checkUser])
 
   const generateClassCode = () => {
     // 生成6位随机班级代码

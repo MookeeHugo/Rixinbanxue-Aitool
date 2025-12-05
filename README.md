@@ -66,6 +66,14 @@ npm run dev
 
 访问 [http://localhost:3002](http://localhost:3002)
 
+> 维护提示：执行 `npm run dev:clean` 时会自动运行 `node scripts/log-maintenance.mjs`，将 `logs/failures` / `logs/metrics` 做轮转、并同步 `tmp/archive/2025-12-04/*` 的留痕。无须启动服务也可单独执行该脚本核对 `failuresArchived`、`metricsRotated` 摘要。
+
+## 日志与 tmp 目录策略
+
+- 启动前推荐执行 `npm run dev:clean`（内置 `node scripts/log-maintenance.mjs`），保持 `logs/failures`、`logs/metrics` 轮换，并同步 `tmp/archive/2025-12-04/*` 留痕。
+- 例行巡检可单独运行 `node scripts/log-maintenance.mjs --dry-run` 查看 `failuresArchived`、`metricsRotated` 摘要，必要时记录到 tracker。
+- 临时文件仅保留 `tmp/sample-upload.jpg` 作为上传样例，其他调试文件放入 `tmp/archive/2025-12-04/`，新增 tmp 目录需同步更新 `docs/project-governance/file-archive-log.md`。
+
 ## 📁 项目结构
 
 ```
@@ -140,6 +148,11 @@ tailwind.config.ts             # Tailwind + SuperDesign 配置
 - [ ] 安全审计
 - [ ] 生产环境部署
 
+### Phase 4：RealTime 方向（预告）
+- 目标：补齐实时协作/直播增强（LiveKit/ZEGO 选型）、作业批改实时反馈、题库实时检索。
+- 准备：补充 README Phase4 章节、整理 `docs/technical` 下实时方案文档索引。
+- 启动条件：A-D 验收完成后在 tracker 立项，并追加专项质量门槛（lint/build/encoding + DevServer/Puppeteer 留痕）。
+
 ## 🔑 主要功能
 
 ### 教师端
@@ -169,6 +182,8 @@ tailwind.config.ts             # Tailwind + SuperDesign 配置
 - **Warning (警告)**: #f59e0b (橙色)
 - **Error (错误)**: #ef4444 (红色)
 
+> 📘 设计规范与 RealTime 主题请查阅 [`docs/standards/GAUTHMATH_DESIGN_SYSTEM.md`](./docs/standards/GAUTHMATH_DESIGN_SYSTEM.md)。Tailwind / Ant Design 的 Token 需要直接引用该文档（含附录）的变量，不再从 `src/styles/design-system.md` 查找。
+
 ### 组件库策略
 - **shadcn/ui**: 基础 UI 组件（按钮、输入框、卡片、对话框等）
 - **Ant Design**: 复杂业务组件（表格、表单、日期选择器等）
@@ -181,7 +196,12 @@ tailwind.config.ts             # Tailwind + SuperDesign 配置
 - [组件使用指南](./docs/COMPONENT_GUIDE.md) - shadcn/ui + Ant Design 使用示例
 - [代码规范](./docs/CODING_STANDARDS.md) - TypeScript、React、Git 提交规范
 - [开发指南](./docs/DEVELOPMENT_GUIDE.md) - 环境配置、项目结构、常见问题
-- [Gemini Vision V3](./src/lib/ai-question-bank/README.md) - AI 题库流式解析、调试脚本与常见错误
+- [AI 题库技术手册](./docs/ai-question-bank/technical-guide.md) - Gemini/Qwen 解析流程、示例与常见错误
+
+## 🙌 贡献 / PR 模板
+
+- 提交前请阅读 [`docs/project-governance/pull-request-template.md`](./docs/project-governance/pull-request-template.md) 并按照模板填写摘要、变更清单、自测结果与回滚方案。
+- 根目录 [`PULL_REQUEST.md`](./PULL_REQUEST.md) 仅保留快速结构，完整说明以文档版本为准。
 
 ## 📝 开发规范
 
@@ -217,7 +237,7 @@ MIT License
 
 ---
 
-基于 [日新教学平台MVP执行方案v2.4](./日新教学平台MVP执行方案v2.2-关键修正.md) 开发
+基于 [日新教学平台MVP执行方案v2.4](./docs/archive/legacy-plans/日新教学平台MVP执行方案v2.2-关键修正.md) 开发
 
 ### 回归与调试提示
 1. 回归前可先运行 `npm run test:std01`，并确认 `.env.local` 中 `GEMINI_MODEL=gemini-2.5-flash`，用 STD-01 样本验证模型链路。

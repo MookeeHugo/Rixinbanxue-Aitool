@@ -436,7 +436,7 @@ export class QuestionService {
 ## 📚 相关文档
 
 - [TypeScript 类型改进报告](./TYPESCRIPT_IMPROVEMENTS.md)
-- [单元测试指南](./TESTING.md)
+- [单元测试指南](../../standards/TESTING.md)
 - [API 文档](../src/types/README.md)
 
 ---

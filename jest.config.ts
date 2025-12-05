@@ -24,8 +24,7 @@ const config: Config = {
     '/playwright-report/',
     '/test-results/',
     '/tests/e2e/',  // 忽略 E2E 测试
-    '/rixinworksuperdesign/',
-    '/superdesign/',
+    '/legacy/',
     '/__tests__/utils/',  // 忽略测试工具目录
   ],
 

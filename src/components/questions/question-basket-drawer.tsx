@@ -250,9 +250,9 @@ export function QuestionBasketDrawer({
                 <FileDown className="mr-2 h-4 w-4" />
                 导出为 PDF
               </Button>
-              <p className="text-xs text-muted-foreground text-center">
-                题篮内容会自动同步到"组卷工坊"，支持导出为 PDF/Word
-              </p>
+            <p className="text-xs text-muted-foreground text-center">
+              题篮内容会自动同步到“组卷工坊”，支持导出为 PDF/Word
+            </p>
             </div>
           </div>
         </SheetContent>

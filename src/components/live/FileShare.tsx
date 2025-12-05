@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { Upload, File, Image, FileText, X, Download, Eye, Loader2 } from 'lucide-react';
+import { Upload, File, Image as ImageIcon, FileText, X, Download, Eye, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
 
@@ -198,7 +198,7 @@ export function FileShare({
         alert('删除文件失败，请重试');
       }
     },
-    [supabase]
+    []
   );
 
   // 在白板上显示文件
@@ -229,7 +229,7 @@ export function FileShare({
         alert('显示文件失败，请重试');
       }
     },
-    [supabase, onFileDisplayOnWhiteboard]
+    [onFileDisplayOnWhiteboard]
   );
 
   // 下载文件
@@ -244,7 +244,7 @@ export function FileShare({
   // 获取文件图标
   const getFileIcon = (fileType: string) => {
     if (fileType.startsWith('image/')) {
-      return <Image className="w-5 h-5" />;
+      return <ImageIcon className="w-5 h-5" />;
     } else if (fileType === 'application/pdf') {
       return <FileText className="w-5 h-5" />;
     } else {

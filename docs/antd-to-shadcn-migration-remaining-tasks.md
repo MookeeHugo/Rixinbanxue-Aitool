@@ -42,7 +42,7 @@
 
 ### 任务 1: 修复 useChat.ts 类型错误（紧急）
 
-**文件**: `rixinworksuperdesign/src/webview/hooks/useChat.ts:302`
+**文件**: `legacy/rixinworksuperdesign/src/webview/hooks/useChat.ts:302`
 
 **错误信息**:
 ```

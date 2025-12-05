@@ -19,8 +19,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": [
-        "src/*",
-        "AI题库前端最新版/*"
+        "src/*"
       ]
     },
     "incremental": true,
@@ -39,6 +38,9 @@
   "exclude": [
     "node_modules",
     "**/*.stories.tsx",
-    "**/*.stories.ts"
+    "**/*.stories.ts",
+    "legacy/**/*",
+    "tmp/**/*",
+    "logs/**/*"
   ]
 }

@@ -42,13 +42,22 @@ const nextConfig = {
   webpack: (config, { dev, isServer }) => {
     // 开发环境优化
     if (dev) {
-      // 开发环境使用文件系统监听
-      const ignoredPattern = /(?:[\\/]node_modules[\\/]|[\\/]\.next[\\/]|[\\/]test-results[\\/]|[\\/]playwright-report[\\/]|System Volume Information)/i; // 跳过 Windows 控制盘根目录的权限问题
+      // 开发环境使用文件系统监听并显式忽略磁盘根目录的系统文件夹，避免 EINVAL
+      const ignoredGlobs = [
+        '**/node_modules/**',
+        '**/.next/**',
+        '**/.git/**',
+        '**/test-results/**',
+        '**/playwright-report/**',
+        '**/System Volume Information/**',
+        'D:/System Volume Information/**',
+        'D:\\\\System Volume Information\\\\**'
+      ];
 
       config.watchOptions = {
         poll: 1000, // 每秒检查一次
         aggregateTimeout: 300, // 延迟重新构建
-        ignored: ignoredPattern,
+        ignored: ignoredGlobs
       };
 
       // 注意：Next.js 14.2.7 已经内置了文件系统缓存，这里不需要额外配置

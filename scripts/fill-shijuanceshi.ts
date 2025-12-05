@@ -4,11 +4,11 @@ import { config } from "dotenv";
 config({ path: path.resolve(process.cwd(), ".env.local") });
 
 async function main() {
-  const metadataPath = path.resolve(process.cwd(), "shijuanceshi", "metadata.json");
+  const metadataPath = path.resolve(process.cwd(), "legacy", "shijuanceshi", "metadata.json");
   const raw = await fs.readFile(metadataPath, "utf8");
   const records: Array<any> = JSON.parse(raw);
   const { parseQuestionWithCascadingFromBuffer } = await import("../src/lib/ai-question-bank/gemini-vision-client");
-  const root = path.resolve(process.cwd(), "shijuanceshi");
+  const root = path.resolve(process.cwd(), "legacy", "shijuanceshi");
   let updated = 0;
   let failed = 0;
 

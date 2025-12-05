@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from 'react'
+import Image from 'next/image'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Card } from '@/components/ui/card'
@@ -253,11 +254,15 @@ export default function QuestionDetailPage() {
             <section className="space-y-3">
               <h3 className="text-lg font-semibold">图片</h3>
               <Card className="p-3 flex items-center justify-center">
-                <img
-                  src={question.image_url}
-                  alt="题目图片"
-                  className="max-h-72 object-contain"
-                />
+                <div className="relative w-full h-72">
+                  <Image
+                    src={question.image_url}
+                    alt="题目图片"
+                    fill
+                    sizes="(max-width: 768px) 100vw, 640px"
+                    className="object-contain"
+                  />
+                </div>
               </Card>
             </section>
           ) : null}

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
@@ -43,17 +43,7 @@ export default function EditQuestionPage() {
     difficulty: 'medium' as 'easy' | 'medium' | 'hard',
   })
 
-  useEffect(() => {
-    loadProfile()
-  }, [])
-
-  useEffect(() => {
-    if (profile) {
-      loadQuestion()
-    }
-  }, [profile, questionId])
-
-  const loadProfile = async () => {
+  const loadProfile = useCallback(async () => {
     try {
       const data = await getCurrentProfile()
       if (!data || data.role !== 'teacher') {
@@ -65,9 +55,11 @@ export default function EditQuestionPage() {
       logger.error('Failed to load profile:', { error: error })
       router.push('/login')
     }
-  }
+  }, [router])
 
-  const loadQuestion = async () => {
+  const loadQuestion = useCallback(async () => {
+    if (!profile) return
+
     try {
       const { data, error } = await supabase
         .from('questions')
@@ -108,7 +100,15 @@ export default function EditQuestionPage() {
     } finally {
       setInitialLoading(false)
     }
-  }
+  }, [profile, questionId, router])
+
+  useEffect(() => {
+    loadProfile()
+  }, [loadProfile])
+
+  useEffect(() => {
+    loadQuestion()
+  }, [loadQuestion])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

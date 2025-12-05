@@ -1,7 +1,8 @@
-'use client'
+"use client"
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
+import { CanvasImage, type CanvasPointerInfo, type CanvasImageMetrics } from '@/components/canvas-image'
 
 type Box2D = [number, number, number, number]
 
@@ -10,170 +11,140 @@ interface ManualImageCropperProps {
   onSelectionChange?: (box: Box2D | null) => void
 }
 
-interface DraftRect {
+interface NormalizedRect {
   startX: number
   startY: number
   endX: number
   endY: number
 }
 
-function clamp(value: number, min: number, max: number) {
-  return Math.max(min, Math.min(max, value))
+const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value))
+
+const toBox2D = (rect: NormalizedRect): Box2D => {
+  const yMin = Math.round(clamp(Math.min(rect.startY, rect.endY), 0, 1) * 1000)
+  const xMin = Math.round(clamp(Math.min(rect.startX, rect.endX), 0, 1) * 1000)
+  const yMax = Math.round(clamp(Math.max(rect.startY, rect.endY), 0, 1) * 1000)
+  const xMax = Math.round(clamp(Math.max(rect.startX, rect.endX), 0, 1) * 1000)
+  return [yMin, xMin, yMax, xMax]
 }
 
 export function ManualImageCropper({ imageUrl, onSelectionChange }: ManualImageCropperProps) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const imageRef = useRef<HTMLImageElement>(null)
-  const [draftRect, setDraftRect] = useState<DraftRect | null>(null)
+  const [draftRect, setDraftRect] = useState<NormalizedRect | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [selectedBox, setSelectedBox] = useState<Box2D | null>(null)
-  const [imageLoaded, setImageLoaded] = useState(false)
-  const [imageError, setImageError] = useState(false)
 
   useEffect(() => {
     onSelectionChange?.(selectedBox)
   }, [selectedBox, onSelectionChange])
 
-  const getRelativePoint = (event: React.PointerEvent<HTMLDivElement>) => {
-    const rect = containerRef.current?.getBoundingClientRect()
-    if (!rect) return { x: 0, y: 0 }
-    return {
-      x: clamp(event.clientX - rect.left, 0, rect.width),
-      y: clamp(event.clientY - rect.top, 0, rect.height)
+  const overlay = useMemo(() => {
+    const rect = draftRect
+    if (!rect && !selectedBox) return null
+    const normalized = rect
+      ? {
+          left: Math.min(rect.startX, rect.endX),
+          top: Math.min(rect.startY, rect.endY),
+          width: Math.abs(rect.endX - rect.startX),
+          height: Math.abs(rect.endY - rect.startY),
+        }
+      : selectedBox
+      ? {
+          left: selectedBox[1] / 1000,
+          top: selectedBox[0] / 1000,
+          width: (selectedBox[3] - selectedBox[1]) / 1000,
+          height: (selectedBox[2] - selectedBox[0]) / 1000,
+        }
+      : null
+    if (!normalized) return null
+    const OverlayRenderer = (metrics: CanvasImageMetrics | null) => {
+      if (!metrics) return null
+      const left = metrics.offsetX + normalized.left * metrics.renderedWidth
+      const top = metrics.offsetY + normalized.top * metrics.renderedHeight
+      const width = normalized.width * metrics.renderedWidth
+      const height = normalized.height * metrics.renderedHeight
+      return (
+        <div
+          className="absolute border-2 border-primary bg-primary/10"
+          style={{
+            left,
+            top,
+            width,
+            height,
+          }}
+        />
+      )
     }
-  }
+    OverlayRenderer.displayName = 'ManualImageCropperOverlay'
+    return OverlayRenderer
+  }, [draftRect, selectedBox])
 
-  const toBox2D = (rect: { left: number; top: number; width: number; height: number }): Box2D | null => {
-    const width = imageRef.current?.clientWidth || rect.width
-    const height = imageRef.current?.clientHeight || rect.height
-    if (width <= 0 || height <= 0 || rect.width <= 0 || rect.height <= 0) {
-      return null
-    }
-    const ymin = Math.round((rect.top / height) * 1000)
-    const xmin = Math.round((rect.left / width) * 1000)
-    const ymax = Math.round(((rect.top + rect.height) / height) * 1000)
-    const xmax = Math.round(((rect.left + rect.width) / width) * 1000)
-    return [
-      clamp(ymin, 0, 1000),
-      clamp(xmin, 0, 1000),
-      clamp(ymax, 0, 1000),
-      clamp(xmax, 0, 1000)
-    ]
-  }
-
-  const renderRect = draftRect
-    ? {
-        left: Math.min(draftRect.startX, draftRect.endX),
-        top: Math.min(draftRect.startY, draftRect.endY),
-        width: Math.abs(draftRect.endX - draftRect.startX),
-        height: Math.abs(draftRect.endY - draftRect.startY)
-      }
-    : null
-
-  const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
-    event.preventDefault()
-    const { x, y } = getRelativePoint(event)
+  const handlePointerDown = (event: React.PointerEvent<HTMLCanvasElement>, info: CanvasPointerInfo) => {
+    event.currentTarget.setPointerCapture(event.pointerId)
     setDraftRect({
-      startX: x,
-      startY: y,
-      endX: x,
-      endY: y
+      startX: info.relativeX,
+      startY: info.relativeY,
+      endX: info.relativeX,
+      endY: info.relativeY,
     })
     setIsDragging(true)
-    event.currentTarget.setPointerCapture(event.pointerId)
   }
 
-  const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+  const handlePointerMove = (_event: React.PointerEvent<HTMLCanvasElement>, info: CanvasPointerInfo) => {
     if (!isDragging || !draftRect) return
-    event.preventDefault()
-    const { x, y } = getRelativePoint(event)
-    setDraftRect(prev =>
+    setDraftRect((prev) =>
       prev
         ? {
             ...prev,
-            endX: x,
-            endY: y
+            endX: info.relativeX,
+            endY: info.relativeY,
           }
-        : prev
+        : prev,
     )
   }
 
-  const handlePointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (!isDragging || !renderRect) return
-    event.preventDefault()
+  const handlePointerUp = (event: React.PointerEvent<HTMLCanvasElement>) => {
     event.currentTarget.releasePointerCapture(event.pointerId)
+    if (!draftRect) return
     setIsDragging(false)
-    const box = toBox2D(renderRect)
-    if (box) {
+    const box = toBox2D(draftRect)
+    if (box[0] === box[2] || box[1] === box[3]) {
+      setSelectedBox(null)
+    } else {
       setSelectedBox(box)
     }
+    setDraftRect(null)
   }
 
   const handleClear = () => {
-    setDraftRect(null)
     setSelectedBox(null)
+    setDraftRect(null)
   }
 
   return (
     <div className="space-y-4">
-      <div
-        ref={containerRef}
-        className="relative w-full max-h-[70vh] overflow-auto rounded-lg border bg-muted/50"
+      <CanvasImage
+        src={imageUrl}
+        alt="原始题图"
+        overlay={overlay}
+        className="relative max-h-[70vh]"
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerLeave={() => setIsDragging(false)}
-      >
-        {!imageLoaded && !imageError && (
-          <div className="absolute inset-0 flex items-center justify-center bg-muted/50 z-10">
-            <div className="text-sm text-muted-foreground">加载中...</div>
+        loadingFallback="图像加载中…"
+        errorFallback={
+          <div className="flex flex-col items-center gap-2 text-sm">
+            <p className="text-destructive font-medium">图像加载失败</p>
+            <p className="text-muted-foreground break-all">{imageUrl}</p>
           </div>
-        )}
-        {imageError && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-red-50 dark:bg-red-900/20 z-10 p-4">
-            <svg className="w-12 h-12 text-red-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <p className="text-red-600 font-semibold mb-2">图片加载失败</p>
-            <p className="text-xs text-gray-600 dark:text-gray-400 max-w-md break-all text-center">
-              {imageUrl}
-            </p>
-          </div>
-        )}
-        <img
-          ref={imageRef}
-          src={imageUrl}
-          alt="原图"
-          className="w-full h-auto select-none"
-          draggable={false}
-          onLoad={() => {
-            setImageLoaded(true)
-            setImageError(false)
-          }}
-          onError={() => {
-            setImageError(true)
-            setImageLoaded(false)
-            console.error('[ManualImageCropper] 图片加载失败:', imageUrl)
-          }}
-        />
-        {renderRect && imageLoaded && (
-          <div
-            className="absolute border-2 border-primary-500 bg-primary-500/20 pointer-events-none"
-            style={{
-              left: renderRect.left,
-              top: renderRect.top,
-              width: renderRect.width,
-              height: renderRect.height
-            }}
-          />
-        )}
-      </div>
+        }
+      />
 
       <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
         <Badge variant="outline" className="border-primary-400 text-primary-700 bg-primary-50">
           {selectedBox
             ? `ymin=${selectedBox[0]} xmin=${selectedBox[1]} ymax=${selectedBox[2]} xmax=${selectedBox[3]}`
-            : '请在原图上拖拽以选择区域'}
+            : '请在图片上拖拽选择区域'}
         </Badge>
         <button
           type="button"
@@ -182,7 +153,7 @@ export function ManualImageCropper({ imageUrl, onSelectionChange }: ManualImageC
         >
           清除选区
         </button>
-        <span>提示：按住鼠标左键（或触摸）拖拽，即可框选正确的图像区域。</span>
+        <span>提示：拖拽鼠标即可框选，松开后会保存为锚点。</span>
       </div>
     </div>
   )

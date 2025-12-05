@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getCurrentUser } from '@/lib/auth'
@@ -22,31 +22,8 @@ export default function JoinClassPage() {
   const [joinedClasses, setJoinedClasses] = useState<JoinedClass[]>([])
   const [loadingClasses, setLoadingClasses] = useState(true)
 
-  useEffect(() => {
-    checkUser()
-  }, [])
-
-  const checkUser = async () => {
-    const currentUser = await getCurrentUser()
-    if (!currentUser) {
-      router.push('/login')
-      return
-    }
-
-    // 检查用户角色是否为学生
-    if (currentUser.role !== 'student') {
-      alert('只有学生可以加入班级')
-      router.push('/')
-      return
-    }
-
-    setUser(currentUser)
-    loadJoinedClasses(currentUser.id)
-  }
-
-  const loadJoinedClasses = async (userId: string) => {
+  const loadJoinedClasses = useCallback(async (userId: string) => {
     try {
-      // 查询学生已加入的班级
       const { data: classStudents, error } = await supabase
         .from('class_students')
         .select(`
@@ -76,7 +53,29 @@ export default function JoinClassPage() {
     } finally {
       setLoadingClasses(false)
     }
-  }
+  }, [])
+
+  const checkUser = useCallback(async () => {
+    const currentUser = await getCurrentUser()
+    if (!currentUser) {
+      router.push('/login')
+      return
+    }
+
+    // 检查用户角色是否为学生
+    if (currentUser.role !== 'student') {
+      alert('只有学生可以加入班级')
+      router.push('/')
+      return
+    }
+
+    setUser(currentUser)
+    loadJoinedClasses(currentUser.id)
+  }, [loadJoinedClasses, router])
+
+  useEffect(() => {
+    checkUser()
+  }, [checkUser])
 
   const handleJoinClass = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -258,7 +257,7 @@ export default function JoinClassPage() {
           <p className="text-info font-semibold mb-2">💡 提示</p>
           <ul className="text-foreground space-y-1 ml-4 text-sm">
             <li className="list-disc">加入班级后，您将能够看到该班级的所有作业</li>
-            <li className="list-disc">如需退出班级，请点击对应班级的"退出班级"按钮</li>
+            <li className="list-disc">如需退出班级，请点击对应班级的“退出班级”按钮</li>
             <li className="list-disc">如果班级代码无效，请联系您的老师确认</li>
           </ul>
         </div>

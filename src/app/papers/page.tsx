@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getCurrentUser } from '@/lib/auth'
@@ -12,21 +12,7 @@ export default function PapersPage() {
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
 
-  useEffect(() => {
-    checkUser()
-  }, [])
-
-  const checkUser = async () => {
-    const currentUser = await getCurrentUser()
-    if (!currentUser) {
-      router.push('/login')
-      return
-    }
-    setUser(currentUser)
-    loadPapers(currentUser.id)
-  }
-
-  const loadPapers = async (userId: string) => {
+  const loadPapers = useCallback(async (userId: string) => {
     try {
       const { data, error } = await supabase
         .from('papers')
@@ -42,7 +28,21 @@ export default function PapersPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  const checkUser = useCallback(async () => {
+    const currentUser = await getCurrentUser()
+    if (!currentUser) {
+      router.push('/login')
+      return
+    }
+    setUser(currentUser)
+    loadPapers(currentUser.id)
+  }, [loadPapers, router])
+
+  useEffect(() => {
+    checkUser()
+  }, [checkUser])
 
   const deletePaper = async (id: string) => {
     if (!confirm('确定要删除这份试卷吗？')) return

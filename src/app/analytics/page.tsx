@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getCurrentUser } from '@/lib/auth'
@@ -34,11 +34,7 @@ export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true)
   const [timeRange, setTimeRange] = useState<'week' | 'month' | 'all'>('all')
 
-  useEffect(() => {
-    loadAnalytics()
-  }, [timeRange])
-
-  const loadAnalytics = async () => {
+  const loadAnalytics = useCallback(async () => {
     try {
       const user = await getCurrentUser()
       if (!user) {
@@ -186,7 +182,11 @@ export default function AnalyticsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [router, timeRange])
+
+  useEffect(() => {
+    loadAnalytics()
+  }, [loadAnalytics])
 
   const getMasteryLevel = (rate: number) => {
     if (rate >= 90) return { text: '优秀', color: 'text-success', bg: 'bg-success/10' }

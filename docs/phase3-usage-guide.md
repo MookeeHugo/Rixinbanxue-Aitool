@@ -2,7 +2,7 @@
 
 ## 概述
 
-Phase 3 实现了三个高级编辑工具模块：
+Phase 3 实现了三个高级编辑工具模块:
 1. **LaTeX 可视化编辑器** - 支持公式输入、预览、符号工具栏
 2. **图片处理功能** - 降噪、锐化、旋转、透明背景等
 3. **图片位置拖拽编辑器** - 拖拽排序图片
@@ -33,7 +33,7 @@ function MyComponent() {
 
 ### 组件说明
 
-#### LatexEditor（主编辑器）
+#### LatexEditor(主编辑器)
 
 **Props:**
 - `value: string` - 当前 LaTeX 值
@@ -46,12 +46,12 @@ function MyComponent() {
 - `onInsert?: (latex: string) => void` - 插入公式回调
 
 **特性:**
-- 三种模式：可视化编辑（MathLive）、代码模式、预览模式
-- 动态加载 MathLive，避免 SSR 问题
+- 三种模式:可视化编辑(MathLive)、代码模式、预览模式
+- 动态加载 MathLive,避免 SSR 问题
 - 常用公式快捷按钮
 - 支持公式符号工具栏
 
-#### FormulaPreview（公式预览）
+#### FormulaPreview(公式预览)
 
 ```tsx
 import { FormulaPreview } from '@/components/latex-editor'
@@ -69,7 +69,7 @@ import { FormulaPreview } from '@/components/latex-editor'
 - `bordered?: boolean` - 是否显示边框
 - `displayMode?: 'inline' | 'block'` - 显示模式
 
-#### FormulaToolbar（公式工具栏）
+#### FormulaToolbar(公式工具栏)
 
 ```tsx
 import { FormulaToolbar } from '@/components/latex-editor'
@@ -81,21 +81,21 @@ import { FormulaToolbar } from '@/components/latex-editor'
 ```
 
 **包含符号分类:**
-- 基础运算：+、-、×、÷、±、=、≠、<、>、≤、≥ 等
-- 分数/根式：分数、根号、幂次、下标
-- 希腊字母：α、β、γ、δ、π、Σ 等
-- 三角函数：sin、cos、tan、arcsin 等
-- 微积分：∑、∏、∫、lim、∂、∇、∞
-- 集合/逻辑：∈、∉、⊂、⊆、∪、∩、∅、∀、∃
-- 矩阵/括号：矩阵、向量、括号、上划线等
+- 基础运算:+、-、×、÷、±、=、≠、<、>、≤、≥ 等
+- 分数/根式:分数、根号、幂次、下标
+- 希腊字母:α、β、γ、δ、π、Σ 等
+- 三角函数:sin、cos、tan、arcsin 等
+- 微积分:∑、∏、∫、lim、∂、∇、∞
+- 集合/逻辑:∈、∉、⊂、⊆、∪、∩、∅、∀、∃
+- 矩阵/括号:矩阵、向量、括号、上划线等
 
 ---
 
-## 2. 图片处理功��
+## 2. 图片处理功
 
 ### Server Actions
 
-所有图片处理功能都通过 Server Actions 实现，确保安全性。
+所有图片处理功能都通过 Server Actions 实现,确保安全性。
 
 #### processImage - 处理图片
 
@@ -200,7 +200,7 @@ if (result.success) {
 
 | 选项 | 类型 | 说明 | 默认值 |
 |------|------|------|--------|
-| `denoise` | number | 降噪强度，使用 median 滤波 (0-100) | - |
+| `denoise` | number | 降噪强度,使用 median 滤波 (0-100) | - |
 | `sharpen` | number | 锐化强度 (0-100) | - |
 | `rotate` | 0\|90\|180\|270 | 旋转角度 | - |
 | `removeBackground` | boolean | 移除白色/浅色背景使其透明 | false |
@@ -208,10 +208,10 @@ if (result.success) {
 | `brightness` | number | 亮度调整 (-100 到 100) | - |
 | `contrast` | number | 对比度调整 (-100 到 100) | - |
 | `grayscale` | boolean | 转换为灰度图 | false |
-| `flip` | string | 翻转：'horizontal' \| 'vertical' \| 'both' | - |
+| `flip` | string | 翻转:'horizontal' \| 'vertical' \| 'both' | - |
 | `crop` | object | 裁剪区域 {left, top, width, height} | - |
 | `resize` | object | 调整尺寸 {width?, height?, fit?} | - |
-| `format` | string | 输出格式：'jpeg' \| 'png' \| 'webp' | 'png' |
+| `format` | string | 输出格式:'jpeg' \| 'png' \| 'webp' | 'png' |
 | `quality` | number | 输出质量 (1-100) | 90 |
 
 ---
@@ -261,7 +261,7 @@ function MyComponent() {
 | `disabled` | boolean | 是否禁用 | false |
 | `className` | string | 自定义类名 | - |
 | `layout` | 'grid' \| 'list' | 布局模式 | 'grid' |
-| `columns` | number | 网格列数（grid 模式） | 4 |
+| `columns` | number | 网格列数(grid 模式) | 4 |
 | `showDelete` | boolean | 显示删除按钮 | true |
 | `showPreview` | boolean | 显示预览按钮 | true |
 | `imageSize` | 'sm' \| 'md' \| 'lg' | 图片尺寸 | 'md' |
@@ -290,7 +290,7 @@ const {
   addImages,       // 添加多张图片
   removeImage,     // 删除图片
   updateImage,     // 更新图片信息
-  moveImage,       // 移动图片（通过索引）
+  moveImage,       // 移动图片(通过索引)
   clearImages,     // 清空所有图片
   reorderImages    // 重新排序
 } = useImagePositionEditor(initialImages)
@@ -317,7 +317,7 @@ export function QuestionImageEditor() {
     reader.onload = async (e) => {
       const base64 = e.target?.result as string
 
-      // 处理图片（锐化、调整尺寸）
+      // 处理图片(锐化、调整尺寸)
       const result = await processAndSaveImage(base64, {
         sharpen: 30,
         resize: { width: 800, fit: 'inside' },
@@ -368,9 +368,9 @@ export function QuestionImageEditor() {
 
 ---
 
-## 集成示例：题目编辑器
+## 集成示例:题目编辑器
 
-结合三个工具创建完整的题目编辑器：
+结合三个工具创建完整的题目编辑器:
 
 ```tsx
 'use client'
@@ -389,7 +389,7 @@ export function QuestionEditor() {
     reader.onload = async (e) => {
       const base64 = e.target?.result as string
 
-      // 图片预处理：降噪 + 锐化 + 移除背景
+      // 图片预处理:降噪 + 锐化 + 移除背景
       const result = await processAndSaveImage(base64, {
         denoise: 20,
         sharpen: 40,
@@ -461,18 +461,18 @@ export function QuestionEditor() {
 - **KaTeX** (0.16.25) - LaTeX 渲染引擎
 - **Sharp** (0.34.4) - 高性能图片处理库
 - **@dnd-kit** (6.3.1) - 拖拽排序功能
-- **react-image-crop** (11.0.7) - 图片裁剪（预留）
+- **react-image-crop** (11.0.7) - 图片裁剪(预留)
 
 ---
 
 ## 注意事项
 
 1. **MathLive SSR 问题**
-   - MathLive 通过动态导入加载，避免 SSR 问题
-   - 如果加载失败，会自动降级到代码模式
+   - MathLive 通过动态导入加载,避免 SSR 问题
+   - 如果加载失败,会自动降级到代码模式
 
 2. **图片处理性能**
-   - 图片处理在服务端执行，确保安全性
+   - 图片处理在服务端执行,确保安全性
    - 批量处理最多支持 10 张图片
    - 大图片建议先压缩再处理
 
@@ -488,10 +488,10 @@ export function QuestionEditor() {
 
 ## 下一步
 
-Phase 3 的高级编辑工具已经完成。可以在题目编辑、审核等功能中集成这些组件，提升编辑体验。
+Phase 3 的高级编辑工具已经完成。可以在题目编辑、审核等功能中集成这些组件,提升编辑体验。
 
-建议后续优化：
-1. 添加图片裁剪功能（使用 react-image-crop）
+建议后续优化:
+1. 添加图片裁剪功能(使用 react-image-crop)
 2. 实现公式模板库
 3. 支持批量图片处理的进度显示
 4. 添加撤销/重做功能

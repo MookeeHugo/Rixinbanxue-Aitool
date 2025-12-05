@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import Image from 'next/image'
 import { MarkdownRenderer } from './markdown-renderer'
 import { Button } from './ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog'
@@ -108,11 +109,13 @@ export function QuestionContentRenderer({
                 >
                   <div className="relative h-40 rounded-lg bg-background flex items-center justify-center overflow-hidden group">
                     {!hasError ? (
-                      <img
+                      <Image
                         src={asset.proxyUrl}
                         alt={asset.label}
+                        fill
                         loading="lazy"
-                        className="w-full h-full object-contain"
+                        sizes="(max-width: 768px) 220px, 260px"
+                        className="object-contain"
                         onError={() => markAssetError(asset.id)}
                       />
                     ) : (
@@ -192,30 +195,34 @@ export function QuestionContentRenderer({
                 <DialogTitle>题目原图</DialogTitle>
               </DialogHeader>
               <div className="relative">
-                <img
-                  src={proxyImageUrl}
-                  alt="题目原图"
-                  className="w-full h-auto rounded-lg border border-gray-200 dark:border-gray-700"
-                  loading="lazy"
-                  onLoad={() => {
-                    setOriginalImageLoadError(false)
-                    if (isDev) {
-                      console.log('[QuestionContentRenderer] ✅ 原图加载成功', {
+                <div className="relative w-full min-h-[360px] rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                  <Image
+                    src={proxyImageUrl}
+                    alt="题目原图"
+                    fill
+                    loading="lazy"
+                    sizes="(max-width: 768px) 100vw, 1024px"
+                    className="object-contain"
+                    onLoad={() => {
+                      setOriginalImageLoadError(false)
+                      if (isDev) {
+                        console.log('[QuestionContentRenderer] ✅ 原图加载成功', {
+                          proxyUrl: proxyImageUrl,
+                          originalUrl: imageUrl
+                        })
+                      }
+                    }}
+                    onError={(event) => {
+                      setOriginalImageLoadError(true)
+                      console.error('[QuestionContentRenderer] ❌ 原图加载失败', {
                         proxyUrl: proxyImageUrl,
-                        originalUrl: imageUrl
+                        originalUrl: imageUrl,
+                        error: event.nativeEvent.type,
+                        timestamp: new Date().toISOString()
                       })
-                    }
-                  }}
-                  onError={(e) => {
-                    setOriginalImageLoadError(true)
-                    console.error('[QuestionContentRenderer] ❌ 原图加载失败', {
-                      proxyUrl: proxyImageUrl,
-                      originalUrl: imageUrl,
-                      error: e.type,
-                      timestamp: new Date().toISOString()
-                    })
-                  }}
-                />
+                    }}
+                  />
+                </div>
                 {originalImageLoadError && (
                   <div className="absolute inset-0 flex flex-col items-center justify-center bg-red-50 dark:bg-red-900/20 rounded-lg">
                     <svg className="w-12 h-12 text-red-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getCurrentUser } from '@/lib/auth'
@@ -40,17 +40,7 @@ export default function TeacherAnalyticsPage() {
   const [knowledgeAnalysis, setKnowledgeAnalysis] = useState<KnowledgePointAnalysis[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    loadData()
-  }, [])
-
-  useEffect(() => {
-    if (selectedClass) {
-      loadClassDetails(selectedClass)
-    }
-  }, [selectedClass])
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const user = await getCurrentUser()
       if (!user) {
@@ -122,9 +112,13 @@ export default function TeacherAnalyticsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [router])
 
-  const loadClassDetails = async (classId: string) => {
+  useEffect(() => {
+    loadData()
+  }, [loadData])
+
+  const loadClassDetails = useCallback(async (classId: string) => {
     try {
       // 获取班级的所有作业
       const { data: assignments } = await supabase
@@ -252,7 +246,13 @@ export default function TeacherAnalyticsPage() {
     } catch (error) {
       logger.error('加载班级详情失败:', { error: error })
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    if (selectedClass) {
+      loadClassDetails(selectedClass)
+    }
+  }, [selectedClass, loadClassDetails])
 
   const getPerformanceLevel = (score: number) => {
     if (score >= 90) return { text: '优秀', color: 'text-success' }

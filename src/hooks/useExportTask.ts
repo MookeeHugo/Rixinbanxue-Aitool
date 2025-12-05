@@ -72,7 +72,7 @@ export function useExportTask(options: UseExportTaskOptions = {}) {
     }, pollInterval)
 
     return () => clearInterval(timer)
-  }, [task?.id, task?.status, pollInterval])
+  }, [task, pollInterval, toast])
 
   // 监听任务状态变化
   useEffect(() => {
@@ -92,7 +92,7 @@ export function useExportTask(options: UseExportTaskOptions = {}) {
       })
       onFailed?.(task)
     }
-  }, [task?.status, onCompleted, onFailed])
+  }, [task, onCompleted, onFailed, toast])
 
   // 创建导出任务
   const createTask = useCallback(async (questionIds: string[], templateId: string = 'default') => {
@@ -126,7 +126,7 @@ export function useExportTask(options: UseExportTaskOptions = {}) {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [toast])
 
   // 重置任务
   const resetTask = useCallback(() => {

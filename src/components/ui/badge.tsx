@@ -10,6 +10,8 @@ const badgeVariants = cva(
       variant: {
         default:
           "bg-gray-100 text-gray-700 border-transparent",
+        secondary:
+          "bg-[hsl(var(--background-secondary))] text-foreground border border-border/60",
         primary:
           "bg-primary-50 text-primary-700 border-primary-200/50",
         accent:

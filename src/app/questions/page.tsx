@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useEffect, useMemo, useState, useCallback } from 'react'
@@ -7,25 +8,22 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Checkbox } from '@/components/ui/checkbox'
 import { X } from 'lucide-react'
-import { logger } from '@/lib/logger'
 import {
   Plus,
-  Filter,
   Search as SearchIcon,
   Trash2,
   Download,
   UploadCloud,
   ShoppingBasket,
 } from 'lucide-react'
+import { logger } from '@/lib/logger'
 import { supabase } from '@/lib/supabase'
 import { getCurrentProfile } from '@/lib/auth'
 import type { Profile, Question } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import {
   Select,
   SelectContent,
@@ -36,6 +34,9 @@ import {
 import { useToast } from '@/hooks/use-toast'
 import { QuestionBasketDrawer } from '@/components/questions/question-basket-drawer'
 import { useQuestionBasketStore } from '@/stores/questionBasketStore'
+import { LibraryStats } from '@/components/questions/library-stats'
+import { LibraryFilters, type QuestionLibraryFilters } from '@/components/questions/library-filters'
+import { QuestionLibraryCard, type QuestionLibraryCardData } from '@/components/questions/question-library-card'
 
 type QuestionRecord = Question & {
   knowledge_points?: string[]
@@ -44,10 +45,6 @@ type QuestionRecord = Question & {
   analysis_content?: string | null
   is_public?: boolean
 }
-
-const SEARCH_HISTORY_KEY = 'rixin-question-search-history'
-
-const allowedImportColumns = ['content', 'answer', 'type', 'difficulty', 'knowledge_points']
 
 interface ExportTask {
   id: string
@@ -59,22 +56,35 @@ interface ExportTask {
   completed_at?: string | null
 }
 
+interface LibraryStatsState {
+  weekly: number
+  reviewed: number
+  pending: number
+}
+
+const SEARCH_HISTORY_KEY = 'rixin-question-search-history'
+const allowedImportColumns = ['content', 'answer', 'type', 'difficulty', 'knowledge_points']
+
 export default function QuestionsPage() {
   const router = useRouter()
   const { toast } = useToast()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [questions, setQuestions] = useState<QuestionRecord[]>([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState<{ type?: string; difficulty?: string }>({})
   const [searchText, setSearchText] = useState('')
   const [searchHistory, setSearchHistory] = useState<string[]>([])
-  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
+  const [libraryFilters, setLibraryFilters] = useState<QuestionLibraryFilters>({})
+  const [appliedFilters, setAppliedFilters] = useState<QuestionLibraryFilters>({})
+  const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([])
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [deleteMode, setDeleteMode] = useState<'soft' | 'hard'>('soft')
   const [bulkLoading, setBulkLoading] = useState(false)
   const [basketOpen, setBasketOpen] = useState(false)
   const [exportTask, setExportTask] = useState<ExportTask | null>(null)
   const [exportLoading, setExportLoading] = useState(false)
+  const [stats, setStats] = useState<LibraryStatsState>({ weekly: 0, reviewed: 0, pending: 0 })
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
   const addToBasket = useQuestionBasketStore((state) => state.addQuestion)
   const hasQuestionInBasket = useQuestionBasketStore((state) => state.hasQuestion)
   const basketCount = useQuestionBasketStore((state) => state.questions.length)
@@ -106,7 +116,7 @@ export default function QuestionsPage() {
         setProfile(data)
       } catch (error) {
         if (!mountedRef.current) return
-        logger.error('Failed to load profile:', { error: error })
+        logger.error('????????', { error })
         router.push('/login')
       }
     }
@@ -118,56 +128,77 @@ export default function QuestionsPage() {
     }
   }, [router])
 
-  useEffect(() => {
-    const mountedRef = { current: true }
+  const loadQuestions = useCallback(async (nextFilters?: QuestionLibraryFilters) => {
+    if (!profile) return
+    setLoading(true)
+    const filters = nextFilters ?? appliedFilters
 
-    const loadQuestionsAsync = async () => {
-      if (!profile) return
-      setLoading(true)
-      try {
-        let query = supabase.from('questions').select('*').order('created_at', { ascending: false })
+    try {
+      let query = supabase.from('questions').select('*').order('created_at', { ascending: false })
 
-        if (filter.type) {
-          query = query.eq('type', filter.type)
-        }
-        if (filter.difficulty) {
-          query = query.eq('difficulty', filter.difficulty)
-        }
-        if (searchText.trim()) {
-          // 清理搜索关键词：移除所有特殊字符，只保留字母、数字、中文和空格
-          const keyword = searchText.trim().replace(/[^\w\s\u4e00-\u9fa5]/g, '')
-          if (keyword) {
-            // 使用 Supabase 的参数化查询，避免注入风险
-            query = query.or(`content.ilike.%${keyword}%,answer.ilike.%${keyword}%`)
-          }
-        }
-
-        const { data, error } = await query
-        if (!mountedRef.current) return
-
-        if (error) throw error
-        setQuestions((data as QuestionRecord[]) || [])
-      } catch (error) {
-        if (!mountedRef.current) return
-        logger.error('Failed to load questions:', { error: error })
-        toast({
-          title: '加载失败',
-          description: '加载题目失败',
-          variant: 'destructive',
-        })
-      } finally {
-        if (mountedRef.current) {
-          setLoading(false)
+      if (filters.type?.length) {
+        query = query.in('type', filters.type)
+      }
+      if (filters.difficulty?.length) {
+        query = query.in('difficulty', filters.difficulty)
+      }
+      if (filters.knowledge?.length) {
+        query = query.contains('knowledge_points', filters.knowledge)
+      }
+      if (searchText.trim()) {
+        const keyword = searchText.trim().replace(/[^\w\s\u4e00-\u9fa5]/g, '')
+        if (keyword) {
+          query = query.or(`content.ilike.%${keyword}%,answer.ilike.%${keyword}%`)
         }
       }
-    }
 
-    loadQuestionsAsync()
-
-    return () => {
-      mountedRef.current = false
+      const { data, error } = await query
+      if (error) throw error
+      const result = (data as QuestionRecord[]) || []
+      const filteredResult = applyInMemoryFilters(result, filters)
+      setQuestions(filteredResult)
+      setCurrentPage(1)
+    } catch (error) {
+      logger.error('??????', { error })
+      toast({
+        title: '????',
+        description: '??????????????????',
+        variant: 'destructive',
+      })
+    } finally {
+      setLoading(false)
     }
-  }, [profile, filter, searchText])
+  }, [profile, appliedFilters, searchText, toast])
+
+  useEffect(() => {
+    if (!profile) return
+    void loadQuestions()
+  }, [profile, loadQuestions])
+
+  useEffect(() => {
+    const now = Date.now()
+    const weekAgo = now - 7 * 24 * 60 * 60 * 1000
+    let weekly = 0
+    let reviewed = 0
+
+    questions.forEach((question) => {
+      if (question.created_at) {
+        const created = new Date(question.created_at).getTime()
+        if (!Number.isNaN(created) && created >= weekAgo) {
+          weekly++
+        }
+      }
+      if (question.is_public) {
+        reviewed++
+      }
+    })
+
+    setStats({
+      weekly,
+      reviewed,
+      pending: Math.max(questions.length - reviewed, 0),
+    })
+  }, [questions])
 
   useEffect(() => {
     if (!exportTask || ['COMPLETED', 'FAILED'].includes(exportTask.status)) return
@@ -185,7 +216,7 @@ export default function QuestionsPage() {
         }
       } catch (error) {
         if (!mountedRef.current) return
-        logger.error('轮询导出任务失败', { error: error })
+        logger.error('轮询导出任务失败', { error })
         toast({
           title: '查询失败',
           description: error instanceof Error ? error.message : '查询导出任务失败',
@@ -199,24 +230,24 @@ export default function QuestionsPage() {
       mountedRef.current = false
       clearInterval(timer)
     }
-  }, [exportTask?.id, exportTask?.status])
+  }, [exportTask, toast])
 
   useEffect(() => {
     if (!exportTask) return
     if (exportTask.status === 'COMPLETED') {
       toast({
         title: '导出完成',
-        description: '可在题篮中下载文件',
+        description: '可在题篮中下载文件。',
       })
     }
     if (exportTask.status === 'FAILED') {
       toast({
         title: '导出失败',
-        description: exportTask.error_message || '导出失败，请稍后重试',
+        description: exportTask.error_message || '导出失败，请稍后重试。',
         variant: 'destructive',
       })
     }
-  }, [exportTask?.status, toast])
+  }, [exportTask, toast])
 
   const questionMap = useMemo(() => {
     const map = new Map<string, QuestionRecord>()
@@ -224,37 +255,13 @@ export default function QuestionsPage() {
     return map
   }, [questions])
 
-  const loadQuestions = async () => {
-    if (!profile) return
-    setLoading(true)
-    try {
-      let query = supabase.from('questions').select('*').order('created_at', { ascending: false })
+  const paginatedQuestions = useMemo(() => {
+    const start = (currentPage - 1) * pageSize
+    const end = start + pageSize
+    return questions.slice(start, end)
+  }, [questions, currentPage, pageSize])
 
-      if (filter.type) {
-        query = query.eq('type', filter.type)
-      }
-      if (filter.difficulty) {
-        query = query.eq('difficulty', filter.difficulty)
-      }
-      if (searchText.trim()) {
-        const keyword = searchText.trim().replace(/[%_]/g, '')
-        query = query.or(`content.ilike.%${keyword}%,answer.ilike.%${keyword}%`)
-      }
-
-      const { data, error } = await query
-      if (error) throw error
-      setQuestions((data as QuestionRecord[]) || [])
-    } catch (error) {
-      logger.error('Failed to load questions:', { error: error })
-      toast({
-        title: '加载失败',
-        description: '加载题目失败',
-        variant: 'destructive',
-      })
-    } finally {
-      setLoading(false)
-    }
-  }
+  const totalPages = Math.max(1, Math.ceil(questions.length / pageSize))
 
   const updateSearchHistory = (term: string) => {
     const normalized = term.trim()
@@ -266,44 +273,17 @@ export default function QuestionsPage() {
     })
   }
 
-  const highlightMatch = useCallback((text: string) => {
-    if (!searchText.trim()) return text
-    const keyword = searchText.trim()
-    try {
-      const regex = new RegExp(`(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')
-      const parts = text.split(regex)
-      return parts.map((part, idx) =>
-        idx % 2 === 1 ? (
-          <mark key={`${part}-${idx}`} className="px-0.5 bg-yellow-200">
-            {part}
-          </mark>
-        ) : (
-          part
-        )
-      )
-    } catch {
-      return text
-    }
-  }, [searchText])
-
-  const getAccessToken = async () => {
-    const session = await supabase.auth.getSession()
-    const token = session.data.session?.access_token
-    if (!token) {
-      throw new Error('未找到登录凭证')
-    }
-    return token
-  }
-
   const handleAddToBasketAction = useCallback((record: QuestionRecord) => {
     const id = String(record.id)
+
     if (hasQuestionInBasket(id)) {
       toast({
-        title: '提示',
-        description: '题目已在题篮中',
+        title: '??',
+        description: '???????',
       })
       return
     }
+
     addToBasket({
       id,
       content: record.content,
@@ -311,34 +291,18 @@ export default function QuestionsPage() {
       difficulty: (record.difficulty as any) || 'medium',
       knowledge_points: record.knowledge_points || [],
     })
-    toast({
-      title: '成功',
-      description: '已加入题篮',
-    })
-  }, [hasQuestionInBasket, addToBasket, toast])
 
-const fetchExportTaskStatus = async (taskId: string) => {
-    const token = await getAccessToken()
-    const res = await fetch(`/api/export-tasks/status?taskId=${taskId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+    toast({
+      title: '??',
+      description: '?????',
     })
-    const data = await res.json().catch(() => ({}))
-    if (res.status === 404) {
-      return null
-    }
-    if (!res.ok) {
-      throw new Error(data.error || '查询导出任务失败')
-    }
-    return data.task as ExportTask
-  }
+  }, [addToBasket, hasQuestionInBasket, toast])
 
   const handleStartBuildFromBasket = useCallback(() => {
     if (!basketQuestions.length) {
       toast({
-        title: '提示',
-        description: '题篮为空',
+        title: '??',
+        description: '????',
         variant: 'destructive',
       })
       return
@@ -346,7 +310,7 @@ const fetchExportTaskStatus = async (taskId: string) => {
     try {
       window.localStorage.setItem('rixin-basket-snapshot', JSON.stringify(basketQuestions))
     } catch (error) {
-      logger.warn('题篮快照写入失败', { error: error })
+      logger.warn('????????', { error })
     }
     setBasketOpen(false)
     router.push('/papers/create?source=basket')
@@ -355,8 +319,8 @@ const fetchExportTaskStatus = async (taskId: string) => {
   const handleExportFromBasket = useCallback(async () => {
     if (!basketQuestions.length) {
       toast({
-        title: '提示',
-        description: '题篮为空',
+        title: '??',
+        description: '????',
         variant: 'destructive',
       })
       return
@@ -378,19 +342,19 @@ const fetchExportTaskStatus = async (taskId: string) => {
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {
-        throw new Error(data.error || '创建导出任务失败')
+        throw new Error(data.error || '????????')
       }
       setExportTask(data.task as ExportTask)
       toast({
-        title: '成功',
-        description: '导出任务已创建',
+        title: '??',
+        description: '???????',
       })
       setBasketOpen(true)
     } catch (error: any) {
-      logger.error('创建导出任务失败:', { error: error })
+      logger.error('????????', { error })
       toast({
-        title: '创建失败',
-        description: error?.message || '创建导出任务失败',
+        title: '????',
+        description: error?.message || '????????',
         variant: 'destructive',
       })
     } finally {
@@ -418,7 +382,7 @@ const fetchExportTaskStatus = async (taskId: string) => {
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
-        throw new Error(data.error || '删除失败')
+        throw new Error(data.error || '????')
       }
     }
   }, [questionMap])
@@ -432,8 +396,8 @@ const fetchExportTaskStatus = async (taskId: string) => {
   const handleBulkDelete = useCallback(async () => {
     if (!selectedRowKeys.length) {
       toast({
-        title: '提示',
-        description: '请选择题目',
+        title: '??',
+        description: '?????',
         variant: 'destructive',
       })
       return
@@ -442,29 +406,29 @@ const fetchExportTaskStatus = async (taskId: string) => {
     try {
       await callDeleteApi(selectedRowKeys.map(String), deleteMode)
       toast({
-        title: '成功',
-        description: deleteMode === 'hard' ? '已硬删除所选题目' : '所选题目已软删除',
+        title: '??',
+        description: deleteMode === 'hard' ? '????????' : '????????',
       })
       setSelectedRowKeys([])
       setDeleteModalOpen(false)
       void loadQuestions()
     } catch (error: any) {
-      logger.error('Error occurred', { error: error })
+      logger.error('??????', { error })
       toast({
-        title: '删除失败',
-        description: error.message || '批量删除失败',
+        title: '????',
+        description: error.message || '??????',
         variant: 'destructive',
       })
     } finally {
       setBulkLoading(false)
     }
-  }, [selectedRowKeys, deleteMode, callDeleteApi, toast])
+  }, [selectedRowKeys, deleteMode, callDeleteApi, loadQuestions, toast])
 
   const handleBulkExport = useCallback((format: 'csv' | 'json') => {
     if (!selectedRowKeys.length) {
       toast({
-        title: '提示',
-        description: '请选择题目',
+        title: '??',
+        description: '?????',
         variant: 'destructive',
       })
       return
@@ -475,8 +439,8 @@ const fetchExportTaskStatus = async (taskId: string) => {
 
     if (!rows.length) {
       toast({
-        title: '提示',
-        description: '未找到可导出的题目',
+        title: '??',
+        description: '?????????',
         variant: 'destructive',
       })
       return
@@ -486,7 +450,7 @@ const fetchExportTaskStatus = async (taskId: string) => {
       const blob = new Blob([JSON.stringify(rows, null, 2)], { type: 'application/json;charset=utf-8' })
       triggerDownload(blob, 'questions-export.json')
     } else {
-      const header = ['内容', '答案', '题型', '难度', '知识点']
+      const header = ['??', '??', '??', '??', '???']
       const csv = [
         header.join(','),
         ...rows.map((row) => [
@@ -500,16 +464,16 @@ const fetchExportTaskStatus = async (taskId: string) => {
       triggerDownload(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), 'questions-export.csv')
     }
     toast({
-      title: '导出成功',
-      description: `已导出 ${rows.length} 道题目`,
+      title: '????',
+      description: `??? ${rows.length} ???`,
     })
-  }, [selectedRowKeys, questionMap, toast])
+  }, [questionMap, selectedRowKeys, toast])
 
   const handleBulkImport = useCallback(async (file: File) => {
     if (!profile) {
       toast({
-        title: '错误',
-        description: '请先登录',
+        title: '??',
+        description: '????',
         variant: 'destructive',
       })
       return
@@ -517,8 +481,8 @@ const fetchExportTaskStatus = async (taskId: string) => {
 
     if (!file.name.endsWith('.csv')) {
       toast({
-        title: '错误',
-        description: '请上传 CSV 文件',
+        title: '??',
+        description: '??? CSV ??',
         variant: 'destructive',
       })
       return
@@ -529,8 +493,8 @@ const fetchExportTaskStatus = async (taskId: string) => {
       const rows = parseCsv(text)
       if (!rows.length) {
         toast({
-          title: '提示',
-          description: '未解析到题目',
+          title: '??',
+          description: '??????',
           variant: 'destructive',
         })
         return
@@ -549,59 +513,55 @@ const fetchExportTaskStatus = async (taskId: string) => {
       if (error) throw error
 
       toast({
-        title: '导入成功',
-        description: `成功导入 ${payload.length} 道题目`,
+        title: '????',
+        description: `???? ${payload.length} ???`,
       })
       void loadQuestions()
     } catch (error: any) {
-      logger.error('导入失败:', { error: error })
+      logger.error('????', { error })
       toast({
-        title: '导入失败',
-        description: error.message || '导入失败',
+        title: '????',
+        description: error.message || '????',
         variant: 'destructive',
       })
     }
-  }, [profile, toast])
+  }, [profile, toast, loadQuestions])
 
-  // 分页状态
-  const [currentPage, setCurrentPage] = useState(1)
-  const [pageSize, setPageSize] = useState(10)
-
-  // 计算分页数据
-  const paginatedQuestions = useMemo(() => {
-    const start = (currentPage - 1) * pageSize
-    const end = start + pageSize
-    return questions.slice(start, end)
-  }, [questions, currentPage, pageSize])
-
-  const totalPages = Math.ceil(questions.length / pageSize)
-
-  // 处理全选
-  const handleSelectAll = useCallback((checked: boolean) => {
+  const handleSelectAll = useCallback((checked: boolean | 'indeterminate') => {
     if (checked) {
-      setSelectedRowKeys(paginatedQuestions.map(q => String(q.id)))
+      setSelectedRowKeys(paginatedQuestions.map((q) => String(q.id)))
     } else {
       setSelectedRowKeys([])
     }
   }, [paginatedQuestions])
 
-  // 处理单选
-  const handleSelectRow = useCallback((id: string, checked: boolean) => {
+  const handleSelectRow = useCallback((id: string, checked: boolean | 'indeterminate') => {
     if (checked) {
-      setSelectedRowKeys(prev => [...prev, id])
+      setSelectedRowKeys((prev) => (prev.includes(id) ? prev : [...prev, id]))
     } else {
-      setSelectedRowKeys(prev => prev.filter(key => key !== id))
+      setSelectedRowKeys((prev) => prev.filter((key) => key !== id))
     }
   }, [])
 
-  // 检查是否全选
-  const isAllSelected = paginatedQuestions.length > 0 && paginatedQuestions.every(q => selectedRowKeys.includes(String(q.id)))
-  const isSomeSelected = paginatedQuestions.some(q => selectedRowKeys.includes(String(q.id)))
+  const isAllSelected = paginatedQuestions.length > 0 && paginatedQuestions.every((q) => selectedRowKeys.includes(String(q.id)))
+  const isSomeSelected = paginatedQuestions.some((q) => selectedRowKeys.includes(String(q.id)))
+
+  const handleApplyFilters = (value: QuestionLibraryFilters) => {
+    setLibraryFilters(value)
+    setAppliedFilters(value)
+    void loadQuestions(value)
+  }
+
+  const handleResetFilters = () => {
+    setLibraryFilters({})
+    setAppliedFilters({})
+    void loadQuestions({})
+  }
 
   if (!profile) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-muted-foreground">加载中...</div>
+        <div className="text-muted-foreground">???...</div>
       </div>
     )
   }
@@ -610,13 +570,13 @@ const fetchExportTaskStatus = async (taskId: string) => {
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold">题库管理</h1>
-          <p className="text-muted-foreground mt-1">管理题目、搜索高亮，并批量处理导入/导出</p>
+          <h1 className="text-3xl font-bold">????</h1>
+          <p className="text-muted-foreground mt-1">??????????????????????</p>
         </div>
         <div className="flex items-center gap-3">
           <Link href="/tools/ingest">
             <Button variant="outline" size="lg">
-              开始录题
+              ????
             </Button>
           </Link>
           <Button
@@ -626,106 +586,78 @@ const fetchExportTaskStatus = async (taskId: string) => {
             data-testid="basket-open-btn"
           >
             <ShoppingBasket className="mr-2 h-4 w-4" />
-            题篮 ({basketCount})
+            ?? ({basketCount})
           </Button>
           <Link href="/questions/create">
             <Button size="lg">
               <Plus className="mr-2 h-4 w-4" />
-              新建题目
+              ????
             </Button>
           </Link>
         </div>
       </div>
 
+      <div className="grid gap-4 xl:grid-cols-[3fr,2fr]">
+        <div>
+          <LibraryStats
+            totalQuestions={questions.length}
+            weeklyIncrease={stats.weekly}
+            reviewedCount={stats.reviewed}
+            pendingReviewCount={stats.pending}
+          />
+        </div>
+        <Card className="p-5">
+          <LibraryFilters
+            value={libraryFilters}
+            onChange={setLibraryFilters}
+            onReset={handleResetFilters}
+            onApply={handleApplyFilters}
+          />
+        </Card>
+      </div>
+
       <Card className="p-6 space-y-4">
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium">筛选条件</span>
-          </div>
-          <div className="flex items-center gap-4 flex-wrap">
-            <div className="w-40">
-              <Select
-                value={filter.type || 'all'}
-                onValueChange={(value) => setFilter((prev) => ({ ...prev, type: value === 'all' ? undefined : value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="全部题型" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">全部题型</SelectItem>
-                  <SelectItem value="choice">选择题</SelectItem>
-                  <SelectItem value="fill">填空题</SelectItem>
-                  <SelectItem value="essay">解答题</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="w-40">
-              <Select
-                value={filter.difficulty || 'all'}
-                onValueChange={(value) =>
-                  setFilter((prev) => ({ ...prev, difficulty: value === 'all' ? undefined : value }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="全部难度" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">全部难度</SelectItem>
-                  <SelectItem value="easy">简单</SelectItem>
-                  <SelectItem value="medium">中等</SelectItem>
-                  <SelectItem value="hard">困难</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            {(filter.type || filter.difficulty) && (
-              <Button variant="outline" size="sm" onClick={() => setFilter({})}>
-                清除筛选
-              </Button>
-            )}
-          </div>
-          <div className="ml-auto flex items-center gap-2">
-            <div className="relative w-64">
-              <Input
-                placeholder="全文搜索题干/答案"
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    updateSearchHistory(searchText)
-                    void loadQuestions()
-                  }
-                }}
-                className="pr-16"
-              />
-              {searchText && (
-                <button
-                  onClick={() => setSearchText('')}
-                  className="absolute right-8 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
-              <SearchIcon className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                if (searchText.trim()) {
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative w-64">
+            <Input
+              placeholder="??????/??"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
                   updateSearchHistory(searchText)
+                  void loadQuestions()
                 }
-                void loadQuestions()
               }}
-            >
-              搜索
-            </Button>
+              className="pr-16"
+            />
+            {searchText && (
+              <button
+                onClick={() => setSearchText('')}
+                className="absolute right-8 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+            <SearchIcon className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
           </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              if (searchText.trim()) {
+                updateSearchHistory(searchText)
+              }
+              void loadQuestions()
+            }}
+          >
+            ??
+          </Button>
         </div>
 
         {searchHistory.length > 0 && (
           <div className="flex items-center gap-2 flex-wrap text-xs">
-            <span className="text-muted-foreground">历史搜索:</span>
+            <span className="text-muted-foreground">????:</span>
             {searchHistory.map((keyword) => (
               <button
                 key={keyword}
@@ -747,12 +679,20 @@ const fetchExportTaskStatus = async (taskId: string) => {
                 setSearchHistory([])
               }}
             >
-              清空
+              ??
             </Button>
           </div>
         )}
 
         <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Checkbox
+              checked={isAllSelected ? true : isSomeSelected ? 'indeterminate' : false}
+              onCheckedChange={handleSelectAll}
+              aria-label="??"
+            />
+            <span className="text-xs text-muted-foreground">????</span>
+          </div>
           <Button
             variant="outline"
             size="sm"
@@ -763,7 +703,7 @@ const fetchExportTaskStatus = async (taskId: string) => {
             }}
           >
             <Trash2 className="mr-1 h-4 w-4" />
-            批量删除
+            ????
           </Button>
           <Button
             variant="outline"
@@ -772,7 +712,7 @@ const fetchExportTaskStatus = async (taskId: string) => {
             onClick={() => handleBulkExport('csv')}
           >
             <Download className="mr-1 h-4 w-4" />
-            导出 CSV
+            ?? CSV
           </Button>
           <Button
             variant="outline"
@@ -781,7 +721,7 @@ const fetchExportTaskStatus = async (taskId: string) => {
             onClick={() => handleBulkExport('json')}
           >
             <Download className="mr-1 h-4 w-4" />
-            导出 JSON
+            ?? JSON
           </Button>
           <label>
             <input
@@ -799,140 +739,63 @@ const fetchExportTaskStatus = async (taskId: string) => {
             <Button variant="outline" size="sm" asChild>
               <span className="cursor-pointer">
                 <UploadCloud className="mr-1 h-4 w-4" />
-                批量导入
+                ????
               </span>
             </Button>
           </label>
           <span className="text-xs text-muted-foreground">
-            已选 {selectedRowKeys.length} / 共 {questions.length}
+            ?? {selectedRowKeys.length} / ? {questions.length}
           </span>
         </div>
       </Card>
 
-      <Card className="p-6">
+      <Card className="p-6 space-y-6">
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="text-muted-foreground">加载中...</div>
+            <div className="text-muted-foreground">???...</div>
           </div>
         ) : questions.length === 0 ? (
           <div className="py-12 text-center">
-            <p className="text-muted-foreground mb-4">暂无题目</p>
+            <p className="text-muted-foreground mb-4">????</p>
             <Link href="/questions/create">
               <Button>
                 <Plus className="mr-2 h-4 w-4" />
-                创建第一道题目
+                ???????
               </Button>
             </Link>
           </div>
         ) : (
           <>
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-12">
-                      <Checkbox
-                        checked={isAllSelected}
-                        onCheckedChange={handleSelectAll}
-                        aria-label="全选"
-                      />
-                    </TableHead>
-                    <TableHead>题干</TableHead>
-                    <TableHead className="w-24">题型</TableHead>
-                    <TableHead className="w-24">难度</TableHead>
-                    <TableHead className="w-48">知识点</TableHead>
-                    <TableHead className="w-80">操作</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paginatedQuestions.map((question) => (
-                    <TableRow key={question.id}>
-                      <TableCell>
-                        <Checkbox
-                          checked={selectedRowKeys.includes(String(question.id))}
-                          onCheckedChange={(checked) => handleSelectRow(String(question.id), checked as boolean)}
-                          aria-label={`选择题目 ${question.id}`}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <div className="line-clamp-2 text-sm text-foreground/90">
-                          {highlightMatch(question.content || '')}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{getTypeLabel(question.type)}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={getDifficultyVariant(question.difficulty)}>
-                          {getDifficultyLabel(question.difficulty)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {question.knowledge_points?.length ? (
-                          <div className="flex flex-wrap gap-1">
-                            {question.knowledge_points.slice(0, 3).map((kp) => (
-                              <Badge key={kp} variant="outline">
-                                {kp}
-                              </Badge>
-                            ))}
-                            {question.knowledge_points.length > 3 && (
-                              <span className="text-xs text-muted-foreground">
-                                +{question.knowledge_points.length - 3}
-                              </span>
-                            )}
-                          </div>
-                        ) : (
-                          <span className="text-xs text-muted-foreground">未关联</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Link href={`/questions/${question.id}`}>
-                            <Button variant="outline" size="sm">
-                              查看
-                            </Button>
-                          </Link>
-                          <Link href={`/questions/${question.id}/edit`}>
-                            <Button variant="outline" size="sm">
-                              编辑
-                            </Button>
-                          </Link>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleAddToBasketAction(question)}
-                            disabled={hasQuestionInBasket(String(question.id))}
-                          >
-                            {hasQuestionInBasket(String(question.id)) ? '已在题篮' : '加入题篮'}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDelete(String(question.id))}
-                          >
-                            删除
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+            <div className="grid gap-4">
+              {paginatedQuestions.map((question) => {
+                const cardData = toLibraryCardData(question)
+                return (
+                  <QuestionLibraryCard
+                    key={question.id}
+                    question={cardData}
+                    isSelected={selectedRowKeys.includes(String(question.id))}
+                    onToggle={(checked) => handleSelectRow(String(question.id), checked)}
+                    onView={() => router.push(`/questions/${question.id}`)}
+                    onEdit={() => router.push(`/questions/${question.id}/edit`)}
+                    onDuplicate={() => handleAddToBasketAction(question)}
+                    onDelete={() => handleDelete(String(question.id))}
+                  />
+                )
+              })}
             </div>
 
-            {/* 分页控件 */}
-            <div className="flex items-center justify-between mt-4">
+            <div className="flex items-center justify-between">
               <div className="text-sm text-muted-foreground">
-                共 {questions.length} 道题目，第 {currentPage} / {totalPages} 页
+                ? {questions.length} ????? {currentPage} / {totalPages} ?
               </div>
               <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                   disabled={currentPage === 1}
                 >
-                  上一页
+                  ???
                 </Button>
                 <div className="flex items-center gap-2">
                   <Select
@@ -946,20 +809,20 @@ const fetchExportTaskStatus = async (taskId: string) => {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="10">10 条/页</SelectItem>
-                      <SelectItem value="20">20 条/页</SelectItem>
-                      <SelectItem value="50">50 条/页</SelectItem>
-                      <SelectItem value="100">100 条/页</SelectItem>
+                      <SelectItem value="10">10 ?/?</SelectItem>
+                      <SelectItem value="20">20 ?/?</SelectItem>
+                      <SelectItem value="50">50 ?/?</SelectItem>
+                      <SelectItem value="100">100 ?/?</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
                   disabled={currentPage === totalPages}
                 >
-                  下一页
+                  ???
                 </Button>
               </div>
             </div>
@@ -970,19 +833,19 @@ const fetchExportTaskStatus = async (taskId: string) => {
       <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>删除题目</DialogTitle>
+            <DialogTitle>????</DialogTitle>
             <DialogDescription>
-              软删除会将题目设置为私有并保留数据；硬删除会彻底清除题目及图片。
+              ????????????????????????????????
             </DialogDescription>
           </DialogHeader>
           <RadioGroup value={deleteMode} onValueChange={(value) => setDeleteMode(value as 'soft' | 'hard')}>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="soft" id="soft" />
-              <Label htmlFor="soft">软删除（可恢复）</Label>
+              <Label htmlFor="soft">????????</Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="hard" id="hard" />
-              <Label htmlFor="hard">硬删除（不可恢复）</Label>
+              <Label htmlFor="hard">?????????</Label>
             </div>
           </RadioGroup>
           <DialogFooter>
@@ -991,14 +854,14 @@ const fetchExportTaskStatus = async (taskId: string) => {
               onClick={() => setDeleteModalOpen(false)}
               disabled={bulkLoading}
             >
-              取消
+              ??
             </Button>
             <Button
               variant={deleteMode === 'hard' ? 'destructive' : 'default'}
               onClick={handleBulkDelete}
               disabled={bulkLoading}
             >
-              {bulkLoading ? '删除中...' : (deleteMode === 'hard' ? '硬删除' : '软删除')}
+              {bulkLoading ? '???...' : deleteMode === 'hard' ? '???' : '???'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1014,6 +877,50 @@ const fetchExportTaskStatus = async (taskId: string) => {
       />
     </div>
   )
+}
+
+function applyInMemoryFilters(list: QuestionRecord[], filters: QuestionLibraryFilters) {
+  return list.filter((question) => {
+    if (filters.grade?.length) {
+      const gradeMatches = (question.tags || []).some((tag) => filters.grade?.includes(tag))
+      if (!gradeMatches) {
+        return false
+      }
+    }
+    if (filters.knowledge?.length && (question.knowledge_points?.length || 0) > 0) {
+      const knowledgeMatches = question.knowledge_points!.some((kp) => filters.knowledge!.includes(kp))
+      if (!knowledgeMatches) {
+        return false
+      }
+    }
+    return true
+  })
+}
+
+async function getAccessToken() {
+  const session = await supabase.auth.getSession()
+  const token = session.data.session?.access_token
+  if (!token) {
+    throw new Error('未找到登录凭证')
+  }
+  return token
+}
+
+async function fetchExportTaskStatus(taskId: string): Promise<ExportTask | null> {
+  const token = await getAccessToken()
+  const res = await fetch(`/api/export-tasks/status?taskId=${taskId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+  const data = await res.json().catch(() => ({}))
+  if (res.status === 404) {
+    return null
+  }
+  if (!res.ok) {
+    throw new Error(data.error || '查询导出任务失败')
+  }
+  return data.task as ExportTask
 }
 
 function triggerDownload(blob: Blob, filename: string) {
@@ -1076,29 +983,45 @@ function splitCsvLine(line: string) {
   return result
 }
 
-function getTypeLabel(type: string) {
-  const labels: Record<string, string> = {
-    choice: '选择题',
-    fill: '填空题',
-    essay: '解答题',
-  }
-  return labels[type] || type
-}
-
 function getDifficultyLabel(level: string) {
   const labels: Record<string, string> = {
-    easy: '简单',
-    medium: '中等',
-    hard: '困难',
+    easy: '??',
+    medium: '??',
+    hard: '??',
   }
   return labels[level] || level
 }
 
-function getDifficultyVariant(level: string): 'success' | 'warning' | 'error' | 'default' {
-  const variants: Record<string, 'success' | 'warning' | 'error'> = {
-    easy: 'success',
-    medium: 'warning',
-    hard: 'error',
+function formatCreatedAt(dateString?: string) {
+  if (!dateString) return undefined
+  const date = new Date(dateString)
+  if (Number.isNaN(date.getTime())) return undefined
+  return new Intl.DateTimeFormat('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(date)
+}
+
+function toLibraryCardData(question: QuestionRecord): QuestionLibraryCardData {
+  const safeType: QuestionLibraryCardData['type'] = ['choice', 'fill', 'solve', 'essay', 'proof'].includes(question.type as any)
+    ? (question.type as QuestionLibraryCardData['type'])
+    : 'choice'
+
+  const tags: QuestionLibraryCardData['tags'] = []
+  if (question.difficulty) {
+    tags.push({ category: 'difficulty', value: getDifficultyLabel(question.difficulty) })
   }
-  return variants[level] || 'default'
+  ;(question.knowledge_points || []).forEach((kp) => {
+    tags.push({ category: 'knowledge', value: kp })
+  })
+
+  return {
+    id: String(question.id),
+    type: safeType,
+    content: question.content || '',
+    answer: question.answer || '',
+    createdAt: formatCreatedAt(question.created_at),
+    tags,
+  }
 }

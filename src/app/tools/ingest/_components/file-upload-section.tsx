@@ -20,29 +20,7 @@ export function FileUploadSection({ onSuccess }: FileUploadSectionProps) {
   const { toast } = useToast()
 
   // 处理文件拖拽
-  const handleDrag = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    if (e.type === 'dragenter' || e.type === 'dragover') {
-      setDragActive(true)
-    } else if (e.type === 'dragleave') {
-      setDragActive(false)
-    }
-  }, [])
-
-  // 处理文件放置
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setDragActive(false)
-
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFileSelect(e.dataTransfer.files[0])
-    }
-  }, [])
-
-  // 处理文件选择
-  const handleFileSelect = (file: File) => {
+  const handleFileSelect = useCallback((file: File) => {
     // 验证文件类型
     const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf']
     if (!validTypes.includes(file.type)) {
@@ -66,14 +44,36 @@ export function FileUploadSection({ onSuccess }: FileUploadSectionProps) {
     }
 
     setSelectedFile(file)
-  }
+  }, [toast])
+
+  // 处理文件拖拽
+  const handleDrag = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (e.type === 'dragenter' || e.type === 'dragover') {
+      setDragActive(true)
+    } else if (e.type === 'dragleave') {
+      setDragActive(false)
+    }
+  }, [])
+
+  // 处理文件放置
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDragActive(false)
+
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFileSelect(e.dataTransfer.files[0])
+    }
+  }, [handleFileSelect])
 
   // 处理文件输入变化
-  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       handleFileSelect(e.target.files[0])
     }
-  }
+  }, [handleFileSelect])
 
   // 清除选择的文件
   const handleClearFile = () => {

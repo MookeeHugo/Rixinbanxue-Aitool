@@ -132,6 +132,16 @@ async function quickClean() {
   }
 }
 
+async function runLogMaintenance() {
+  try {
+    log('🗂️ 执行 log-maintenance 脚本...', 'yellow');
+    await execAsync('node scripts/log-maintenance.mjs', { cwd: rootDir });
+    log('✅ log-maintenance 完成', 'green');
+  } catch (error) {
+    log(`⚠️  log-maintenance 执行失败: ${error.message}`, 'yellow');
+  }
+}
+
 /**
  * 启动开发服务器
  */
@@ -207,6 +217,7 @@ async function main() {
     // 2. 清理缓存（可选）
     if (shouldClean) {
       await quickClean();
+      await runLogMaintenance();
     }
 
     // 3. 启动开发服务器

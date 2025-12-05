@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getCurrentUser } from '@/lib/auth'
@@ -15,22 +15,8 @@ export default function PaperDetailPage() {
   const [questions, setQuestions] = useState<Question[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    checkUserAndLoadPaper()
-  }, [paperId])
-
-  const checkUserAndLoadPaper = async () => {
-    const currentUser = await getCurrentUser()
-    if (!currentUser) {
-      router.push('/login')
-      return
-    }
-    loadPaper()
-  }
-
-  const loadPaper = async () => {
+  const loadPaper = useCallback(async () => {
     try {
-      // 加载试卷信息
       const { data: paperData, error: paperError } = await supabase
         .from('papers')
         .select('*')
@@ -40,7 +26,6 @@ export default function PaperDetailPage() {
       if (paperError) throw paperError
       setPaper(paperData)
 
-      // 加载题目详情
       if (paperData.question_ids && paperData.question_ids.length > 0) {
         const { data: questionsData, error: questionsError } = await supabase
           .from('questions')
@@ -49,7 +34,6 @@ export default function PaperDetailPage() {
 
         if (questionsError) throw questionsError
 
-        // 按照 question_ids 的顺序排序
         const orderedQuestions = paperData.question_ids
           .map((id: string) => questionsData.find(q => q.id === id))
           .filter(Boolean) as Question[]
@@ -63,7 +47,20 @@ export default function PaperDetailPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [paperId, router])
+
+  const checkUserAndLoadPaper = useCallback(async () => {
+    const currentUser = await getCurrentUser()
+    if (!currentUser) {
+      router.push('/login')
+      return
+    }
+    loadPaper()
+  }, [loadPaper, router])
+
+  useEffect(() => {
+    checkUserAndLoadPaper()
+  }, [checkUserAndLoadPaper])
 
   const deletePaper = async () => {
     if (!confirm('确定要删除这份试卷吗？')) return

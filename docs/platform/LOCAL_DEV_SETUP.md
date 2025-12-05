@@ -42,6 +42,6 @@ node ./scripts/start-local-dev.mjs
 
 1. `npx supabase start` 卡住：检查 Docker 是否运行，或执行 `npx supabase stop && npx supabase start` 重启。
 2. Next.js 无法连接数据库：确认 `.env.local` 中 URL/Key 是否仍是 `http://127.0.0.1:54321` 与本地 anon key。
-3. 端口占用：将 `NEXT_PUBLIC_SUPABASE_URL`、`supabase/config.toml` 端口与 `npm run dev -p` 保持一致。
+3. 端口占用：将 `NEXT_PUBLIC_SUPABASE_URL`、`supabase/config.toml` 端口与 `npm run dev -- -p` 保持一致。
 
 按照以上步骤即可实现 “supabase + next dev” 的一键本地体验，减少 E2E 依赖云端服务的概率。祝开发顺利！

@@ -43,7 +43,7 @@ async function testAliyunOCR() {
 
   // Test 2: 读取测试图片
   console.log('【测试2】读取测试图片...');
-  const testImagePath = path.join(__dirname, '../AI题库前端最新版/public/math-test-page-1.jpg');
+  const testImagePath = path.join(__dirname, '../legacy/AI题库前端最新版/public/math-test-page-1.jpg');
 
   if (!fs.existsSync(testImagePath)) {
     console.error(`❌ 测试图片不存在: ${testImagePath}`);

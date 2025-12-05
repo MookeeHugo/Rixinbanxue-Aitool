@@ -9,6 +9,9 @@
 ## 报告类文档
 - `reports/mvp-verification-report.md`：原报告与实际实现存在偏差，需重新填入真实测试记录。
 
+## 技术资料
+- `technical-guide.md`：解析链路、Gemini/Qwen 环境变量与示例代码（由 `src/lib/ai-question-bank/README.md` 迁入）。
+
 ## 已归档位置说明
 - `../archive/2025-11/mvp-daily/`：Day0/Day1 日志与完成报告。
 - `../archive/2025-11/ocr-incidents/`：OCR/上传相关的排查与事故记录。

@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useState } from 'react'
 import { LatexEditor } from '@/components/latex-editor'
 import { ImagePositionEditor, useImagePositionEditor, type ImageItem } from '@/components/image-position-editor'
@@ -19,6 +20,7 @@ export default function TestPhase3Page() {
   // 图片处理状态
   const [processingImage, setProcessingImage] = useState(false)
   const [processedImageUrl, setProcessedImageUrl] = useState<string>('')
+  const [processedImageSize, setProcessedImageSize] = useState<{ width: number; height: number } | null>(null)
 
   // 图片拖拽状态
   const { images, addImage, removeImage, reorderImages } = useImagePositionEditor([
@@ -44,6 +46,7 @@ export default function TestPhase3Page() {
 
     setProcessingImage(true)
     setProcessedImageUrl('')
+    setProcessedImageSize(null)
 
     try {
       const reader = new FileReader()
@@ -60,6 +63,7 @@ export default function TestPhase3Page() {
 
         if (result.success && result.data) {
           setProcessedImageUrl(result.data.base64)
+          setProcessedImageSize({ width: result.data.width, height: result.data.height })
 
           // 添加到拖拽列表
           addImage({
@@ -194,14 +198,24 @@ export default function TestPhase3Page() {
               {processedImageUrl && (
                 <div className="space-y-2">
                   <h4 className="text-sm font-medium">处理后的图片：</h4>
-                  <div className="border rounded-md p-4 bg-muted/30">
-                    <img
-                      src={processedImageUrl}
-                      alt="处理后的图片"
-                      className="max-w-full h-auto"
-                      data-testid="processed-image"
-                    />
-                  </div>
+              <div className="border rounded-md p-4 bg-muted/30">
+                <div className="relative w-full min-h-[320px]">
+                  <Image
+                    src={processedImageUrl}
+                    alt="处理后的图片"
+                    fill
+                    sizes="(max-width: 768px) 100vw, 600px"
+                    className="object-contain"
+                    unoptimized
+                    data-testid="processed-image"
+                  />
+                </div>
+                {processedImageSize && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    显示尺寸：{processedImageSize.width}×{processedImageSize.height}px
+                  </p>
+                )}
+              </div>
                 </div>
               )}
 

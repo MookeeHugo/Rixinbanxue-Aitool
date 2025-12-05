@@ -13,7 +13,8 @@ import type {
   GeminiQuestion,
   GeminiValidationResult,
   NormalizedBox,
-  QuestionData
+  QuestionData,
+  QuestionType
 } from './types';
 import type { ImageMeta, PixelRect } from './coordinates';
 
@@ -48,7 +49,8 @@ Rules:
 rac{1}{2}$). Never leave math symbols as plain text.
 3. Detect diagrams/figures precisely. Use normalized coordinates [ymin, xmin, ymax, xmax] in the 0-100 space (one decimal precision, example: [12.5, 30.0, 36.2, 55.1]). Provide generous rough boxes with at least 10% padding (err on the larger side; downstream CV will shrink them).
 4. Always capture anchor_text_prev and anchor_text_next (10 UTF-8 chars immediately above/below the figure) for coordinate validation and later inclusion-rejection trimming.
-5. JSON must match the provided schema exactly. Do not output Markdown fences or explanations.
+5. meta.type MUST be one of "choice", "fill", "essay", or "proof" (exact match). Never output synonyms such as "fill_in_the_blank" or any Chinese text.
+6. JSON must match the provided schema exactly. Do not output Markdown fences or explanations.
 `.trim();
 
 const QUESTION_RESPONSE_SCHEMA = {
@@ -116,6 +118,31 @@ const QUESTION_RESPONSE_SCHEMA = {
   required: ['questions'] as string[]
 } as const;
 
+const QUESTION_TYPE_ALIASES: Record<string, QuestionType> = {
+  fill_in_the_blank: 'fill',
+  填空题: 'fill',
+  填空: 'fill',
+  multiple_choice: 'choice',
+  单选题: 'choice',
+  选择题: 'choice',
+  多选题: 'choice',
+  essay_question: 'essay',
+  解答题: 'essay',
+  简答题: 'essay',
+  proof_question: 'proof',
+  证明题: 'proof'
+};
+
+function normalizeQuestionType(raw?: string | null): QuestionType | undefined {
+  if (!raw) return undefined;
+  const clean = raw.trim().toLowerCase();
+  if (!clean) return undefined;
+  if (clean === 'choice' || clean === 'fill' || clean === 'essay' || clean === 'proof') {
+    return clean as QuestionType;
+  }
+  return QUESTION_TYPE_ALIASES[clean];
+}
+
 const GEMINI_BASE_URL =
   (process.env.GEMINI_BASE_URL || 'https://generativelanguage.googleapis.com').replace(
     /\/$/,
@@ -166,6 +193,19 @@ const NormalizedBoxSchema = z
     }
   });
 
+const QuestionTypeSchema = z.string().transform((value, ctx) => {
+  const normalized = normalizeQuestionType(value);
+  if (!normalized) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message:
+        'meta.type 必须是 "choice" | "fill" | "essay" | "proof" 之一（或官方别名），请检查输出'
+    });
+    return z.NEVER;
+  }
+  return normalized;
+});
+
 const GeminiImageRegionSchema = z.object({
   anchor_id: z.string().nullable().optional(),
   box_2d: NormalizedBoxSchema,
@@ -192,7 +232,7 @@ const GeminiQuestionSchema = z.object({
         .union([z.enum(['easy', 'medium', 'hard']), z.number().min(0).max(5)])
         .optional(),
       tags: z.array(z.string()).optional(),
-      type: z.enum(['choice', 'fill', 'essay', 'proof']).optional()
+      type: QuestionTypeSchema.optional()
     })
     .optional()
 });
@@ -709,6 +749,29 @@ function sanitizeImageRegionsForPayload(
   return sanitized;
 }
 
+const REGION_ALIAS_KEYS = [
+  'image_regions',
+  'imageRegions',
+  'image_boxes',
+  'imageBoxes',
+  'diagram_regions',
+  'diagramRegions',
+  'figure_regions',
+  'figureRegions'
+];
+
+const IMAGE_ALIAS_KEYS = ['images', 'imageRegions', 'image_regions', 'figures', 'figureRegions'];
+
+function resolveRegionCandidates(question: Record<string, unknown>, keys: string[]) {
+  for (const key of keys) {
+    const candidate = (question as any)?.[key];
+    if (Array.isArray(candidate) && candidate.length > 0) {
+      return candidate;
+    }
+  }
+  return [];
+}
+
 function normalizeRawGeminiPayload(payload: unknown, requestId: string): unknown {
   if (!payload || typeof payload !== 'object') {
     return payload;
@@ -723,13 +786,15 @@ function normalizeRawGeminiPayload(payload: unknown, requestId: string): unknown
       if (!question || typeof question !== 'object') {
         return question;
       }
+      const regionSource = resolveRegionCandidates(question, REGION_ALIAS_KEYS);
+      const imageSource = resolveRegionCandidates(question, IMAGE_ALIAS_KEYS);
       return {
         ...question,
-        image_regions: sanitizeImageRegionsForPayload(question.image_regions, {
+        image_regions: sanitizeImageRegionsForPayload(regionSource, {
           requestId,
           questionIndex: index + 1
         }),
-        images: sanitizeImageRegionsForPayload(question.images, {
+        images: sanitizeImageRegionsForPayload(imageSource, {
           requestId,
           questionIndex: index + 1
         })
@@ -999,13 +1064,18 @@ function normalizeQuestionData(parsed: z.infer<typeof QuestionDataSchema>): Ques
           options
         });
 
+      const rawRegions = question.image_regions ?? [];
+      const rawImages = question.images ?? [];
+
       return {
         number: fallbackNumber,
         content: decodeLatexText(question.content.trim()),
         answer: decodeLatexText(question.answer?.trim() ?? ''),
         options,
-        image_regions: [], // 将在 enrichImageRegions 中填充完整的 GeminiImageRegion
-        images: [], // 将在 enrichImageRegions 中填充完整的 GeminiImageRegion
+        image_regions: [],
+        images: [],
+        raw_image_regions: rawRegions,
+        raw_images: rawImages,
         meta: {
           difficulty: difficultyValue,
           tags,
@@ -1027,9 +1097,9 @@ async function enrichImageRegions(
     return question.image_regions ?? [];
   }
 
-  const rawRegions = question.image_regions?.length
-    ? question.image_regions
-    : question.images ?? [];
+  const rawRegions = question.raw_image_regions?.length
+    ? question.raw_image_regions
+    : question.raw_images ?? [];
 
   if (!rawRegions.length) {
     return [];
@@ -1079,13 +1149,13 @@ async function enrichImageRegions(
         box_2d: region.box_2d,
         rough_bbox: roughBox,
         padded_box_2d: paddedBox2d,
-        label: region.label,
-        description: region.description,
-        position: region.position,
+        label: region.label ?? undefined,
+        description: region.description ?? undefined,
+        position: (region.position ?? undefined) as GeminiImageRegion['position'],
         anchor_text_prev: anchorPrev,
         anchor_text_next: anchorNext,
-        confidence: region.confidence,
-        source: region.source ?? 'llm',
+        confidence: region.confidence ?? 0.75,
+        source: (region.source ?? 'llm') as GeminiImageRegion['source'],
         base64: dataUrl,
         mime_type: 'image/png',
         padding: {

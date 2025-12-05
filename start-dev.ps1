@@ -3,6 +3,12 @@ Write-Host "  Rixindemo Dev Environment Starter"
 Write-Host "========================================"
 Write-Host ""
 
+# 始终在仓库根目录执行，避免被错误工作目录影响
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+if ($scriptDir) {
+    Set-Location $scriptDir
+}
+
 # Step 1: Stop old Node processes
 Write-Host "[1/5] Cleaning old Node.js processes..."
 $nodes = Get-Process node -ErrorAction SilentlyContinue
