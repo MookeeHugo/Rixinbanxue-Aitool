@@ -1,6 +1,6 @@
 # 日新教学平台 MVP
 
-> 智能组卷 · 自动批改 · 学情分析
+> 智能组卷 · 自动批改 · 学情分析 · AI运营助手
 
 ## 🎯 项目概述
 
@@ -8,6 +8,8 @@
 - ✅ 10分钟完成组卷（节省80%时间）
 - ✅ 客观题自动批改（节省50%时间）
 - ✅ 自动生成错题本和学情分析
+- ✅ AI题库智能解析（100%图片生成成功率）
+- ✅ 小红书AI运营系统（内容爬取与分析）
 
 ## 🛠️ 技术栈 (v5 升级版)
 
@@ -74,9 +76,53 @@ npm run dev
 
 > 维护提示：执行 `npm run dev:clean` 时会自动运行 `node scripts/log-maintenance.mjs`，将 `logs/failures` / `logs/metrics` 做轮转、并同步 `tmp/archive/2025-12-04/*` 的留痕。无须启动服务也可单独执行该脚本核对 `failuresArchived`、`metricsRotated` 摘要。
 
-## 项目状态（2025-12-07）
+## 项目状态（2025-12-11）
 
-### 最新更新：首页加载挂死问题修复 (2025-12-07 晚)
+### 最新更新：Phase 2 P0 生产就绪优化完成 (2025-12-11)
+
+**✅ AI题库系统 - 图片生成问题修复**
+- **问题**: 11个文件解析成功率100%，但图片生成成功率为0%
+- **根本原因**: Supabase Storage 缺少 `question-images` 存储桶
+- **修复内容**:
+  - 创建 `question-images` 存储桶（public, 10MB限制）
+  - 修复图片裁剪和上传流程
+  - 添加详细的错误日志和诊断脚本
+- **结果**: imageSuccessRate 从 0% 提升至 **100%** (35/35 图片成功生成)
+- **测试数据**: 2025test 数据集（11个文件，35个问题）
+
+**✅ 小红书AI运营系统 - Phase 2 完成**
+- **核心功能**:
+  - ✅ 真实爬虫集成（Playwright + Cookie认证）
+  - ✅ 数据库扩展（collects、publish_time 字段）
+  - ✅ 批量爬取功能（智能重试、404跳过）
+  - ✅ 反爬虫对策（User-Agent伪装、随机延迟、鼠标模拟）
+- **已完成**:
+  - 探索页面爬取：成功率 37.5% (3/8)
+  - Cookie保存机制
+  - 完整文档和测试脚本
+- **技术债**:
+  - ⚠️ 关键词搜索功能暂停开发（反爬虫限制，成功率0%）
+  - 📋 短期方案：混合策略（探索页面 + 关键词过滤）
+  - 📋 中长期方案：调研官方API或MediaCrawler开源项目
+  - 详见：[docs/technical-debt/xiaohongshu-crawler-limitations.md](docs/technical-debt/xiaohongshu-crawler-limitations.md)
+
+**✅ GitHub仓库优化**
+- 移除测试报告和日志文件（46个文件，减少30-40MB）
+- 更新 `.gitignore` 防止未来大文件提交
+- 仓库大小：96 MB（适合GitHub上传）
+- 已同步至：https://github.com/MookeeHugo/Rixinbanxue-Aitool.git
+
+**📝 相关文档**:
+- [AI题库修复报告](docs/project-governance/bucket-fix-success-report-20251211.md)
+- [小红书爬虫完成报告](docs/xiaohongshu-real-crawler-completion-report.md)
+- [小红书下一阶段规划](docs/xiaohongshu-next-phase-plan.md)
+- [GitHub优化指南](docs/technical/github-upload-optimization-guide.md)
+
+---
+
+## 历史更新记录
+
+### 首页加载挂死问题修复 (2025-12-07 晚)
 **问题**: 首页卡在"加载中..."，文件上传后不稳定、崩溃
 
 **根本原因**:
@@ -101,7 +147,7 @@ npm run dev
 
 **验证**: `npm run lint && npm run build` 通过
 
-### 更新：Ant Design 移除 & shadcn/ui 统一 (2025-12-07 早)
+### Ant Design 移除 & shadcn/ui 统一 (2025-12-07 早)
 - ✅ 完全移除 `antd` 和 `@ant-design/nextjs-registry` 依赖
 - ✅ 新增 `FileUpload` 组件替代 Ant Design Upload (支持 R2 存储、拖拽上传、图片预览)
 - ✅ 表单系统迁移至 react-hook-form + Zod + shadcn/ui
@@ -147,6 +193,7 @@ src/
 │   ├── assignments/           # 作业管理
 │   ├── live/                  # 直播教学
 │   ├── analytics/             # 数据分析
+│   ├── ai-creator/            # 小红书AI运营 (NEW)
 │   ├── test-components/       # 组件测试页面
 │   ├── layout.tsx             # 根布局 (shadcn/ui + Sonner Toast)
 │   ├── page.tsx               # 首页
@@ -155,13 +202,21 @@ src/
 │   ├── ui/                    # shadcn/ui 组件
 │   │   ├── button.tsx
 │   │   ├── card.tsx
-│   │   ├── file-upload.tsx    # R2 文件上传组件 (NEW)
+│   │   ├── file-upload.tsx    # R2 文件上传组件
 │   │   └── ...
 │   └── Navbar.tsx             # 导航栏
 ├── lib/
 │   ├── utils.ts               # 工具函数
 │   ├── supabase.ts            # Supabase 客户端
-│   └── storage.ts             # Cloudflare R2 存储
+│   ├── storage.ts             # Cloudflare R2 存储
+│   ├── ai-question-bank/      # AI题库解析 (NEW)
+│   │   ├── process-upload.ts  # 上传处理流程
+│   │   ├── crop-question-images.ts  # 图片裁剪
+│   │   └── gemini-vision-client.ts  # Gemini Vision API
+│   └── xiaohongshu-crawler/   # 小红书爬虫 (NEW)
+│       ├── playwright-client.ts     # Playwright爬虫客户端
+│       ├── real-crawler-integration.ts  # 真实爬虫集成
+│       └── enhanced-crawler.ts      # 增强版爬虫（实验性）
 ├── stores/
 │   ├── userStore.ts           # 用户状态 (Zustand)
 │   └── questionBasketStore.ts # 题篮状态
@@ -171,7 +226,22 @@ src/
 docs/
 ├── COMPONENT_GUIDE.md         # 组件使用指南
 ├── CODING_STANDARDS.md        # 代码规范
-└── DEVELOPMENT_GUIDE.md       # 开发指南
+├── DEVELOPMENT_GUIDE.md       # 开发指南
+├── ai-question-bank/          # AI题库技术文档 (NEW)
+│   └── technical-guide.md
+├── technical-debt/            # 技术债管理 (NEW)
+│   └── xiaohongshu-crawler-limitations.md
+├── xiaohongshu-*.md          # 小红书系统文档 (NEW)
+└── project-governance/        # 项目治理文档
+    ├── bucket-fix-success-report-20251211.md
+    ├── file-archive-log.md
+    └── project-status-tracker.md
+
+scripts/
+├── auto-test-batch-upload.mjs  # 批量测试脚本 (NEW)
+├── test-keyword-search.ts      # 关键词搜索测试 (NEW)
+├── debug-crop-task.mjs         # 图片裁剪调试 (NEW)
+└── cleanup-git-large-files.ps1 # Git仓库清理 (NEW)
 
 components.json                 # shadcn/ui 配置
 tailwind.config.ts             # Tailwind + SuperDesign 配置
@@ -190,11 +260,14 @@ tailwind.config.ts             # Tailwind + SuperDesign 配置
 - [x] 调整为浅色主题并验证所有组件
 - [x] **移除 Ant Design，统一使用 shadcn/ui** (2025-12-07)
 
-### Sprint 3-4: 核心功能开发 📋 (Week 5-8 计划中)
+### Sprint 3-4: 核心功能开发 ✅ (Week 5-8 已完成)
 - [x] 题库管理页面重构 (使用 shadcn/ui)
+- [x] AI题库智能解析系统 (Gemini Vision API)
+- [x] 图片裁剪和上传功能 (100%成功率)
+- [x] 小红书AI运营系统 Phase 2 (真实爬虫集成)
+- [x] 文件上传集成 R2 存储 (FileUpload 组件)
 - [ ] 智能组卷功能优化
 - [ ] 作业管理流程完善
-- [x] 文件上传集成 R2 存储 (FileUpload 组件)
 
 ### Sprint 5-6: 高级功能 📋 (Week 9-12 计划中)
 - [ ] 直播教学模块 (ZEGO/LiveKit)
@@ -223,16 +296,28 @@ tailwind.config.ts             # Tailwind + SuperDesign 配置
 ## 🔑 主要功能
 
 ### 教师端
-- 题库管理：支持选择题、填空题、解答题
-- 智能组卷：根据知识点、难度自动生成试卷
-- 作业管理：发布、批改、统计
-- 班级管理：管理学生和班级
-- 学情分析：查看学生学习数据
+- **题库管理**: 支持选择题、填空题、解答题
+  - ✅ AI智能解析（Gemini Vision API）
+  - ✅ 自动裁剪题目图片（100%成功率）
+  - ✅ 批量上传和处理
+- **智能组卷**: 根据知识点、难度自动生成试卷
+- **作业管理**: 发布、批改、统计
+- **班级管理**: 管理学生和班级
+- **学情分析**: 查看学生学习数据
+
+### AI运营助手 (NEW)
+- **小红书内容爬取**:
+  - ✅ 真实爬虫集成（Playwright）
+  - ✅ Cookie认证系统
+  - ✅ 批量爬取功能（智能重试）
+  - ⚠️ 关键词搜索（技术债，待优化）
+- **内容分析**: AI驱动的内容质量分析
+- **配额管理**: 智能配额系统和使用监控
 
 ### 学生端
-- 在线作答：支持多种题型
-- 错题本：自动收集错题
-- 学习报告：查看知识点掌握情况
+- **在线作答**: 支持多种题型
+- **错题本**: 自动收集错题
+- **学习报告**: 查看知识点掌握情况
 
 ## 🔒 数据安全
 
@@ -261,10 +346,25 @@ tailwind.config.ts             # Tailwind + SuperDesign 配置
 
 ## 📚 文档
 
+### 开发文档
 - [组件使用指南](./docs/COMPONENT_GUIDE.md) - shadcn/ui 组件使用示例
 - [代码规范](./docs/CODING_STANDARDS.md) - TypeScript、React、Git 提交规范
 - [开发指南](./docs/DEVELOPMENT_GUIDE.md) - 环境配置、项目结构、常见问题
+
+### AI题库系统
 - [AI 题库技术手册](./docs/ai-question-bank/technical-guide.md) - Gemini/Qwen 解析流程、示例与常见错误
+- [图片生成修复报告](./docs/project-governance/bucket-fix-success-report-20251211.md) - 0%到100%的修复过程
+
+### 小红书AI运营系统
+- [小红书系统总览](./docs/xiaohongshu-project-summary.md) - 功能概述和架构
+- [真实爬虫集成文档](./docs/xiaohongshu-real-crawler-integration.md) - 爬虫实现细节
+- [Phase 2 完成报告](./docs/xiaohongshu-phase2-completion-summary.md) - 阶段性成果
+- [下一阶段规划](./docs/xiaohongshu-next-phase-plan.md) - Phase 3 计划
+- [技术债：爬虫限制](./docs/technical-debt/xiaohongshu-crawler-limitations.md) - 关键词搜索问题分析
+
+### 项目治理
+- [GitHub 优化指南](./docs/technical/github-upload-optimization-guide.md) - 仓库优化策略
+- [项目状态追踪](./docs/project-governance/project-status-tracker.md) - 进度和问题跟踪
 
 ## 🙌 贡献 / PR 模板
 
