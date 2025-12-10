@@ -64,6 +64,9 @@ logs/
 tmp/
 tests/output/
 *.log
+test-reports/
+inngest-*.log
+next-dev.log
 
 # Python
 venv/
