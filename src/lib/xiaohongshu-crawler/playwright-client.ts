@@ -158,10 +158,11 @@ export class PlaywrightCrawler {
       const cookiesFile = process.env.XHS_COOKIES_FILE || 'test-reports/xiaohongshu-cookies.json';
       await loadCookies(this.context, cookiesFile);
 
-      // 2. 执行批量爬取
-      console.log(`[PlaywrightCrawler] 目标: ${config.maxResults}个帖子，最低点赞: ${config.minLikes}`);
+      // 2. 执行批量爬取（根据关键词搜索）
+      console.log(`[PlaywrightCrawler] 关键词: "${config.keyword}", 目标: ${config.maxResults}个帖子，最低点赞: ${config.minLikes}`);
 
       const posts = await batchCrawlPosts(this.context, this.page, {
+        keyword: config.keyword,
         maxResults: Math.min(config.maxResults, 10), // 最多10个
         minLikes: config.minLikes,
         randomDelay: true,

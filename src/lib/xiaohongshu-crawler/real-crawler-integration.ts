@@ -44,14 +44,15 @@ export async function loadCookies(
 }
 
 // ============================================================================
-// 爬取探索页面
+// 爬取搜索页面
 // ============================================================================
 
 /**
- * 爬取探索页面获取帖子链接
+ * 爬取搜索页面获取帖子链接（根据关键词）
  */
-export async function crawlExplorePage(
+export async function crawlSearchPage(
   page: Page,
+  keyword: string,
   options?: {
     maxLinks?: number;
     scrollCount?: number;
@@ -61,10 +62,11 @@ export async function crawlExplorePage(
   const scrollCount = options?.scrollCount || 2;
 
   try {
-    console.log('[RealCrawler] 访问探索页面...');
+    console.log(`[RealCrawler] 搜索关键词: "${keyword}"...`);
 
-    // 访问探索页面
-    await page.goto('https://www.xiaohongshu.com/explore', {
+    // 访问搜索页面
+    const searchUrl = `https://www.xiaohongshu.com/search_result?keyword=${encodeURIComponent(keyword)}`;
+    await page.goto(searchUrl, {
       waitUntil: 'domcontentloaded',
       timeout: 30000,
     });
@@ -384,23 +386,24 @@ function extractPostId(url: string): string {
 // ============================================================================
 
 /**
- * 批量爬取帖子
+ * 批量爬取帖子（根据关键词搜索）
  */
 export async function batchCrawlPosts(
   context: BrowserContext,
   page: Page,
   options: {
+    keyword: string;
     maxResults: number;
     minLikes?: number;
     randomDelay?: boolean;
   }
 ): Promise<XHSPost[]> {
-  const {maxResults, minLikes = 0, randomDelay = true } = options;
+  const { keyword, maxResults, minLikes = 0, randomDelay = true } = options;
   const posts: XHSPost[] = [];
 
   try {
-    // 1. 获取探索页面的帖子链接
-    const links = await crawlExplorePage(page, {
+    // 1. 搜索关键词，获取帖子链接
+    const links = await crawlSearchPage(page, keyword, {
       maxLinks: maxResults * 3, // 多获取一些以应对失败
     });
 
