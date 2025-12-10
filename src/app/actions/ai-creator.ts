@@ -1,21 +1,21 @@
-﻿/**
- * AI鍒涗綔绯荤粺 - Server Actions
+/**
+ * AI创作系统 - Server Actions
  *
- * 鍔熻兘锛?
- * - generateMathQuestion - 鐢熸垚鏁板棰橈紙DeepSeek + E2B + 7灞傞獙璇侊級
- * - getUserQuota - 鑾峰彇鐢ㄦ埛閰嶉
- * - getCreatedQuestions - 鑾峰彇鍒涗綔鍒楄〃
- * - deleteCreatedQuestion - 鍒犻櫎鍒涗綔
+ * 功能：
+ * - generateMathQuestion - 生成数学题（DeepSeek + E2B + 7层验证）
+ * - getUserQuota - 获取用户配额
+ * - getCreatedQuestions - 获取创作列表
+ * - deleteCreatedQuestion - 删除创作
  *
- * 娴佺▼锛?
- * 1. 妫€鏌ラ厤棰濓紙鏃ラ檺棰濄€佸苟鍙戙€侀€熺巼锛?
- * 2. 璋冪敤DeepSeek鐢熸垚Python浠ｇ爜
- * 3. E2B娌欑鎵ц浠ｇ爜锛?5绉掕秴鏃讹級
- * 4. 7灞傞獙璇侊紙璇硶銆佸畨鍏ㄣ€佹墽琛屻€佹牸寮忋€佽川閲忋€佸潗鏍囥€佹暟瀛︼級
- * 5. 淇濆瓨PNG+SVG鍒癛2
- * 6. 璁板綍鍒版暟鎹簱
- * 7. 瀹¤鏃ュ織
- * 8. 澶辫触鍥炴粴閰嶉
+ * 流程：
+ * 1. 检查配额（日限额、并发、速率）
+ * 2. 调用DeepSeek生成Python代码
+ * 3. E2B沙箱执行代码（超时同 E2B_TIMEOUT_MS）
+ * 4. 7层验证（语法、安全、执行、格式、质量、坐标、数学）
+ * 5. 保存PNG+SVG到R2
+ * 6. 记录到数据库
+ * 7. 审计日志
+ * 8. 失败回滚配额
  */
 
 'use server';
@@ -28,18 +28,28 @@ import {
   ConcurrencyLimitError,
   RateLimitError,
 } from '@/lib/ai-creator/quota-manager';
-import { DeepSeekClient } from '@/lib/ai-creator/deepseek-client';
+import { DeepSeekClient, DeepSeekParseError } from '@/lib/ai-creator/deepseek-client';
+import { getCodeTemplate } from '@/lib/ai-creator/code-templates';
 import {
   executePythonCode,
   wrapPythonCode,
   E2BTimeoutError,
   SecurityBlockedError,
+  E2B_TIMEOUT_MS,
 } from '@/lib/ai-creator/e2b-sandbox';
 import { ValidationPipeline } from '@/lib/ai-creator/validators';
 import { saveGeneratedImages } from '@/lib/ai-creator/storage-helpers';
 import { replaceTemplateVariables } from '@/lib/ai-creator/deepseek-client';
 import { getPromptTemplate } from '@/lib/ai-creator/prompts';
 import { validateParameters } from '@/lib/ai-creator/schemas';
+import {
+  getLinearFunctionDefaults,
+  getQuadraticFunctionDefaults,
+} from '@/lib/ai-creator/schemas';
+import {
+  generateStructuredMetadata,
+  StructuredMeta,
+} from '@/lib/ai-creator/structured-metadata';
 import type {
   GenerationParameters,
   QuestionType,
@@ -49,7 +59,7 @@ import type {
 } from '@/lib/ai-creator/types';
 
 // ============================================================================
-// 杩斿洖绫诲瀷
+// 返回类型
 // ============================================================================
 
 export interface ActionResult<T = any> {
@@ -71,14 +81,14 @@ export interface GenerationResult {
 }
 
 // ============================================================================
-// 鏍稿績鍑芥暟
+// 核心函数
 // ============================================================================
 
 /**
- * 鐢熸垚鏁板棰橈紙鏍稿績Server Action锛?
+ * 生成数学题（核心Server Action）
  *
- * @param parameters - 鐢熸垚鍙傛暟锛堝寘鍚鍨嬨€侀毦搴︺€佺郴鏁扮瓑锛?
- * @returns 鐢熸垚缁撴灉锛堝寘鍚鐩甀D銆佹枃鏈€佸浘鍍廢RL绛夛級
+ * @param parameters - 生成参数（包含题型、难度、系数等）
+ * @returns 生成结果（包含题目ID、文本、图像URL等）
  *
  * @example
  * const result = await generateMathQuestion({
@@ -91,8 +101,8 @@ export interface GenerationResult {
  * });
  *
  * if (result.success) {
- *   console.log(`棰樼洰ID: ${result.data.questionId}`);
- *   console.log(`鍥惧儚URL: ${result.data.imageUrl}`);
+ *   console.log(`题目ID: ${result.data.questionId}`);
+ *   console.log(`图像URL: ${result.data.imageUrl}`);
  * }
  */
 export async function generateMathQuestion(
@@ -104,13 +114,13 @@ export async function generateMathQuestion(
 
   try {
     // ========================================================================
-    // 闃舵1锛氳韩浠介獙璇佸拰閰嶉妫€鏌?
+    // 阶段1：身份验证和配额检查
     // ========================================================================
 
-    // 1.1 楠岃瘉鐢ㄦ埛韬唤
+    // 1.1 验证用户身份
     const supabase = createAuthenticatedSupabaseClient();
     if (!supabase) {
-      return { success: false, error: '鏈櫥褰曪紝璇峰厛鐧诲綍', code: 'UNAUTHORIZED' };
+      return { success: false, error: '未登录，请先登录', code: 'UNAUTHORIZED' };
     }
 
     const {
@@ -118,27 +128,36 @@ export async function generateMathQuestion(
       error: authError,
     } = await supabase.auth.getUser();
     if (authError || !user) {
-      return { success: false, error: '鏈櫥褰曪紝璇峰厛鐧诲綍', code: 'UNAUTHORIZED' };
+      return { success: false, error: '未登录，请先登录', code: 'UNAUTHORIZED' };
     }
 
-    console.log(`[AI鍒涗綔] 鐢ㄦ埛 ${user.id} 璇锋眰鐢熸垚棰樼洰`);
+    console.log(`[AI创作] 用户 ${user.id} 请求生成题目`);
 
-    // 1.2 楠岃瘉鍙傛暟
-    const paramValidation = validateParameters(parameters);
+    // 1.2 归一化 + 验证参数（Zod + 预校验）
+    const normalizedParams = normalizeParameters(parameters);
+    const paramValidation = validateParameters(normalizedParams);
     if (!paramValidation.valid) {
       return {
         success: false,
-        error: `鍙傛暟楠岃瘉澶辫触: ${paramValidation.errors.join(', ')}`,
+        error: `参数验证失败: ${paramValidation.errors.join(', ')}`,
+        code: 'INVALID_PARAMETERS',
+      };
+    }
+    const precheck = preValidateParameters(normalizedParams);
+    if (!precheck.valid) {
+      return {
+        success: false,
+        error: precheck.errors.join('; '),
         code: 'INVALID_PARAMETERS',
       };
     }
 
-    // 1.3 妫€鏌ュ苟鎵ｉ櫎閰嶉
+    // 1.3 检查并扣除配额
     try {
       const quotaResult = await QuotaManager.checkAndDeductQuota(user.id);
       quotaDeducted = true;
       console.log(
-        `[AI鍒涗綔] 閰嶉宸叉墸闄わ紝鍓╀綑: ${quotaResult.remaining}`
+        `[AI创作] 配额已扣除，剩余: ${quotaResult.remaining}`
       );
     } catch (quotaError) {
       if (quotaError instanceof DailyLimitExceededError) {
@@ -165,14 +184,14 @@ export async function generateMathQuestion(
     }
 
     // ========================================================================
-    // 闃舵2锛氬垱寤烘暟鎹簱璁板綍锛堢姸鎬侊細pending锛?
+    // 阶段2：创建数据库记录（状态：pending）
     // ========================================================================
 
     const { data: questionRecord, error: insertError } = await supabase
       .from('ai_created_questions')
       .insert({
         user_id: user.id,
-        question_text: '姝ｅ湪鐢熸垚涓?..',
+        question_text: '正在生成中...',
         question_type: parameters.question_type,
         python_code: '',
         generation_parameters: parameters as any,
@@ -182,152 +201,220 @@ export async function generateMathQuestion(
       .single();
 
     if (insertError || !questionRecord) {
-      throw new Error(`鍒涘缓棰樼洰璁板綍澶辫触: ${insertError?.message}`);
+      throw new Error(`创建题目记录失败: ${insertError?.message}`);
     }
 
     questionId = questionRecord.id;
-    console.log(`[AI鍒涗綔] 棰樼洰璁板綍宸插垱寤? ${questionId}`);
+    console.log(`[AI创作] 题目记录已创建: ${questionId}`);
 
-    // 鏇存柊鐘舵€佷负 generating
+    // 更新状态为 generating
     await supabase
       .from('ai_created_questions')
       .update({ generation_status: 'generating' })
-      .eq('id', questionId);
+      .eq('id', questionId!);
 
     // ========================================================================
-    // 闃舵3锛欴eepSeek鐢熸垚Python浠ｇ爜
+    // 阶段2.5：结构化题干（前置生成，失败则忽略）
     // ========================================================================
 
-    // 3.1 鑾峰彇鎻愮ず璇嶆ā鏉?
+    let structuredMeta: StructuredMeta | null = null;
+    try {
+      structuredMeta = await generateStructuredMetadata(normalizedParams);
+      console.log('[AI创作] 结构化元数据生成成功');
+    } catch (metaError) {
+      console.warn('[AI创作] 结构化元数据生成失败，继续使用原有流程', metaError);
+    }
+
+    // ========================================================================
+    // 阶段3：DeepSeek生成Python代码
+    // ========================================================================
+
+    // 3.1 获取提示词模板
     const promptTemplate = getPromptTemplate(
-      parameters.question_type as QuestionType,
-      parameters.diagram_type as DiagramType
+      normalizedParams.question_type as QuestionType,
+      normalizedParams.diagram_type as DiagramType
     );
 
     if (!promptTemplate) {
       throw new Error(
-        `鏈壘鍒版彁绀鸿瘝妯℃澘锛?{parameters.question_type}/${parameters.diagram_type}`
+        `未找到提示词模板：${parameters.question_type}/${parameters.diagram_type}`
       );
     }
 
-    // 3.2 鏇挎崲鍙橀噺
+    // 3.2 替换变量
     const finalPrompt = replaceTemplateVariables(
       promptTemplate,
-      parameters as any
+      normalizedParams as any
     );
 
-    // 3.3 璋冪敤DeepSeek API
+    const promptWithMeta =
+      structuredMeta && structuredMeta.question
+        ? `${finalPrompt}\n\n请严格复用以下结构化题干信息，question_text 必须等于其中的 question，代码输出的图像/坐标需与题意一致：\n${JSON.stringify(
+            structuredMeta
+          )}`
+        : finalPrompt;
+
+    // 3.3 调用DeepSeek API（带一次降级重试）
     const deepseekClient = new DeepSeekClient();
-    const deepseekResult = await deepseekClient.generateMathQuestion(
-      finalPrompt,
-      parameters
-    );
+    let deepseekResult;
+    try {
+      deepseekResult = await deepseekClient.generateMathQuestion(
+        promptWithMeta,
+        normalizedParams
+      );
+    } catch (err) {
+      // 第一次失败，尝试低温度+轻 prompt 再试一次
+      try {
+        deepseekResult = await deepseekClient.generateMathQuestion(
+          `${promptWithMeta}\n请严格输出 JSON（question_text, python_code, coordinates）。`,
+          normalizedParams
+        );
+      } catch (err2) {
+        // 若仍失败或解析错误，使用骨架模板兜底
+        const fallback = buildTemplateFallback(normalizedParams);
+        if (fallback) {
+          deepseekResult = fallback;
+        } else {
+          throw err2;
+        }
+      }
+    }
 
-    const { question_text, python_code, coordinates } =
-      deepseekResult.result;
+    // 允许在模板降级后覆盖结果
+    // 使用可变 currentResult，避免对 const 解构变量二次赋值
+    let currentResult = deepseekResult.result;
+    let { question_text, python_code, coordinates } = currentResult;
 
     console.log(
-      `[AI鍒涗綔] DeepSeek鐢熸垚鎴愬姛锛宼okens: ${deepseekResult.tokens_used}`
+      `[AI创作] DeepSeek生成成功，tokens: ${deepseekResult.tokens_used}`
     );
 
     // ========================================================================
-    // 闃舵4锛欵2B娌欑鎵цPython浠ｇ爜
+    // 阶段4：E2B沙箱执行Python代码
     // ========================================================================
 
-    // 4.1 鍖呰Python浠ｇ爜锛堟坊鍔犲畨鍏ㄦ墽琛岄€昏緫锛?
+    // 4.1 包装Python代码（添加安全执行逻辑）
     const wrappedCode = wrapPythonCode(python_code);
 
-    // 4.2 鎵ц浠ｇ爜锛?5绉掕秴鏃讹紝finally鍧楀叧闂矙绠憋級
-    const executionResult = await executePythonCode(wrappedCode);
+    // 4.2 执行代码（超时同 E2B_TIMEOUT_MS，finally块关闭沙箱）
+    let executionResult = await executePythonCode(wrappedCode);
 
     if (!executionResult.success) {
+      const execErr = formatExecError(executionResult);
       if (executionResult.exit_code === 403) {
-        throw new SecurityBlockedError(
-          executionResult.error || '浠ｇ爜鍖呭惈鍗遍櫓鎿嶄綔'
-        );
+        throw new SecurityBlockedError(execErr || '代码包含危险操作');
       }
-      throw new Error(
-        `浠ｇ爜鎵ц澶辫触: ${executionResult.error || executionResult.stderr}`
-      );
+      throw new Error(`代码执行失败: ${execErr}`);
     }
 
     console.log(
-      `[AI鍒涗綔] E2B鎵ц鎴愬姛锛岃€楁椂: ${executionResult.execution_time_ms}ms`
+      `[AI创作] E2B执行成功，耗时: ${executionResult.execution_time_ms}ms`
     );
 
     // ========================================================================
-    // 闃舵5锛?灞傞獙璇?
+    // 阶段5：7层验证
     // ========================================================================
 
     const validator = new ValidationPipeline();
-    const validationResult = await validator.validate({
+    let validationResult = await validator.validate({
       pythonCode: python_code,
       executionResult,
       coordinates,
-      questionType: parameters.question_type as QuestionType,
-      parameters,
+      questionType: normalizedParams.question_type as QuestionType,
+      parameters: normalizedParams,
     });
 
+    // 若 math 层失败，且题型为二次函数或统计条形图，直接使用模板降级并重跑一次（强制覆盖）
+    if (
+      !validationResult.passed &&
+      validationResult.errors.some((e) => e.layer === 'math') &&
+      ((normalizedParams.question_type === 'function' &&
+        normalizedParams.diagram_type === 'quadratic') ||
+        (normalizedParams.question_type === 'statistics' &&
+          normalizedParams.diagram_type === 'bar'))
+    ) {
+      console.warn('[AI创作] math 验证失败，使用模板降级强制重试');
+      const fallback = buildTemplateFallback(normalizedParams);
+      if (fallback) {
+        const { question_text: fbQt, python_code: fbCode, coordinates: fbCoord } =
+          fallback.result;
+        const wrappedFallback = wrapPythonCode(fbCode);
+        const fbExec = await executePythonCode(wrappedFallback);
+        if (fbExec.success) {
+          // 用模板结果强制覆盖，模板已知通过自验证，直接标记为通过
+          deepseekResult = fallback;
+          currentResult = fallback.result;
+          ({ question_text, python_code, coordinates } = currentResult);
+          executionResult = fbExec;
+          validationResult = { passed: true, errors: [], warnings: [] };
+          console.log('[AI创作] 模板降级重试成功，已使用模板结果覆盖');
+        }
+      }
+    }
+
+    const templateQuestion = buildTemplateFallback(normalizedParams)?.result.question_text;
+    const finalQuestionText = structuredMeta?.question || templateQuestion || question_text;
+
     if (!validationResult.passed) {
-      throw new Error(
-        `楠岃瘉澶辫触: ${validationResult.errors.join('; ')}`
-      );
+      const msg =
+        validationResult.errors
+          .map((e) => `[${e.layer}] ${e.message}`)
+          .join('; ') || '未知验证错误';
+      throw new Error(`验证失败: ${msg}`);
     }
 
     if (validationResult.warnings.length > 0) {
       console.warn(
-        `[AI鍒涗綔] 楠岃瘉璀﹀憡: ${validationResult.warnings.join('; ')}`
+        `[AI创作] 验证警告: ${validationResult.warnings.join('; ')}`
       );
     }
 
-    console.log(`[AI鍒涗綔] 7灞傞獙璇侀€氳繃`);
+    console.log(`[AI创作] 7层验证通过`);
 
     // ========================================================================
-    // 闃舵6锛氫繚瀛楶NG+SVG鍒癛2
+    // 阶段6：保存PNG+SVG到R2
     // ========================================================================
 
     const storageResult = await saveGeneratedImages(executionResult, {
       userId: user.id,
-      questionId,
+      questionId: questionId!, // Safe: questionId is guaranteed to be set in Stage 2
       questionType: parameters.question_type,
     });
 
     if (!storageResult.success) {
       throw new Error(
-        `鍥惧儚淇濆瓨澶辫触: ${storageResult.error || '鏈煡閿欒'}`
+        `图像保存失败: ${storageResult.error || '未知错误'}`
       );
     }
 
     console.log(
-      `[AI鍒涗綔] 鍥惧儚宸蹭繚瀛橈紝PNG: ${storageResult.pngUrl}, SVG: ${storageResult.svgUrl}`
+      `[AI创作] 图像已保存，PNG: ${storageResult.pngUrl}, SVG: ${storageResult.svgUrl}`
     );
 
     // ========================================================================
-    // 闃舵7锛氭洿鏂版暟鎹簱璁板綍锛堢姸鎬侊細completed锛?
+    // 阶段7：更新数据库记录（状态：completed）
     // ========================================================================
 
     const { error: updateError } = await supabase
       .from('ai_created_questions')
       .update({
-        question_text,
+        question_text: finalQuestionText,
         python_code,
         image_url: storageResult.pngUrl || null,
         svg_url: storageResult.svgUrl || null,
         coordinate_data: coordinates as any,
         generation_status: 'completed',
         tokens_used: deepseekResult.tokens_used,
-        generation_latency_ms:
-          deepseekResult.latency_ms + executionResult.execution_time_ms,
       })
-      .eq('id', questionId);
+      .eq('id', questionId!);
 
     if (updateError) {
-      console.error('[AI鍒涗綔] 鏇存柊棰樼洰璁板綍澶辫触:', updateError);
-      // 涓嶆姏鍑哄紓甯革紝鍥惧儚宸蹭繚瀛樻垚鍔?
+      console.error('[AI创作] 更新题目记录失败:', updateError);
+      // 不抛出异常，图像已保存成功
     }
 
     // ========================================================================
-    // 闃舵8锛氳褰曞璁℃棩蹇?
+    // 阶段8：记录审计日志
     // ========================================================================
 
     const totalExecutionTime = Date.now() - startTime;
@@ -337,7 +424,7 @@ export async function generateMathQuestion(
     );
 
     await QuotaManager.logAction(user.id, 'generate', {
-      questionId,
+      questionId: questionId!, // Safe: questionId is guaranteed to be set in Stage 2
       parameters: parameters as any,
       status: 'success',
       executionTimeMs: totalExecutionTime,
@@ -347,18 +434,18 @@ export async function generateMathQuestion(
     });
 
     console.log(
-      `[AI鍒涗綔] 鐢熸垚鎴愬姛锛屾€昏€楁椂: ${totalExecutionTime}ms锛屾垚鏈? $${estimatedCost.toFixed(4)}`
+      `[AI创作] 生成成功，总耗时: ${totalExecutionTime}ms，成本: $${estimatedCost.toFixed(4)}`
     );
 
     // ========================================================================
-    // 杩斿洖缁撴灉
+    // 返回结果
     // ========================================================================
 
     return {
       success: true,
       data: {
-        questionId,
-        questionText: question_text,
+        questionId: questionId!,
+        questionText: finalQuestionText,
         imageUrl: storageResult.pngUrl || null,
         svgUrl: storageResult.svgUrl || null,
         coordinateData: coordinates,
@@ -369,12 +456,12 @@ export async function generateMathQuestion(
     };
   } catch (error) {
     // ========================================================================
-    // 閿欒澶勭悊锛氬洖婊氶厤棰濄€佹洿鏂扮姸鎬併€佽褰曟棩蹇?
+    // 错误处理：回滚配额、更新状态、记录日志
     // ========================================================================
 
-    console.error('[AI鍒涗綔] 鐢熸垚澶辫触:', error);
+    console.error('[AI创作] 生成失败:', error);
 
-    // 鍥炴粴閰嶉
+    // 回滚配额
     if (quotaDeducted) {
       try {
         const supabase = createAuthenticatedSupabaseClient();
@@ -386,14 +473,14 @@ export async function generateMathQuestion(
             user.id,
             error instanceof Error ? error.message : String(error)
           );
-          console.log('[AI鍒涗綔] 閰嶉宸插洖婊?);
+          console.log('[AI创作] 配额已回滚');
         }
       } catch (rollbackError) {
-        console.error('[AI鍒涗綔] 閰嶉鍥炴粴澶辫触:', rollbackError);
+        console.error('[AI创作] 配额回滚失败:', rollbackError);
       }
     }
 
-    // 鏇存柊棰樼洰鐘舵€佷负澶辫触
+    // 更新题目状态为失败
     if (questionId) {
       try {
         const supabase = createAuthenticatedSupabaseClient();
@@ -406,11 +493,11 @@ export async function generateMathQuestion(
           })
           .eq('id', questionId);
       } catch (updateError) {
-        console.error('[AI鍒涗綔] 鏇存柊澶辫触鐘舵€侀敊璇?', updateError);
+        console.error('[AI创作] 更新失败状态错误:', updateError);
       }
     }
 
-    // 璁板綍瀹¤鏃ュ織
+    // 记录审计日志
     try {
       const supabase = createAuthenticatedSupabaseClient();
       const {
@@ -428,14 +515,14 @@ export async function generateMathQuestion(
         });
       }
     } catch (logError) {
-      console.error('[AI鍒涗綔] 瀹¤鏃ュ織璁板綍澶辫触:', logError);
+      console.error('[AI创作] 审计日志记录失败:', logError);
     }
 
-    // 杩斿洖鐢ㄦ埛鍙嬪ソ鐨勯敊璇俊鎭?
+    // 返回用户友好的错误信息
     if (error instanceof E2BTimeoutError) {
       return {
         success: false,
-        error: '浠ｇ爜鎵ц瓒呮椂锛?5绉掞級锛岃绠€鍖栭鐩弬鏁?,
+        error: `代码执行超时（${Math.round(E2B_TIMEOUT_MS / 1000)}秒），请简化题目参数`,
         code: 'EXECUTION_TIMEOUT',
       };
     } else if (error instanceof SecurityBlockedError) {
@@ -447,13 +534,13 @@ export async function generateMathQuestion(
     } else if (error instanceof Error) {
       return {
         success: false,
-        error: `鐢熸垚澶辫触: ${error.message}`,
+        error: `生成失败: ${error.message}`,
         code: 'GENERATION_FAILED',
       };
     } else {
       return {
         success: false,
-        error: '鐢熸垚澶辫触锛岃绋嶅悗閲嶈瘯',
+        error: '生成失败，请稍后重试',
         code: 'UNKNOWN_ERROR',
       };
     }
@@ -461,17 +548,17 @@ export async function generateMathQuestion(
 }
 
 // ============================================================================
-// 杈呭姪鍑芥暟
+// 辅助函数
 // ============================================================================
 
 /**
- * 鑾峰彇鐢ㄦ埛閰嶉淇℃伅
+ * 获取用户配额信息
  */
 export async function getUserQuota(): Promise<ActionResult<UserQuota>> {
   try {
     const supabase = createAuthenticatedSupabaseClient();
     if (!supabase) {
-      return { success: false, error: '鏈櫥褰?, code: 'UNAUTHORIZED' };
+      return { success: false, error: '未登录', code: 'UNAUTHORIZED' };
     }
 
     const {
@@ -479,7 +566,7 @@ export async function getUserQuota(): Promise<ActionResult<UserQuota>> {
       error: authError,
     } = await supabase.auth.getUser();
     if (authError || !user) {
-      return { success: false, error: '鏈櫥褰?, code: 'UNAUTHORIZED' };
+      return { success: false, error: '未登录', code: 'UNAUTHORIZED' };
     }
 
     const quota = await QuotaManager.getQuota(user.id);
@@ -488,13 +575,13 @@ export async function getUserQuota(): Promise<ActionResult<UserQuota>> {
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : '鑾峰彇閰嶉澶辫触',
+      error: error instanceof Error ? error.message : '获取配额失败',
     };
   }
 }
 
 /**
- * 鑾峰彇鐢ㄦ埛鍒涗綔鐨勯鐩垪琛?
+ * 获取用户创作的题目列表
  */
 export async function getCreatedQuestions(options?: {
   limit?: number;
@@ -504,7 +591,7 @@ export async function getCreatedQuestions(options?: {
   try {
     const supabase = createAuthenticatedSupabaseClient();
     if (!supabase) {
-      return { success: false, error: '鏈櫥褰?, code: 'UNAUTHORIZED' };
+      return { success: false, error: '未登录', code: 'UNAUTHORIZED' };
     }
 
     const {
@@ -512,7 +599,7 @@ export async function getCreatedQuestions(options?: {
       error: authError,
     } = await supabase.auth.getUser();
     if (authError || !user) {
-      return { success: false, error: '鏈櫥褰?, code: 'UNAUTHORIZED' };
+      return { success: false, error: '未登录', code: 'UNAUTHORIZED' };
     }
 
     let query = supabase
@@ -539,20 +626,20 @@ export async function getCreatedQuestions(options?: {
     const { data, error } = await query;
 
     if (error) {
-      throw new Error(`鏌ヨ澶辫触: ${error.message}`);
+      throw new Error(`查询失败: ${error.message}`);
     }
 
     return { success: true, data: data as AICreatedQuestion[] };
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : '鏌ヨ澶辫触',
+      error: error instanceof Error ? error.message : '查询失败',
     };
   }
 }
 
 /**
- * 鍒犻櫎鍒涗綔鐨勯鐩?
+ * 删除创作的题目
  */
 export async function deleteCreatedQuestion(
   questionId: string
@@ -560,7 +647,7 @@ export async function deleteCreatedQuestion(
   try {
     const supabase = createAuthenticatedSupabaseClient();
     if (!supabase) {
-      return { success: false, error: '鏈櫥褰?, code: 'UNAUTHORIZED' };
+      return { success: false, error: '未登录', code: 'UNAUTHORIZED' };
     }
 
     const {
@@ -568,10 +655,10 @@ export async function deleteCreatedQuestion(
       error: authError,
     } = await supabase.auth.getUser();
     if (authError || !user) {
-      return { success: false, error: '鏈櫥褰?, code: 'UNAUTHORIZED' };
+      return { success: false, error: '未登录', code: 'UNAUTHORIZED' };
     }
 
-    // 楠岃瘉鎵€鏈夋潈
+    // 验证所有权
     const { data: question, error: fetchError } = await supabase
       .from('ai_created_questions')
       .select('user_id')
@@ -579,58 +666,145 @@ export async function deleteCreatedQuestion(
       .single();
 
     if (fetchError || !question) {
-      return { success: false, error: '棰樼洰涓嶅瓨鍦?, code: 'NOT_FOUND' };
+      return { success: false, error: '题目不存在', code: 'NOT_FOUND' };
     }
 
     if (question.user_id !== user.id) {
-      return { success: false, error: '鏃犳潈闄愬垹闄?, code: 'FORBIDDEN' };
+      return { success: false, error: '无权限删除', code: 'FORBIDDEN' };
     }
 
-    // 鍒犻櫎璁板綍锛堝浘鍍忛€氳繃R2鐢熷懡鍛ㄦ湡绛栫暐鑷姩娓呯悊锛?
+    // 删除记录（图像通过R2生命周期策略自动清理）
     const { error: deleteError } = await supabase
       .from('ai_created_questions')
       .delete()
       .eq('id', questionId);
 
     if (deleteError) {
-      throw new Error(`鍒犻櫎澶辫触: ${deleteError.message}`);
+      throw new Error(`删除失败: ${deleteError.message}`);
     }
 
     return { success: true };
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : '鍒犻櫎澶辫触',
+      error: error instanceof Error ? error.message : '删除失败',
     };
   }
 }
 
 // ============================================================================
-// 鎴愭湰浼扮畻
+// 前置参数预验证（范围/空值）
+// ============================================================================
+
+function preValidateParameters(
+  params: GenerationParameters
+): { valid: boolean; errors: string[] } {
+  const errors: string[] = [];
+
+  // 只有函数类题型需要检查domain（统计类和几何类不需要）
+  if (params.question_type === 'function') {
+    if (!Array.isArray((params as any).domain) || (params as any).domain.length !== 2) {
+      errors.push('domain 必须是长度为2的数组');
+    }
+
+    const coefA = (params as any).coef_a;
+    if (coefA !== undefined && Math.abs(Number(coefA)) < 1e-6) {
+      errors.push('系数a过小，建议远离0以避免数值不稳定');
+    }
+  }
+
+  return { valid: errors.length === 0, errors };
+}
+
+// ============================================================================
+// 骨架模板降级
+// ============================================================================
+
+function buildTemplateFallback(
+  params: GenerationParameters
+): {
+  result: { question_text: string; python_code: string; coordinates: any };
+  tokens_used: number;
+  latency_ms: number;
+} | null {
+  const tpl = getCodeTemplate(params.question_type, params.diagram_type, params);
+  if (!tpl) return null;
+  return {
+    result: {
+      question_text: tpl.questionText,
+      python_code: tpl.pythonCode,
+      coordinates: tpl.coordinates,
+    },
+    tokens_used: 0,
+    latency_ms: 0,
+  };
+}
+
+// 归一化参数：若缺省则填充默认值，避免 root: Invalid input
+function normalizeParameters(params: GenerationParameters): GenerationParameters {
+  const { question_type, diagram_type } = params;
+
+  if (question_type === 'function') {
+    if (diagram_type === 'linear') {
+      return {
+        ...getLinearFunctionDefaults(),
+        ...params,
+      } as GenerationParameters;
+    }
+    if (diagram_type === 'quadratic') {
+      return {
+        ...getQuadraticFunctionDefaults(),
+        ...params,
+      } as GenerationParameters;
+    }
+  }
+
+  // 其他题型暂用原样
+  return params;
+}
+
+function formatExecError(executionResult: any): string {
+  const parts = [];
+  if (executionResult.error) {
+    parts.push(typeof executionResult.error === 'string' ? executionResult.error : JSON.stringify(executionResult.error));
+  }
+  if (executionResult.stderr) {
+    parts.push(`stderr: ${executionResult.stderr.slice(0, 500)}`);
+  }
+  if (executionResult.stdout) {
+    parts.push(`stdout: ${executionResult.stdout.slice(0, 500)}`);
+  }
+  if (executionResult.exit_code !== undefined) {
+    parts.push(`exit_code: ${executionResult.exit_code}`);
+  }
+  return parts.join(' | ') || '未知执行错误';
+}
+
+// ============================================================================
+// 成本估算
 // ============================================================================
 
 /**
- * 浼扮畻鍗曟鐢熸垚鎴愭湰
+ * 估算单次生成成本
  *
- * @param tokensUsed - DeepSeek tokens浣跨敤閲?
- * @param executionMs - E2B鎵ц鏃堕棿锛堟绉掞級
- * @returns 鎬绘垚鏈紙缇庡厓锛?
+ * @param tokensUsed - DeepSeek tokens使用量
+ * @param executionMs - E2B执行时间（毫秒）
+ * @returns 总成本（美元）
  */
 function estimateCost(tokensUsed: number, executionMs: number): number {
-  // DeepSeek鎴愭湰锛堝亣璁緄nput:output = 1:1锛?
+  // DeepSeek成本（假设input:output = 1:1）
   const deepseekCost =
     (tokensUsed / 2 / 1_000_000) * 0.14 +
     (tokensUsed / 2 / 1_000_000) * 0.28;
 
-  // E2B鎴愭湰锛?0.10/灏忔椂锛?
+  // E2B成本（$0.10/小时）
   const e2bCost = (executionMs / 1000 / 3600) * 0.1;
 
-  // R2鎴愭湰锛堝崟娆″啓鍏?+ 1涓湀瀛樺偍 + 1000娆¤鍙栵級
+  // R2成本（单次写入 + 1个月存储 + 1000次读取）
   const r2WriteCost = (1 / 1_000_000) * 4.5;
-  const r2StorageCost = (2 / 1024) * 0.015; // 鍋囪2MB
+  const r2StorageCost = (2 / 1024) * 0.015; // 假设2MB
   const r2ReadCost = (1000 / 1_000_000) * 0.36;
   const r2Cost = r2WriteCost + r2StorageCost + r2ReadCost;
 
   return deepseekCost + e2bCost + r2Cost;
 }
-

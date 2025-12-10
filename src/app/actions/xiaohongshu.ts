@@ -203,10 +203,12 @@ export async function crawlPosts(
           likes: post.likes,
           comments: post.comments,
           shares: post.shares,
+          collects: post.collects,
           author_id: post.author_id,
           author_name: post.author_name,
           tags: post.tags,
           category: post.category,
+          publish_time: post.publish_time,
           crawled_by: user.id,
           crawl_keyword: keyword,
         })

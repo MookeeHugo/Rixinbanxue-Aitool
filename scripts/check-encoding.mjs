@@ -45,9 +45,10 @@ function runRipgrep(pattern, label) {
   });
 
   if (result.error) {
-    console.error('[encoding-check] 无法执行 rg，请确认已安装 ripgrep 并在 PATH 中可用。');
-    console.error(result.error);
-    process.exit(2);
+    console.warn('[encoding-check] ⚠️  ripgrep 未安装，跳过编码检查');
+    console.warn('[encoding-check] 提示：安装 ripgrep 以启用完整的编码验证');
+    console.warn('[encoding-check] 安装方法: https://github.com/BurntSushi/ripgrep#installation');
+    return; // 优雅降级：继续执行而不阻止提交
   }
 
   if (result.status === 0) {

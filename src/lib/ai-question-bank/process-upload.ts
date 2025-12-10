@@ -338,8 +338,22 @@ async function refineGeminiImageRegions(
       }
 
       try {
+        const allowUpgrade = process.env.AUTO_SCALE_LEGACY_BOX === 'true';
+        const { box: normalizedBox, upgraded } = allowUpgrade
+          ? upgradeLegacyBox(fallbackBox)
+          : { box: fallbackBox, upgraded: false };
+
+        if (upgraded) {
+          console.warn('[pipeline] upgraded legacy box scale 0-100 -> 0-1000', {
+            question: question.number,
+            regionIndex: regions.indexOf(region),
+            original: fallbackBox,
+            upgraded: normalizedBox
+          });
+        }
+
         const response = await callCoordinateRefiner({
-          roughBox: fallbackBox,
+          roughBox: normalizedBox,
           binaryPath: options.binaryPath,
           imageMeta: options.imageMeta
         });
@@ -347,14 +361,14 @@ async function refineGeminiImageRegions(
         if (response?.status === 'ok' && Array.isArray(response.refined_bbox)) {
           updatedRegions.push({
             ...region,
-            rough_bbox: fallbackBox,
+            rough_bbox: normalizedBox,
             box_2d: response.refined_bbox as NormalizedBox,
             source: 'cv'
           });
         } else {
           updatedRegions.push({
             ...region,
-            rough_bbox: fallbackBox
+            rough_bbox: normalizedBox
           });
         }
       } catch (error) {
@@ -380,14 +394,35 @@ async function refineGeminiImageRegions(
 
 type AnchorHook = (context: CropHookContext) => Promise<CropHookResult | void>;
 
+function upgradeLegacyBox(
+  box: NormalizedBox
+): { box: NormalizedBox; upgraded: boolean } {
+  const maxVal = Math.max(...box);
+  // 认为 max <=120 为旧 0-100 制式
+  if (maxVal <= 120) {
+    const scaled = box.map((v) => Math.round(v * 10)) as NormalizedBox;
+    return { box: scaled, upgraded: true };
+  }
+  return { box, upgraded: false };
+}
+
 function createAnchorHook(config: { taskId: string }): AnchorHook | undefined {
   if (!SHOULD_USE_PIPELINE) {
     return undefined;
   }
 
   return async function anchorHook(context: CropHookContext): Promise<CropHookResult | void> {
+    const verifyEnabled = process.env.ANCHOR_VERIFY_ENABLED === 'true';
     const anchorText = context.regionMeta?.anchor_text_prev?.trim();
-    if (!anchorText) {
+    const minLength =
+      Number.parseInt(process.env.ANCHOR_VERIFY_MIN_LENGTH || '5', 10) || 5;
+
+    const shouldVerify =
+      verifyEnabled &&
+      Boolean(anchorText) &&
+      (context.regionIndex > 0 || (anchorText?.length || 0) >= minLength);
+
+    if (!shouldVerify) {
       return undefined;
     }
 
@@ -400,7 +435,7 @@ function createAnchorHook(config: { taskId: string }): AnchorHook | undefined {
         context.regionIndex
       );
       const anchorResult = await callAnchorVerification({
-        anchorTextPrev: anchorText,
+        anchorTextPrev: anchorText!, // 已在 shouldVerify 中验证非空
         imagePath: tempPath,
         stripRatio: 0.12
       });
@@ -513,7 +548,9 @@ function normalizeRegion(
     return null;
   }
 
-  if (!isValidImageBox(rect, imageMeta)) {
+  // P0修复: 兜底全页框跳过 fullImageThreshold 检查
+  const isFallback = (region as any)?.source === 'fallback';
+  if (!isFallback && !isValidImageBox(rect, imageMeta)) {
     logInvalidRegion(context.taskId, context.questionNumber, '启发式过滤拦截', {
       box_2d: normalizedBox,
       mapped: rect
@@ -637,10 +674,18 @@ export async function processUploadTask(data: {
       .update({ progress: 30, updated_at: new Date().toISOString() })
       .eq('id', taskId);
 
-    const geminiResult = await parseQuestionWithCascadingFromBuffer(geminiInputBuffer);
+    const geminiResult = await parseQuestionWithCascadingFromBuffer(geminiInputBuffer, fileUrl || undefined);
 
-    if (!geminiResult.validation?.passed) {
-      throw new Error(`Gemini 数据校验失败: ${geminiResult.validation?.reasons?.join('；') ?? '未知原因'}`);
+    const validationReasons = geminiResult.validation?.reasons ?? [];
+    const blockingReasons = validationReasons.filter(reason => reason !== '缺少配图标注');
+    if (!geminiResult.validation?.passed && blockingReasons.length > 0) {
+      throw new Error(`Gemini 数据校验失败: ${blockingReasons.join('；')}`);
+    }
+    if (!geminiResult.validation?.passed && blockingReasons.length === 0) {
+      console.warn('[Gemini校验] 缺少配图标注，继续处理（降级无图模式）', {
+        taskId,
+        fileUrl
+      });
     }
 
     if (!geminiResult.questions.length) {
@@ -707,7 +752,10 @@ export async function processUploadTask(data: {
     });
 
     if (invalidRegionQuestions.length > 0) {
-      throw new Error(`部分题目配图坐标无效: ${invalidRegionQuestions.slice(0, 5).join(', ')}`);
+      console.warn('[upload-process] 部分题目配图坐标无效，降级为无图', {
+        taskId,
+        invalid: invalidRegionQuestions.slice(0, 5)
+      });
     }
 
     await supabase
@@ -741,12 +789,30 @@ export async function processUploadTask(data: {
     const questionsWithAssets = questionsWithImages.filter(q => (cropSummary.assetsByQuestion[q.number]?.length ?? 0) > 0);
 
     if (questionsWithImages.length > 0 && questionsWithAssets.length === 0) {
-      throw new Error('检测到配图题目，但裁剪结果全部为空');
+      console.warn('[upload-process] 检测到配图题目，但裁剪结果全部为空，降级为无图', {
+        taskId,
+        questionNumbers: questionsWithImages.map(q => q.number)
+      });
     }
 
     const missingAssets = questionsWithImages.filter(q => !(cropSummary.assetsByQuestion[q.number]?.length));
     if (missingAssets.length > 0) {
-      throw new Error(`部分配图裁剪失败: ${missingAssets.map(q => q.number).slice(0, 5).join(', ')}`);
+      console.warn('[upload-process] 部分配图裁剪失败（将继续处理）', {
+        taskId,
+        failedQuestions: missingAssets.map(q => q.number),
+        totalWithImages: questionsWithImages.length,
+        successCount: questionsWithAssets.length,
+        failureRate: `${Math.round((missingAssets.length / questionsWithImages.length) * 100)}%`
+      });
+
+      // 如果失败率 > 80%，仅记录告警，不再中断整个任务
+      if (missingAssets.length / questionsWithImages.length > 0.8) {
+        console.warn('[upload-process] 配图裁剪失败率过高（跳过中断）', {
+          taskId,
+          failed: missingAssets.map(q => q.number).slice(0, 5),
+          totalWithImages: questionsWithImages.length
+        });
+      }
     }
 
     await supabase

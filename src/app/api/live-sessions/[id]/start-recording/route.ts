@@ -10,6 +10,8 @@ import { createQuotaManager } from '@/lib/storage/quota';
 import { logger } from '@/lib/logger';
 import { broadcastRecordingStatus } from '../recording-status/stream/route';
 import { performanceMonitor } from '@/lib/performance-monitor';
+import { withTimeout } from '@/lib/utils/timeout';
+import { checkRateLimit, getClientId } from '@/lib/server/rate-limit';
 
 interface RouteParams {
   params: {
@@ -24,26 +26,37 @@ export async function POST(
   const startTime = Date.now();
   const sessionId = params.id;
 
+  const clientId = getClientId(req);
+  const rate = checkRateLimit(`start-recording:${clientId}`, { limit: 10, windowMs: 60_000 });
+  if (!rate.ok) {
+    return NextResponse.json(
+      { error: '请求过于频繁，请稍后再试' },
+      { status: 429, headers: { 'Retry-After': Math.ceil(rate.retryAfterMs / 1000).toString() } }
+    );
+  }
+
   try {
     const supabase = createServerClient();
 
-    // 获取当前用户
     const {
       data: { user },
       error: userError,
-    } = await supabase.auth.getUser();
+    } = await withTimeout(supabase.auth.getUser(), 10_000, 'Supabase 请求超时');
 
     if (userError || !user) {
       logger.warn('Unauthorized start recording attempt', { sessionId });
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // 获取会话信息
-    const { data: session, error: sessionError } = await supabase
-      .from('live_sessions')
-      .select('id, title, created_by, room_id, status')
-      .eq('id', sessionId)
-      .single();
+    const { data: session, error: sessionError } = await withTimeout(
+      supabase
+        .from('live_sessions')
+        .select('id, title, created_by, room_id, status')
+        .eq('id', sessionId)
+        .single(),
+      10_000,
+      'Supabase 请求超时'
+    );
 
     if (sessionError || !session) {
       logger.error('Failed to fetch session', sessionError, { sessionId });
@@ -53,7 +66,6 @@ export async function POST(
       );
     }
 
-    // 验证权限：只有会话创建者可以开始录制
     if (session.created_by !== user.id) {
       logger.warn('User not authorized to start recording', {
         sessionId,
@@ -66,7 +78,6 @@ export async function POST(
       );
     }
 
-    // 检查会话状态
     if (session.status !== 'live' && session.status !== 'scheduled') {
       logger.warn('Cannot start recording for session not in live/scheduled status', {
         sessionId,
@@ -78,16 +89,13 @@ export async function POST(
       );
     }
 
-    // 检查存储配额
     const quotaManager = createQuotaManager();
-
-    // 预估文件大小（假设录制 1 小时 = ~500MB）
     const estimatedSize = 500 * 1024 * 1024; // 500 MB
 
-    const quotaCheck = await quotaManager.checkAllQuotas(
-      user.id,
-      sessionId,
-      estimatedSize
+    const quotaCheck = await withTimeout(
+      quotaManager.checkAllQuotas(user.id, sessionId, estimatedSize),
+      10_000,
+      'Quota check timeout'
     );
 
     if (!quotaCheck.allowed) {
@@ -98,20 +106,22 @@ export async function POST(
       });
       return NextResponse.json(
         { error: quotaCheck.reason || 'Storage quota exceeded' },
-        { status: 413 } // Payload Too Large
+        { status: 413 }
       );
     }
 
-    // 初始化 LiveKit 适配器
     const livekit = new LiveKitAdapter();
 
     try {
-      // 开始录制
-      const result = await livekit.startRecording({
-        sessionId: session.id,
-        roomId: session.room_id,
-        userId: user.id,
-      });
+      const result = await withTimeout(
+        livekit.startRecording({
+          sessionId: session.id,
+          roomId: session.room_id,
+          userId: user.id,
+        }),
+        15_000,
+        'LiveKit 录制启动超时'
+      );
 
       logger.info('Recording started successfully', {
         sessionId,
@@ -119,7 +129,6 @@ export async function POST(
         userId: user.id,
       });
 
-      // Broadcast status update to all connected SSE clients
       broadcastRecordingStatus(sessionId, {
         isRecording: true,
         recordingId: result.recordingId,
@@ -127,7 +136,6 @@ export async function POST(
         egressId: result.egressId,
       });
 
-      // Track performance metrics
       const duration = Date.now() - startTime;
       performanceMonitor.trackAPIResponseTime('startRecording', duration);
       performanceMonitor.trackRecording('start');

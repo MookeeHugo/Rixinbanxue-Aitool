@@ -5,24 +5,102 @@ import Link from 'next/link'
 import { getCurrentProfile } from '@/lib/auth'
 import type { Profile } from '@/lib/supabase'
 import { logger } from '@/lib/logger'
+import { checkSupabaseHealth } from '@/lib/utils/supabase-health'
 export default function HomePage() {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [loadingTimeout, setLoadingTimeout] = useState(false)
+  const [supabaseAvailable, setSupabaseAvailable] = useState<boolean | null>(null)
 
   const loadProfile = useCallback(async () => {
     try {
+      setError(null) // 重置错误状态
       const data = await getCurrentProfile()
       setProfile(data)
     } catch (error) {
       logger.error('Failed to load profile:', { error: error })
+      // 设置错误状态，显示给用户
+      setError(error instanceof Error ? error.message : '加载用户信息失败')
     } finally {
       setLoading(false)
     }
   }, [])
 
   useEffect(() => {
-    loadProfile()
-  }, [loadProfile])
+    // 先检查 Supabase 是否可用
+    checkSupabaseHealth().then((available) => {
+      setSupabaseAvailable(available)
+      if (!available) {
+        setError('无法连接到数据库服务，请确保服务已启动')
+        setLoading(false)
+      } else {
+        loadProfile()
+      }
+    })
+
+    // 15 秒后如果还在加载，显示超时提示
+    const timer = setTimeout(() => {
+      if (loading) {
+        setLoadingTimeout(true)
+      }
+    }, 15000)
+
+    return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // 错误状态 - 显示错误信息和重试按钮
+  if (error) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="max-w-md text-center">
+          <div className="text-error text-lg mb-4">⚠️ {error}</div>
+          {supabaseAvailable === false && (
+            <div className="mb-4 p-4 bg-muted rounded-lg text-left">
+              <p className="text-sm text-foreground-secondary mb-2">
+                数据库服务未启动，请在项目根目录运行:
+              </p>
+              <code className="block bg-background px-3 py-2 rounded text-sm font-mono">
+                npx supabase start
+              </code>
+            </div>
+          )}
+          <button
+            onClick={() => {
+              setLoading(true)
+              setError(null)
+              setSupabaseAvailable(null)
+              window.location.reload()
+            }}
+            className="rx-btn rx-btn-primary"
+          >
+            重新检查
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // 加载超时提示
+  if (loading && loadingTimeout) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="max-w-md text-center">
+          <div className="text-muted mb-4">加载时间过长...</div>
+          <p className="text-sm text-foreground-secondary mb-4">
+            可能是网络问题或服务未启动
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="rx-btn rx-btn-primary"
+          >
+            刷新页面
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   // 未登录状态 - 显示欢迎页
   if (!loading && !profile) {
@@ -77,6 +155,35 @@ export default function HomePage() {
             <div className="flex gap-2">
               <Link href="/questions" className="rx-btn rx-btn-primary">
                 进入题库
+              </Link>
+            </div>
+          </section>
+
+          <section className="rx-card bg-gradient-to-br from-forest-50 to-forest-100 border-forest-300">
+            <h2 className="text-xl font-semibold mb-2 flex items-center gap-2">
+              🤖 AI创作数学题
+              <span className="text-xs px-2 py-0.5 bg-forest-500 text-white rounded-full">NEW</span>
+            </h2>
+            <p className="rx-muted mb-4">使用DeepSeek AI自动生成专业数学题和配图</p>
+            <div className="flex gap-2">
+              <Link href="/ai-creator/new" className="rx-btn rx-btn-primary">
+                开始创作
+              </Link>
+              <Link href="/ai-creator" className="rx-btn">
+                管理创作
+              </Link>
+            </div>
+          </section>
+
+          <section className="rx-card bg-gradient-to-br from-blue-50 to-blue-100 border-blue-300">
+            <h2 className="text-xl font-semibold mb-2 flex items-center gap-2">
+              📱 小红书AI分析
+              <span className="text-xs px-2 py-0.5 bg-blue-500 text-white rounded-full">NEW</span>
+            </h2>
+            <p className="rx-muted mb-4">爬取爆款帖子，AI分析+智能重写，打造教师IP</p>
+            <div className="flex gap-2">
+              <Link href="/xiaohongshu" className="rx-btn rx-btn-primary">
+                开始分析
               </Link>
             </div>
           </section>

@@ -28,6 +28,7 @@ import {
   getRandomViewport,
   getExponentialBackoffDelay,
 } from './config';
+import { loadCookies, batchCrawlPosts } from './real-crawler-integration';
 
 // ============================================================================
 // Playwright爬虫客户端类
@@ -136,7 +137,7 @@ export class PlaywrightCrawler {
   // ==========================================================================
 
   /**
-   * 搜索并爬取帖子（带重试和软封禁检测）
+   * 搜索并爬取帖子（使用真实爬虫）
    */
   async searchAndCrawl(config: CrawlConfig): Promise<CrawlResult> {
     const metadata: CrawlMetadata = {
@@ -146,69 +147,52 @@ export class PlaywrightCrawler {
       retryCount: 0,
     };
 
-    // Codex建议：重试机制
-    for (let attempt = 0; attempt < CRAWLER_CONFIG.maxRetries; attempt++) {
-      try {
-        console.log(`[PlaywrightCrawler] 尝试爬取 (${attempt + 1}/${CRAWLER_CONFIG.maxRetries})`);
+    try {
+      console.log(`[PlaywrightCrawler] 使用真实爬虫模式`);
 
-        const posts = await this._crawlWithoutRetry(config, metadata);
-
-        // 成功
-        metadata.endTime = Date.now();
-        metadata.duration = metadata.endTime - metadata.startTime;
-        metadata.totalPosts = posts.length;
-
-        return {
-          success: true,
-          posts,
-          metadata,
-        };
-      } catch (error: any) {
-        metadata.retryCount = attempt + 1;
-        metadata.errors.push(error.message || String(error));
-
-        // 检测软封禁
-        if (error.message?.includes('SOFT_BAN_DETECTED')) {
-          console.error('[PlaywrightCrawler] 检测到软封禁，停止重试');
-          metadata.endTime = Date.now();
-          metadata.duration = metadata.endTime - metadata.startTime;
-          return {
-            success: false,
-            posts: [],
-            metadata,
-            error: '检测到软封禁，请稍后再试',
-          };
-        }
-
-        // 最后一次尝试
-        if (attempt === CRAWLER_CONFIG.maxRetries - 1) {
-          console.error('[PlaywrightCrawler] 所有重试均失败');
-          metadata.endTime = Date.now();
-          metadata.duration = metadata.endTime - metadata.startTime;
-          return {
-            success: false,
-            posts: [],
-            metadata,
-            error: `爬取失败: ${error.message}`,
-          };
-        }
-
-        // 指数退避
-        const backoffDelay = getExponentialBackoffDelay(attempt);
-        console.log(`[PlaywrightCrawler] 等待 ${backoffDelay}ms 后重试...`);
-        await new Promise((resolve) => setTimeout(resolve, backoffDelay));
+      if (!this.page || !this.context) {
+        throw new Error('浏览器未初始化');
       }
-    }
 
-    // 不应该到达这里
-    metadata.endTime = Date.now();
-    metadata.duration = metadata.endTime - metadata.startTime;
-    return {
-      success: false,
-      posts: [],
-      metadata,
-      error: '未知错误',
-    };
+      // 1. 加载Cookies（如果存在）
+      const cookiesFile = process.env.XHS_COOKIES_FILE || 'test-reports/xiaohongshu-cookies.json';
+      await loadCookies(this.context, cookiesFile);
+
+      // 2. 执行批量爬取
+      console.log(`[PlaywrightCrawler] 目标: ${config.maxResults}个帖子，最低点赞: ${config.minLikes}`);
+
+      const posts = await batchCrawlPosts(this.context, this.page, {
+        maxResults: Math.min(config.maxResults, 10), // 最多10个
+        minLikes: config.minLikes,
+        randomDelay: true,
+      });
+
+      // 3. 完成统计
+      metadata.endTime = Date.now();
+      metadata.duration = metadata.endTime - metadata.startTime;
+      metadata.totalPosts = posts.length;
+
+      console.log(`[PlaywrightCrawler] 完成: 爬取${posts.length}个帖子，耗时${(metadata.duration / 1000).toFixed(1)}秒`);
+
+      return {
+        success: true,
+        posts,
+        metadata,
+      };
+    } catch (error: any) {
+      metadata.endTime = Date.now();
+      metadata.duration = metadata.endTime - metadata.startTime;
+      metadata.errors.push(error.message || String(error));
+
+      console.error('[PlaywrightCrawler] 爬取失败:', error);
+
+      return {
+        success: false,
+        posts: [],
+        metadata,
+        error: error.message || '爬取失败',
+      };
+    }
   }
 
   /**

@@ -1,12 +1,14 @@
 "use client"
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { Card } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { ChevronDown, ChevronUp } from 'lucide-react'
+import { MarkdownRenderer } from '../markdown-renderer'
 
 export type QuestionLibraryCardType = 'choice' | 'fill' | 'solve' | 'essay' | 'proof'
 
@@ -15,6 +17,7 @@ export interface QuestionLibraryCardData {
   type: QuestionLibraryCardType
   content: string
   answer: string
+  imageUrl?: string | null
   createdAt?: string
   tags?: Array<{ id?: string; category?: string; value: string }>
 }
@@ -50,6 +53,10 @@ export function QuestionLibraryCard({
 }: QuestionLibraryCardProps) {
   const [expanded, setExpanded] = useState(false)
 
+  const proxyImageUrl = question.imageUrl
+    ? `/api/image-proxy?url=${encodeURIComponent(question.imageUrl)}`
+    : null
+
   return (
     <Card className={cn('transition-all bg-white', isSelected && 'border-primary/50 shadow-sm', className)}>
       <div className="p-5 flex gap-4">
@@ -65,7 +72,11 @@ export function QuestionLibraryCard({
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="outline">{typeLabels[question.type] ?? question.type}</Badge>
               {question.tags?.map((tag) => (
-                <Badge key={`${tag.category ?? 'tag'}-${tag.value}`} variant="outline" className="bg-primary/10 border-primary/20 text-primary">
+                <Badge
+                  key={`${tag.category ?? 'tag'}-${tag.value}`}
+                  variant="outline"
+                  className="bg-primary/10 border-primary/20 text-primary"
+                >
                   {tag.value}
                 </Badge>
               ))}
@@ -78,14 +89,27 @@ export function QuestionLibraryCard({
           <div className="text-sm text-slate-900 leading-relaxed">
             {expanded ? (
               <div className="space-y-3">
-                <div className="whitespace-pre-wrap">{question.content}</div>
+                <MarkdownRenderer content={question.content} className="prose-sm" />
+                {proxyImageUrl && (
+                  <div className="relative w-40 h-40">
+                    <Image
+                      src={proxyImageUrl}
+                      alt="题目配图"
+                      fill
+                      sizes="160px"
+                      className="object-contain rounded border"
+                    />
+                  </div>
+                )}
                 <div className="rounded border border-primary/30 bg-primary/5 p-3 text-sm">
                   <p className="text-xs font-semibold text-primary mb-1">参考答案</p>
-                  <div className="whitespace-pre-wrap">{question.answer}</div>
+                  <MarkdownRenderer content={question.answer} className="prose-sm" />
                 </div>
               </div>
             ) : (
-              <p className="line-clamp-2">{question.content}</p>
+              <div className="line-clamp-2">
+                <MarkdownRenderer content={question.content} className="prose-sm" />
+              </div>
             )}
           </div>
 
@@ -123,7 +147,12 @@ export function QuestionLibraryCard({
               </Button>
             )}
             {onDelete && (
-              <Button variant="ghost" size="sm" className="text-destructive" onClick={() => onDelete(question)}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-destructive"
+                onClick={() => onDelete(question)}
+              >
                 删除
               </Button>
             )}

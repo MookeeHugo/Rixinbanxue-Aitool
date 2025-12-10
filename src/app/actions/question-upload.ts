@@ -123,18 +123,43 @@ export async function uploadQuestionFile(formData: FormData): Promise<ActionResu
     if (isDev) {
       // 开发环境：直接调用处理逻辑（不需要运行 Inngest CLI）
       console.log('开发环境：直接处理上传任务', { taskId: task.id });
-      // 使用动态导入避免影响构建
-      import('@/lib/ai-question-bank/process-upload').then(({ processUploadTask }) => {
-        processUploadTask({
-          taskId: task.id,
-          userId: user.id,
-          fileName: normalizedFileName,
-          fileUrl: fileKey,
-          traceId: task.trace_id
-        }).catch(err => {
-          console.error('后台处理失败', err);
+
+      // 为动态导入添加完整的错误处理
+      import('@/lib/ai-question-bank/process-upload')
+        .then(({ processUploadTask }) => {
+          return processUploadTask({
+            taskId: task.id,
+            userId: user.id,
+            fileName: normalizedFileName,
+            fileUrl: fileKey,
+            traceId: task.trace_id
+          });
+        })
+        .catch(err => {
+          console.error('[question-upload] 后台处理失败', {
+            taskId: task.id,
+            error: err instanceof Error ? err.message : String(err),
+            stack: err instanceof Error ? err.stack : undefined
+          });
+
+          // 更新数据库任务状态为失败
+          Promise.resolve(
+            supabase
+              .from('upload_tasks')
+              .update({
+                status: 'failed',
+                error_message: `后台处理失败: ${err instanceof Error ? err.message : '未知错误'}`,
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', task.id)
+          )
+            .then(() => {
+              console.log('[question-upload] 任务状态已更新为失败', { taskId: task.id });
+            })
+            .catch(dbErr => {
+              console.error('[question-upload] 更新任务状态失败', dbErr);
+            });
         });
-      });
     } else {
       // 生产环境：使用 Inngest 异步处理
       console.log('生产环境：发送 Inngest 事件', { taskId: task.id });

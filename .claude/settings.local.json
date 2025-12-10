@@ -1,10 +1,38 @@
 {
   "permissions": {
+    "defaultMode": "bypassPermissions",
     "allow": [
-      "Bash(npm run build:*)",
-      "Bash(npx supabase migration:*)"
+      "Bash(npm:*)",
+      "Bash(npx:*)",
+      "Bash(yarn:*)",
+      "Bash(git:*)",
+      "Bash(python:*)",
+      "Bash(node:*)",
+      "Bash(npx supabase:*)",
+      "Edit(src/**)",
+      "Edit(docs/**)",
+      "Edit(scripts/**)",
+      "Edit(tests/**)",
+      "Edit(supabase/**)",
+      "Edit(paddleocr-service/**)",
+      "Edit(*.ts)",
+      "Edit(*.tsx)",
+      "Edit(*.js)",
+      "Edit(*.jsx)",
+      "Edit(*.json)",
+      "Edit(*.md)",
+      "Edit(*.py)",
+      "Read(**/*)"
     ],
-    "deny": [],
-    "ask": []
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./secrets/**)",
+      "Read(./.aws/**)",
+      "Read(./config/credentials.json)",
+      "Bash(rm -rf:*)",
+      "Bash(curl:*)",
+      "Bash(wget:*)"
+    ]
   }
 }

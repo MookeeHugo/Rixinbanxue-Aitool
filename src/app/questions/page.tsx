@@ -1,4 +1,4 @@
-
+﻿
 "use client"
 
 import { useEffect, useMemo, useState, useCallback } from 'react'
@@ -116,7 +116,7 @@ export default function QuestionsPage() {
         setProfile(data)
       } catch (error) {
         if (!mountedRef.current) return
-        logger.error('????????', { error })
+        logger.error('加载用户信息失败', { error })
         router.push('/login')
       }
     }
@@ -159,10 +159,10 @@ export default function QuestionsPage() {
       setQuestions(filteredResult)
       setCurrentPage(1)
     } catch (error) {
-      logger.error('??????', { error })
+      logger.error('加载题库失败', { error })
       toast({
-        title: '????',
-        description: '??????????????????',
+        title: '加载失败',
+        description: '请稍后重试或检查网络',
         variant: 'destructive',
       })
     } finally {
@@ -216,10 +216,10 @@ export default function QuestionsPage() {
         }
       } catch (error) {
         if (!mountedRef.current) return
-        logger.error('轮询导出任务失败', { error })
+        logger.error('杞瀵煎嚭浠诲姟澶辫触', { error })
         toast({
-          title: '查询失败',
-          description: error instanceof Error ? error.message : '查询导出任务失败',
+          title: '鏌ヨ澶辫触',
+          description: error instanceof Error ? error.message : '鏌ヨ瀵煎嚭浠诲姟澶辫触',
           variant: 'destructive',
         })
         setExportTask(null)
@@ -234,16 +234,16 @@ export default function QuestionsPage() {
 
   useEffect(() => {
     if (!exportTask) return
-    if (exportTask.status === 'COMPLETED') {
+        if (exportTask.status === 'COMPLETED') {
       toast({
         title: '导出完成',
-        description: '可在题篮中下载文件。',
+        description: '可在题库中下载文件',
       })
     }
     if (exportTask.status === 'FAILED') {
       toast({
         title: '导出失败',
-        description: exportTask.error_message || '导出失败，请稍后重试。',
+        description: exportTask.error_message || '导出失败，请稍后重试',
         variant: 'destructive',
       })
     }
@@ -278,8 +278,8 @@ export default function QuestionsPage() {
 
     if (hasQuestionInBasket(id)) {
       toast({
-        title: '??',
-        description: '???????',
+        title: '提示',
+        description: '题目已在题篮中',
       })
       return
     }
@@ -293,16 +293,16 @@ export default function QuestionsPage() {
     })
 
     toast({
-      title: '??',
-      description: '?????',
+      title: '提示',
+      description: '已加入题篮',
     })
   }, [addToBasket, hasQuestionInBasket, toast])
 
   const handleStartBuildFromBasket = useCallback(() => {
     if (!basketQuestions.length) {
       toast({
-        title: '??',
-        description: '????',
+        title: '提示',
+        description: '题篮为空',
         variant: 'destructive',
       })
       return
@@ -310,7 +310,7 @@ export default function QuestionsPage() {
     try {
       window.localStorage.setItem('rixin-basket-snapshot', JSON.stringify(basketQuestions))
     } catch (error) {
-      logger.warn('????????', { error })
+      logger.warn('保存题篮快照失败', { error })
     }
     setBasketOpen(false)
     router.push('/papers/create?source=basket')
@@ -319,8 +319,8 @@ export default function QuestionsPage() {
   const handleExportFromBasket = useCallback(async () => {
     if (!basketQuestions.length) {
       toast({
-        title: '??',
-        description: '????',
+        title: '提示',
+        description: '题篮为空',
         variant: 'destructive',
       })
       return
@@ -342,19 +342,19 @@ export default function QuestionsPage() {
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {
-        throw new Error(data.error || '????????')
+        throw new Error(data.error || '导出任务创建失败')
       }
       setExportTask(data.task as ExportTask)
       toast({
-        title: '??',
-        description: '???????',
+        title: '导出任务已创建',
+        description: '请等待生成完成',
       })
       setBasketOpen(true)
     } catch (error: any) {
-      logger.error('????????', { error })
+      logger.error('导出任务创建失败', { error })
       toast({
-        title: '????',
-        description: error?.message || '????????',
+        title: '创建失败',
+        description: error?.message || '导出任务创建失败',
         variant: 'destructive',
       })
     } finally {
@@ -382,7 +382,7 @@ export default function QuestionsPage() {
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
-        throw new Error(data.error || '????')
+        throw new Error(data.error || '删除失败')
       }
     }
   }, [questionMap])
@@ -396,8 +396,8 @@ export default function QuestionsPage() {
   const handleBulkDelete = useCallback(async () => {
     if (!selectedRowKeys.length) {
       toast({
-        title: '??',
-        description: '?????',
+        title: '提示',
+        description: '请先选择题目',
         variant: 'destructive',
       })
       return
@@ -406,17 +406,17 @@ export default function QuestionsPage() {
     try {
       await callDeleteApi(selectedRowKeys.map(String), deleteMode)
       toast({
-        title: '??',
-        description: deleteMode === 'hard' ? '????????' : '????????',
+        title: '删除成功',
+        description: deleteMode === 'hard' ? '已硬删除所选题目' : '已软删除所选题目',
       })
       setSelectedRowKeys([])
       setDeleteModalOpen(false)
       void loadQuestions()
     } catch (error: any) {
-      logger.error('??????', { error })
+      logger.error('批量删除失败', { error })
       toast({
-        title: '????',
-        description: error.message || '??????',
+        title: '删除失败',
+        description: error.message || '批量删除失败',
         variant: 'destructive',
       })
     } finally {
@@ -427,8 +427,8 @@ export default function QuestionsPage() {
   const handleBulkExport = useCallback((format: 'csv' | 'json') => {
     if (!selectedRowKeys.length) {
       toast({
-        title: '??',
-        description: '?????',
+        title: '提示',
+        description: '请先选择题目',
         variant: 'destructive',
       })
       return
@@ -439,8 +439,8 @@ export default function QuestionsPage() {
 
     if (!rows.length) {
       toast({
-        title: '??',
-        description: '?????????',
+        title: '导出失败',
+        description: '未找到可导出的题目',
         variant: 'destructive',
       })
       return
@@ -450,7 +450,7 @@ export default function QuestionsPage() {
       const blob = new Blob([JSON.stringify(rows, null, 2)], { type: 'application/json;charset=utf-8' })
       triggerDownload(blob, 'questions-export.json')
     } else {
-      const header = ['??', '??', '??', '??', '???']
+      const header = ['题干', '答案', '题型', '难度', '知识点']
       const csv = [
         header.join(','),
         ...rows.map((row) => [
@@ -464,16 +464,16 @@ export default function QuestionsPage() {
       triggerDownload(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), 'questions-export.csv')
     }
     toast({
-      title: '????',
-      description: `??? ${rows.length} ???`,
+      title: '导出成功',
+      description: `已导出 ${rows.length} 道题目`,
     })
   }, [questionMap, selectedRowKeys, toast])
 
   const handleBulkImport = useCallback(async (file: File) => {
     if (!profile) {
       toast({
-        title: '??',
-        description: '????',
+        title: '提示',
+        description: '请先登录',
         variant: 'destructive',
       })
       return
@@ -481,8 +481,8 @@ export default function QuestionsPage() {
 
     if (!file.name.endsWith('.csv')) {
       toast({
-        title: '??',
-        description: '??? CSV ??',
+        title: '格式错误',
+        description: '仅支持 CSV 文件',
         variant: 'destructive',
       })
       return
@@ -493,8 +493,8 @@ export default function QuestionsPage() {
       const rows = parseCsv(text)
       if (!rows.length) {
         toast({
-          title: '??',
-          description: '??????',
+          title: '提示',
+          description: '未读取到数据',
           variant: 'destructive',
         })
         return
@@ -513,15 +513,15 @@ export default function QuestionsPage() {
       if (error) throw error
 
       toast({
-        title: '????',
-        description: `???? ${payload.length} ???`,
+        title: '导入成功',
+        description: `已导入 ${payload.length} 道题目`,
       })
       void loadQuestions()
     } catch (error: any) {
-      logger.error('????', { error })
+      logger.error('导入失败', { error })
       toast({
-        title: '????',
-        description: error.message || '????',
+        title: '导入失败',
+        description: error.message || '导入失败',
         variant: 'destructive',
       })
     }
@@ -561,7 +561,7 @@ export default function QuestionsPage() {
   if (!profile) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-muted-foreground">???...</div>
+        <div className="text-muted-foreground">加载中...</div>
       </div>
     )
   }
@@ -570,13 +570,13 @@ export default function QuestionsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold">????</h1>
-          <p className="text-muted-foreground mt-1">??????????????????????</p>
+          <h1 className="text-3xl font-bold">题库管理</h1>
+          <p className="text-muted-foreground mt-1">查看、筛选、导出/导入题目</p>
         </div>
         <div className="flex items-center gap-3">
           <Link href="/tools/ingest">
             <Button variant="outline" size="lg">
-              ????
+              批量导入
             </Button>
           </Link>
           <Button
@@ -586,12 +586,12 @@ export default function QuestionsPage() {
             data-testid="basket-open-btn"
           >
             <ShoppingBasket className="mr-2 h-4 w-4" />
-            ?? ({basketCount})
+            题篮 ({basketCount})
           </Button>
           <Link href="/questions/create">
             <Button size="lg">
               <Plus className="mr-2 h-4 w-4" />
-              ????
+              新建题目
             </Button>
           </Link>
         </div>
@@ -620,7 +620,7 @@ export default function QuestionsPage() {
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative w-64">
             <Input
-              placeholder="??????/??"
+              placeholder="搜索题干/答案"
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
               onKeyDown={(e) => {
@@ -651,13 +651,13 @@ export default function QuestionsPage() {
               void loadQuestions()
             }}
           >
-            ??
+            搜索
           </Button>
         </div>
 
         {searchHistory.length > 0 && (
           <div className="flex items-center gap-2 flex-wrap text-xs">
-            <span className="text-muted-foreground">????:</span>
+            <span className="text-muted-foreground">最近搜索:</span>
             {searchHistory.map((keyword) => (
               <button
                 key={keyword}
@@ -679,7 +679,7 @@ export default function QuestionsPage() {
                 setSearchHistory([])
               }}
             >
-              ??
+              清空
             </Button>
           </div>
         )}
@@ -689,9 +689,9 @@ export default function QuestionsPage() {
             <Checkbox
               checked={isAllSelected ? true : isSomeSelected ? 'indeterminate' : false}
               onCheckedChange={handleSelectAll}
-              aria-label="??"
+              aria-label="全选"
             />
-            <span className="text-xs text-muted-foreground">????</span>
+            <span className="text-xs text-muted-foreground">全选</span>
           </div>
           <Button
             variant="outline"
@@ -703,7 +703,7 @@ export default function QuestionsPage() {
             }}
           >
             <Trash2 className="mr-1 h-4 w-4" />
-            ????
+            删除选中
           </Button>
           <Button
             variant="outline"
@@ -712,7 +712,7 @@ export default function QuestionsPage() {
             onClick={() => handleBulkExport('csv')}
           >
             <Download className="mr-1 h-4 w-4" />
-            ?? CSV
+            导出 CSV
           </Button>
           <Button
             variant="outline"
@@ -721,7 +721,7 @@ export default function QuestionsPage() {
             onClick={() => handleBulkExport('json')}
           >
             <Download className="mr-1 h-4 w-4" />
-            ?? JSON
+            导出 JSON
           </Button>
           <label>
             <input
@@ -739,12 +739,12 @@ export default function QuestionsPage() {
             <Button variant="outline" size="sm" asChild>
               <span className="cursor-pointer">
                 <UploadCloud className="mr-1 h-4 w-4" />
-                ????
+                导入 CSV
               </span>
             </Button>
           </label>
           <span className="text-xs text-muted-foreground">
-            ?? {selectedRowKeys.length} / ? {questions.length}
+            已选 {selectedRowKeys.length} / 共 {questions.length}
           </span>
         </div>
       </Card>
@@ -752,15 +752,15 @@ export default function QuestionsPage() {
       <Card className="p-6 space-y-6">
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="text-muted-foreground">???...</div>
+            <div className="text-muted-foreground">加载中...</div>
           </div>
         ) : questions.length === 0 ? (
           <div className="py-12 text-center">
-            <p className="text-muted-foreground mb-4">????</p>
+            <p className="text-muted-foreground mb-4">暂无题目</p>
             <Link href="/questions/create">
               <Button>
                 <Plus className="mr-2 h-4 w-4" />
-                ???????
+                去创建题目
               </Button>
             </Link>
           </div>
@@ -786,7 +786,7 @@ export default function QuestionsPage() {
 
             <div className="flex items-center justify-between">
               <div className="text-sm text-muted-foreground">
-                ? {questions.length} ????? {currentPage} / {totalPages} ?
+                共 {questions.length} 道题，第 {currentPage} / {totalPages} 页
               </div>
               <div className="flex items-center gap-2">
                 <Button
@@ -795,7 +795,7 @@ export default function QuestionsPage() {
                   onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                   disabled={currentPage === 1}
                 >
-                  ???
+                  上一页
                 </Button>
                 <div className="flex items-center gap-2">
                   <Select
@@ -804,48 +804,48 @@ export default function QuestionsPage() {
                       setPageSize(Number(value))
                       setCurrentPage(1)
                     }}
+                    >
+                      <SelectTrigger className="w-32">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="10">10 条/页</SelectItem>
+                        <SelectItem value="20">20 条/页</SelectItem>
+                        <SelectItem value="50">50 条/页</SelectItem>
+                        <SelectItem value="100">100 条/页</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
                   >
-                    <SelectTrigger className="w-32">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="10">10 ?/?</SelectItem>
-                      <SelectItem value="20">20 ?/?</SelectItem>
-                      <SelectItem value="50">50 ?/?</SelectItem>
-                      <SelectItem value="100">100 ?/?</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    下一页
+                  </Button>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-                  disabled={currentPage === totalPages}
-                >
-                  ???
-                </Button>
               </div>
-            </div>
-          </>
+            </>
         )}
       </Card>
 
       <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>????</DialogTitle>
+            <DialogTitle>删除题目</DialogTitle>
             <DialogDescription>
-              ????????????????????????????????
+              请选择删除方式：软删除仅隐藏题目，硬删除会同时删除资源
             </DialogDescription>
           </DialogHeader>
           <RadioGroup value={deleteMode} onValueChange={(value) => setDeleteMode(value as 'soft' | 'hard')}>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="soft" id="soft" />
-              <Label htmlFor="soft">????????</Label>
+              <Label htmlFor="soft">软删除（保留数据）</Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="hard" id="hard" />
-              <Label htmlFor="hard">?????????</Label>
+              <Label htmlFor="hard">硬删除（删除配图等资源）</Label>
             </div>
           </RadioGroup>
           <DialogFooter>
@@ -854,14 +854,14 @@ export default function QuestionsPage() {
               onClick={() => setDeleteModalOpen(false)}
               disabled={bulkLoading}
             >
-              ??
+              取消
             </Button>
             <Button
               variant={deleteMode === 'hard' ? 'destructive' : 'default'}
               onClick={handleBulkDelete}
               disabled={bulkLoading}
             >
-              {bulkLoading ? '???...' : deleteMode === 'hard' ? '???' : '???'}
+              {bulkLoading ? '删除中...' : deleteMode === 'hard' ? '硬删除' : '软删除'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -918,7 +918,7 @@ async function fetchExportTaskStatus(taskId: string): Promise<ExportTask | null>
     return null
   }
   if (!res.ok) {
-    throw new Error(data.error || '查询导出任务失败')
+    throw new Error(data.error || '鏌ヨ瀵煎嚭浠诲姟澶辫触')
   }
   return data.task as ExportTask
 }
@@ -985,9 +985,9 @@ function splitCsvLine(line: string) {
 
 function getDifficultyLabel(level: string) {
   const labels: Record<string, string> = {
-    easy: '??',
-    medium: '??',
-    hard: '??',
+    easy: '简单',
+    medium: '中等',
+    hard: '困难',
   }
   return labels[level] || level
 }
@@ -1021,7 +1021,9 @@ function toLibraryCardData(question: QuestionRecord): QuestionLibraryCardData {
     type: safeType,
     content: question.content || '',
     answer: question.answer || '',
+    imageUrl: question.image_url || null,
     createdAt: formatCreatedAt(question.created_at),
     tags,
   }
 }
+

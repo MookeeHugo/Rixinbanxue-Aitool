@@ -1,4 +1,29 @@
 {
+  "BAD-01-low-resolution.jpg": {
+    "scenario": "04_bad_quality",
+    "expected_count": 31,
+    "notes": "低分辨率扫描，考察小字清晰度"
+  },
+  "BAD-02-camera-shadow.jpg": {
+    "scenario": "04_bad_quality",
+    "expected_count": 6,
+    "notes": "手机拍摄阴影干扰"
+  },
+  "BAD-03-skewed-angle.jpg": {
+    "scenario": "04_bad_quality",
+    "expected_count": 10,
+    "notes": "倾斜拍摄，考察矫正能力"
+  },
+  "BAD-04-folded-paper.jpg": {
+    "scenario": "04_bad_quality",
+    "expected_count": 8,
+    "notes": "折痕遮挡，局部缺失"
+  },
+  "BAD-05-poor-lighting.jpg": {
+    "scenario": "04_bad_quality",
+    "expected_count": 6,
+    "notes": "光照不均导致低对比度"
+  },
   "BAD-06-low-contrast-photo.jpg": {
     "scenario": "04_bad_quality",
     "source": "tmp/gemini-test-results/测试试卷4/question-4-img1.png",
@@ -6,20 +31,5 @@
     "notes": "评估图像增强或预处理策略",
     "addedAt": "2025-12-01T10:56:00+08:00",
     "expected_count": 1
-  },
-  "BAD-01-low-resolution.jpg": {
-    "expected_count": 31
-  },
-  "BAD-02-camera-shadow.jpg": {
-    "expected_count": 6
-  },
-  "BAD-03-skewed-angle.jpg": {
-    "expected_count": 10
-  },
-  "BAD-04-folded-paper.jpg": {
-    "expected_count": 8
-  },
-  "BAD-05-poor-lighting.jpg": {
-    "expected_count": 6
   }
 }

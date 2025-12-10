@@ -69,11 +69,18 @@ export async function cropAndUploadQuestionImages(
   const imageWidth = metadata.width || 0;
   const imageHeight = metadata.height || 0;
 
+  // P0修复: 检查图片元数据有效性
+  if (!imageWidth || !imageHeight || imageWidth === 0 || imageHeight === 0) {
+    throw new Error(`无效的图片元数据: width=${imageWidth}, height=${imageHeight}`);
+  }
+
   console.log('[image-crop] image size', { imageWidth, imageHeight });
 
   const assetsByQuestion: Record<string, QuestionImageAsset[]> = {};
   let totalRegions = 0;
   let succeededRegions = 0;
+  let filteredRegions = 0;
+  let invalidRegions = 0;
 
   const paddingPx = Math.max(
     20,
@@ -103,6 +110,7 @@ export async function cropAndUploadQuestionImages(
           taskId,
           region
         });
+        invalidRegions += 1;
         continue;
       }
 
@@ -120,33 +128,113 @@ export async function cropAndUploadQuestionImages(
         const finalWidth = right - left;
         const finalHeight = bottom - top;
 
-        if (finalWidth <= 0 || finalHeight <= 0) {
+        // Sharp 要求 left + width < imageWidth（严格小于），所以如果触及边界要留1px余量
+        if (left + finalWidth >= imageWidth && finalWidth > 1) {
+          const adjustedWidth = imageWidth - left - 1;
+          console.warn(`[image-crop] 调整宽度避免触及右边界: ${finalWidth} -> ${adjustedWidth}`);
+          right = left + adjustedWidth;
+        }
+        if (top + finalHeight >= imageHeight && finalHeight > 1) {
+          const adjustedHeight = imageHeight - top - 1;
+          console.warn(`[image-crop] 调整高度避免触及下边界: ${finalHeight} -> ${adjustedHeight}`);
+          bottom = top + adjustedHeight;
+        }
+
+        const safeWidth = right - left;
+        const safeHeight = bottom - top;
+
+        if (safeWidth <= 0 || safeHeight <= 0) {
           console.warn(`[image-crop] q${question.number} region ${index + 1} adjusted invalid`, {
             taskId,
             originalRegion: region,
-            adjusted: { left, top, width: finalWidth, height: finalHeight }
+            adjusted: { left, top, width: safeWidth, height: safeHeight }
           });
           continue;
         }
 
-        const pixelRect = { left, top, width: finalWidth, height: finalHeight };
-        if (!isValidImageBox(pixelRect, { width: imageWidth, height: imageHeight })) {
-          console.warn(`[image-crop] q${question.number} region ${index + 1} filtered`, {
+        const pixelRect = { left, top, width: safeWidth, height: safeHeight };
+        const imageMeta = { width: imageWidth, height: imageHeight };
+
+        // P0修复: 检测是否为全页兜底框（coverage >= 95%），如果是则跳过 isValidImageBox 检查
+        const widthCoverage = safeWidth / imageWidth;
+        const heightCoverage = safeHeight / imageHeight;
+        const isFallbackFullPage = widthCoverage >= 0.95 && heightCoverage >= 0.95;
+
+        if (!isFallbackFullPage && !isValidImageBox(pixelRect, imageMeta)) {
+          // 使用与 isValidImageBox 相同的阈值
+          const minDimensionRatio = Number.parseFloat(process.env.CROP_MIN_DIMENSION_RATIO || '0.006');
+          const maxAspectRatio = Number.parseFloat(process.env.CROP_MAX_ASPECT_RATIO || '18');
+          const fullImageThreshold = Number.parseFloat(process.env.CROP_FULL_IMAGE_THRESHOLD || '0.99');
+
+          const minDim = Math.max(20, Math.round(Math.min(imageWidth, imageHeight) * minDimensionRatio));
+          const ratio = safeWidth / Math.max(1, safeHeight);
+
+          let rejectReason = '未知原因';
+          if (safeWidth < minDim || safeHeight < minDim) {
+            rejectReason = `尺寸过小 (${safeWidth}x${safeHeight} < ${minDim}px, 阈值=${(minDimensionRatio * 100).toFixed(1)}%)`;
+          } else if (ratio > maxAspectRatio || ratio < 1/maxAspectRatio) {
+            rejectReason = `宽高比极端 (${ratio.toFixed(2)}, 限制=${(1/maxAspectRatio).toFixed(2)}~${maxAspectRatio})`;
+          } else if (widthCoverage >= fullImageThreshold && heightCoverage >= fullImageThreshold) {
+            rejectReason = `几乎覆盖全图 (宽=${(widthCoverage*100).toFixed(1)}%, 高=${(heightCoverage*100).toFixed(1)}%, 阈值=${(fullImageThreshold*100).toFixed(0)}%)`;
+          }
+
+          console.warn(`[image-crop] ❌ q${question.number} region ${index + 1} filtered by validation`, {
             taskId,
+            questionNumber: question.number,
+            regionIndex: index + 1,
             originalRegion: region,
-            adjusted: pixelRect
+            adjustedPixels: pixelRect,
+            imageMeta,
+            reason: rejectReason,
+            metrics: {
+              size: `${safeWidth}x${safeHeight}`,
+              ratio: ratio.toFixed(2),
+              coverage: `${(widthCoverage*100).toFixed(1)}% x ${(heightCoverage*100).toFixed(1)}%`,
+              minDimension: minDim
+            }
+          });
+          filteredRegions += 1;
+          continue;
+        }
+
+        // 确保所有 sharp 参数都是整数
+        const intLeft = Math.floor(left);
+        const intTop = Math.floor(top);
+        const intWidth = Math.floor(safeWidth);
+        const intHeight = Math.floor(safeHeight);
+
+        // P0修复: 检测NaN和Infinity
+        if (!Number.isFinite(intLeft) || !Number.isFinite(intTop) ||
+            !Number.isFinite(intWidth) || !Number.isFinite(intHeight)) {
+          console.error(`[image-crop] q${question.number} region ${index + 1} 包含无效坐标`, {
+            taskId,
+            intLeft,
+            intTop,
+            intWidth,
+            intHeight,
+            originalRegion: region
           });
           continue;
         }
+
+        console.log(`[image-crop] 准备提取 q${question.number} region ${index + 1}`, {
+          taskId,
+          sharp_params: { left: intLeft, top: intTop, width: intWidth, height: intHeight },
+          image_size: { imageWidth, imageHeight },
+          verification: {
+            left_plus_width: intLeft + intWidth,
+            top_plus_height: intTop + intHeight,
+            within_bounds: intLeft + intWidth <= imageWidth && intTop + intHeight <= imageHeight
+          }
+        });
 
         const { data: croppedBuffer, info } = await sharp(buffer)
           .extract({
-            left,
-            top,
-            width: finalWidth,
-            height: finalHeight
+            left: intLeft,
+            top: intTop,
+            width: intWidth,
+            height: intHeight
           })
-          .trim()
           .png()
           .toBuffer({ resolveWithObject: true });
 
@@ -255,6 +343,8 @@ export async function cropAndUploadQuestionImages(
     totalRegions,
     succeededRegions,
     failedRegions,
+    filteredRegions,
+    invalidRegions,
     successRate: totalRegions ? `${Math.round((succeededRegions / totalRegions) * 100)}%` : 'N/A'
   });
 

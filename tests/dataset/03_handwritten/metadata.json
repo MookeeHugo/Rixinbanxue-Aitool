@@ -1,25 +1,35 @@
 {
-  "HAND-06-student-annotations.jpg": {
-    "scenario": "03_handwritten",
-    "source": "tmp/gemini-test-results/测试试卷5/question-11.-img1.png",
-    "hasRedPen": true,
-    "notes": "含学生批注与自由书写，验证去噪能力",
-    "addedAt": "2025-12-01T10:56:00+08:00",
-    "expected_count": 1
-  },
   "HAND-01-red-pen-marks.jpg": {
-    "expected_count": 11
+    "scenario": "03_handwritten",
+    "expected_count": 11,
+    "notes": "红笔批注与手写混合"
   },
   "HAND-02-student-answers.jpg": {
-    "expected_count": 6
+    "scenario": "03_handwritten",
+    "expected_count": 6,
+    "notes": "学生作答痕迹，局部涂改"
   },
   "HAND-03-margin-notes.jpg": {
-    "expected_count": 9
+    "scenario": "03_handwritten",
+    "expected_count": 9,
+    "notes": "页边手写批注，考察去噪"
   },
   "HAND-04-scribbled-out.jpg": {
-    "expected_count": 12
+    "scenario": "03_handwritten",
+    "expected_count": 12,
+    "notes": "大面积涂抹，考察异常区域处理"
   },
   "HAND-05-pencil-sketches.jpg": {
-    "expected_count": 4
+    "scenario": "03_handwritten",
+    "expected_count": 4,
+    "notes": "铅笔线稿，低对比度"
+  },
+  "HAND-06-student-annotations.jpg": {
+    "scenario": "03_handwritten",
+    "source": "tmp/gemini-test-results/测试试卷5/question-11-img1.png",
+    "hasRedPen": true,
+    "notes": "学生批注+自由书写，验证去噪能力",
+    "addedAt": "2025-12-01T10:56:00+08:00",
+    "expected_count": 1
   }
 }

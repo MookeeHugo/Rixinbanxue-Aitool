@@ -31,10 +31,12 @@ export interface XHSPost {
   likes: number;           // 点赞数
   comments: number;        // 评论数
   shares: number;          // 分享数
+  collects?: number;       // 收藏数（新增）
   author_id: string;       // 作者ID（不暴露给前端）
   author_name: string;     // 作者昵称
   tags: string[];          // 标签数组
   category?: string;       // 分类
+  publish_time?: string;   // 发布时间（新增）
 }
 
 // ============================================================================

@@ -2,6 +2,7 @@
 /node_modules
 /.pnp
 .pnp.js
+package-lock.json
 
 # testing
 /coverage
@@ -26,6 +27,10 @@ yarn-error.log*
 .env*.local
 .env.production
 .env.production.backup
+.env
+.env.*
+!.env.example
+!.env.local.example
 
 # vercel
 .vercel

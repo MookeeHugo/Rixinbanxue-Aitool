@@ -1,5 +1,6 @@
 import { supabase } from './supabase'
 import type { UserRole } from './supabase'
+import { withSupabaseRetry } from './utils/timeout'
 
 export interface SignUpData {
   email: string
@@ -13,11 +14,7 @@ export interface SignInData {
   password: string
 }
 
-/**
- * 用户注册
- */
 export async function signUp({ email, password, name, role }: SignUpData) {
-  // 1. 创建认证用户
   const { data: authData, error: authError } = await supabase.auth.signUp({
     email,
     password,
@@ -31,7 +28,6 @@ export async function signUp({ email, password, name, role }: SignUpData) {
     throw new Error('注册失败：未返回用户信息')
   }
 
-  // 2. 创建用户资料
   const { error: profileError } = await supabase
     .from('profiles')
     .insert({
@@ -42,15 +38,12 @@ export async function signUp({ email, password, name, role }: SignUpData) {
     })
 
   if (profileError) {
-    throw new Error(`创建用户资料失败：${profileError.message}`)
+    throw new Error(`创建用户资料失败: ${profileError.message}`)
   }
 
   return authData.user
 }
 
-/**
- * 用户登录
- */
 export async function signIn({ email, password }: SignInData) {
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
@@ -64,44 +57,59 @@ export async function signIn({ email, password }: SignInData) {
   return data.user
 }
 
-/**
- * 用户登出
- */
 export async function signOut() {
   const { error } = await supabase.auth.signOut()
-
   if (error) {
     throw new Error(error.message)
   }
 }
 
 /**
- * 获取当前用户
+ * 获取当前用户（带超时重试）
  */
 export async function getCurrentUser() {
-  const { data: { user } } = await supabase.auth.getUser()
-  return user
+  const { data: { user } } = await withSupabaseRetry({
+    factory: () => supabase.auth.getUser(),
+    timeoutMs: 15000,
+    retries: 2,
+    backoffMs: 800,
+  }) as any
+  return user as any
 }
 
 /**
- * 获取当前用户资料
+ * 获取当前用户资料；若超时视为未登录，避免首页阻塞
  */
 export async function getCurrentProfile() {
-  const user = await getCurrentUser()
+  try {
+    const user = await getCurrentUser()
+    if (!user) return null
 
-  if (!user) {
-    return null
+    const { data, error } = (await withSupabaseRetry({
+      factory: () =>
+        Promise.resolve(
+          supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single()
+        ),
+      timeoutMs: 15000,
+      retries: 2,
+      backoffMs: 800,
+    })) as any
+
+    if (error) {
+      throw new Error(`获取用户资料失败: ${error.message}`)
+    }
+
+    return data
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    if (message.includes('请求超时') || message.toLowerCase().includes('timeout')) {
+      return null
+    }
+    if (error instanceof Error) throw error
+    throw new Error('获取用户资料时发生未知错误')
   }
-
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single()
-
-  if (error) {
-    throw new Error(error.message)
-  }
-
-  return data
 }

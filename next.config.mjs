@@ -1,4 +1,6 @@
-﻿/** @type {import('next').NextConfig} */
+import path from 'path'
+
+/** @type {import('next').NextConfig} */
 const nextConfig = {
   // ========== 性能优化配置 ==========
 
@@ -35,30 +37,46 @@ const nextConfig = {
         protocol: 'https',
         hostname: '**.supabase.co',
       },
+      // 允许本地 Supabase 存储
+      {
+        protocol: 'http',
+        hostname: '127.0.0.1',
+        port: '54321',
+        pathname: '/storage/v1/object/public/**',
+      },
     ],
   },
 
   // 5. Webpack 配置优化
   webpack: (config, { dev, isServer }) => {
-    // 开发环境优化
+      // 开发环境优化
     if (dev) {
-      // 开发环境使用文件系统监听并显式忽略磁盘根目录的系统文件夹，避免 EINVAL
-      const ignoredGlobs = [
+      // 使用平台无关的路径解析
+      const rootDir = process.cwd()
+
+      // Webpack schema 仅接受字符串数组或单个 RegExp；使用 glob 字符串列表以通过校验
+      const ignoredList = [
         '**/node_modules/**',
         '**/.next/**',
         '**/.git/**',
         '**/test-results/**',
         '**/playwright-report/**',
-        '**/System Volume Information/**',
-        'D:/System Volume Information/**',
-        'D:\\\\System Volume Information\\\\**'
-      ];
+        '**/__pycache__/**',
+        '**/.pytest_cache/**',
+        '**/logs/**',
+      ]
 
       config.watchOptions = {
         poll: 1000, // 每秒检查一次
         aggregateTimeout: 300, // 延迟重新构建
-        ignored: ignoredGlobs
-      };
+        ignored: [
+          ...ignoredList,
+          // 防止扫描到系统保护目录（使用统一的正斜杠通配，不含盘符）
+          '**/System Volume Information/**',
+          '**/system volume information/**',
+          '**/SYSTEM VOLUME INFORMATION/**',
+        ],
+      }
 
       // 注意：Next.js 14.2.7 已经内置了文件系统缓存，这里不需要额外配置
     }
@@ -107,10 +125,10 @@ const nextConfig = {
             },
           },
         },
-      };
+      }
     }
 
-    return config;
+    return config
   },
 
   // 6. 静态页面生成配置
@@ -134,19 +152,20 @@ const nextConfig = {
               key: 'Content-Security-Policy',
               value: [
                 "default-src 'self'",
-                "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
+                // dev 下允许 eval 以支持 Next.js HMR/React Fast Refresh
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
                 "style-src 'self' 'unsafe-inline'",
-                "img-src 'self' data: blob: https:",
+                "img-src 'self' data: blob: https: http://127.0.0.1:54321",
                 "font-src 'self' data:",
                 "connect-src 'self' ws: wss: http://127.0.0.1:* http://localhost:* https://*.supabase.co",
               ].join('; '),
             },
           ],
         },
-      ];
+      ]
     }
-    return [];
+    return []
   },
-};
+}
 
-export default nextConfig;
+export default nextConfig

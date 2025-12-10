@@ -26,6 +26,9 @@
 - 2025-12-06: `node scripts/log-maintenance.mjs --dry-run` -> `failuresArchived=0, metricsRotated=0`；`rg -n "legacy/" src`、`rg -n "\\uFFFD"` 结果为 0；`curl http://localhost:8000/health` 返回 200，`ocr_loaded=true`，模型缓存于 `C:\\Users\\PC\\.paddleocr\\whl\\det/ch_PP-OCRv4_det_infer` 等。
 - 2025-12-06: `node -r ts-node/register -r tsconfig-paths/register scripts/ingest-test.ts` 使用 `tmp/sample-upload.jpg` 跑通 CLI 流程；Puppeteer 完成 UI 上传（识别 1 题，见截图 `docs/project-governance/screenshots/2025-12-06-ingest-upload.png`），Gemini 返回正常；README 已加入 Phase4/RealTime 预告。
 - 2025-12-06: 图像链路 CLI+UI 均验证通过，Phase A–D 任务收口。
+- 2025-12-06: 新增 `npm run ci:health`（lint/build/encoding + log-maintenance dry-run + rg 巡检 + `/health`）与 `npm run db:backup:rls`（`tmp/archive/supabase-backups/*` 备份 + RLS 导出）；README 增补健康检查/备份/Puppeteer 回归规范与截图目录命名。
+- 2025-12-06: 明确日志/轮转/保留策略：CI 每日 dry-run，周更/发布前执行轮转；`logs/*` 保留 30 天，`tmp/archive/*` 保留 90 天（`tmp/archive/2025-12-04` 长期留痕）；`rg -n "tmp/archive/2025-12-04"` 将在下一 PR 附校验；metrics/black-box 统一存放 `logs/metrics/`，可选挂接轻量可视化。
+- 2025-12-06: README 补充 Phase E 运维例行与 Phase4 前置依赖；组件/样式治理尾项：legacy `<img>` 将按“画布模式”提案（`docs/technical/canvas-image-component-proposal.md`）评估替换路径；数据/模型侧将整理 PaddleOCR 500 复现用例并准备参数/模型压测脚本（含 strip_ratio/anchor 样本库）。
 - 2025-12-05: `legacy/AI题库前端最新版/components` 未迁内容归档至 `legacy/AI题库前端最新版/archived-components`，需复用 Question 组件已迁入 `src/components/questions/*` 并记录 `file-archive-log.md`。
 - 2025-12-05: 搭设题库工作台关键组件（QuestionEditor/StickyTagBar/ProgressVisualization/Submissions）与 admin 系列、Shadcn UI 全集到 `src/components`，新增 `src/lib/store.ts` 与 `src/types/tasks.ts` 支撑 Zustand 状态持久。
 - 2025-12-03:完成文档治理初始阶段,创建 `docs/project-governance/*` 系列文件并归档 5 份旧计划。

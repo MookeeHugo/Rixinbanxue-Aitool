@@ -1,25 +1,35 @@
 {
+  "STD-01-linear-equations.jpg": {
+    "scenario": "01_standard",
+    "expected_count": 10,
+    "notes": "一元一次方程基础题，版式规整"
+  },
+  "STD-02-triangle-geometry.jpg": {
+    "scenario": "01_standard",
+    "expected_count": 4,
+    "notes": "平面几何三角形，含简单图形"
+  },
+  "STD-03-quadratic-functions.jpg": {
+    "scenario": "01_standard",
+    "expected_count": 2,
+    "notes": "二次函数解析题，含坐标系"
+  },
+  "STD-04-probability-stats.jpg": {
+    "scenario": "01_standard",
+    "expected_count": 2,
+    "notes": "概率统计基础填空"
+  },
+  "STD-05-mixed-calculation.jpg": {
+    "scenario": "01_standard",
+    "expected_count": 14,
+    "notes": "多题混合计算，含若干小题"
+  },
   "STD-06-perfect-a4-scan.jpg": {
     "scenario": "01_standard",
     "source": "legacy-paper-01.png",
     "hasHandwriting": false,
-    "notes": "整页 A4 扫描件，用作 Level3 基准，待补题量",
+    "notes": "整页 A4 扫描，作为 L3 基准样本",
     "addedAt": "2025-12-01T10:57:00+08:00",
     "expected_count": 5
-  },
-  "STD-01-linear-equations.jpg": {
-    "expected_count": 10
-  },
-  "STD-02-triangle-geometry.jpg": {
-    "expected_count": 4
-  },
-  "STD-03-quadratic-functions.jpg": {
-    "expected_count": 2
-  },
-  "STD-04-probability-stats.jpg": {
-    "expected_count": 2
-  },
-  "STD-05-mixed-calculation.jpg": {
-    "expected_count": 14
   }
 }

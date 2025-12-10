@@ -1,25 +1,35 @@
 {
-  "EDGE-06-borderless-diagram.jpg": {
-    "scenario": "05_edge_cases",
-    "source": "tmp/gemini-test-results/测试试卷4/question-2025 武汉四调第 15 题-img1.png",
-    "pattern": "整页单图+宽边距",
-    "notes": "验证跨页或超大配图的坐标回写",
-    "addedAt": "2025-12-01T10:56:00+08:00",
-    "expected_count": 1
-  },
   "EDGE-01-pure-text-only.jpg": {
-    "expected_count": 9
+    "scenario": "05_edge_cases",
+    "expected_count": 9,
+    "notes": "纯文字无配图，验证图检测误报率"
   },
   "EDGE-02-cross-page-top.png": {
-    "expected_count": 6
+    "scenario": "05_edge_cases",
+    "expected_count": 6,
+    "notes": "跨页顶部残缺，考察框体补全"
   },
   "EDGE-03-cross-page-btm.png": {
-    "expected_count": 4
+    "scenario": "05_edge_cases",
+    "expected_count": 4,
+    "notes": "跨页底部截断，考察坐标裁剪安全性"
   },
   "EDGE-04-huge-single-fig.jpg": {
-    "expected_count": 1
+    "scenario": "05_edge_cases",
+    "expected_count": 1,
+    "notes": "超大单幅图，接近整页"
   },
   "EDGE-05-vertical-text.jpg": {
-    "expected_count": 14
+    "scenario": "05_edge_cases",
+    "expected_count": 14,
+    "notes": "竖排文本+公式混排"
+  },
+  "EDGE-06-borderless-diagram.jpg": {
+    "scenario": "05_edge_cases",
+    "source": "tmp/gemini-test-results/测试试卷4/question-15-img1.png",
+    "pattern": "整页单图+无边界",
+    "notes": "验证满幅或越界坐标的过滤逻辑",
+    "addedAt": "2025-12-01T10:56:00+08:00",
+    "expected_count": 1
   }
 }

@@ -10,15 +10,15 @@ RixinMath 图像预处理 / 坐标精修 / 锚点校验服务
 from __future__ import annotations
 
 import io
-import math
+import os
 from dataclasses import dataclass
 from pathlib import Path
 import time
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import cv2
 import numpy as np
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse
 from PIL import Image, ImageDraw
@@ -84,23 +84,42 @@ def add_grid_overlay(buffer: bytes, meta: ImageMeta) -> bytes:
         x = round(i * step_x)
         draw.line([(x, 0), (x, meta.height)], fill=(255, 0, 0, 128), width=1)
         if i % 2 == 0:
-            draw.text((x + 4, 4), f"{int(i / cols * 100)}", fill=(255, 0, 0))
+            draw.text((x + 4, 4), f"{int(i / cols * 1000)}", fill=(255, 0, 0))
 
     for j in range(rows + 1):
         y = round(j * step_y)
         draw.line([(0, y), (meta.width, y)], fill=(255, 0, 0, 128), width=1)
         if j % 2 == 0:
-            draw.text((4, y + 4), f"{int(j / rows * 100)}", fill=(255, 0, 0))
+            draw.text((4, y + 4), f"{int(j / rows * 1000)}", fill=(255, 0, 0))
 
     buf = io.BytesIO()
     image.save(buf, format="PNG")
     return buf.getvalue()
 
 
-def preprocess_binary(buffer: bytes) -> bytes:
+def preprocess_binary_adaptive(buffer: bytes, strategy: str = "otsu") -> bytes:
+    """支持多策略二值化，默认 Otsu。"""
     image = Image.open(io.BytesIO(buffer)).convert("L")
     np_img = np.array(image)
-    _, binary = cv2.threshold(np_img, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+    if strategy == "adaptive_gaussian":
+        binary = cv2.adaptiveThreshold(
+            np_img,
+            255,
+            cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+            cv2.THRESH_BINARY,
+            15,
+            8,
+        )
+    elif strategy == "hybrid":
+        background = cv2.GaussianBlur(np_img, (51, 51), 0)
+        diff = cv2.subtract(background, np_img)
+        norm = cv2.normalize(diff, None, 0, 255, cv2.NORM_MINMAX)
+        _, binary = cv2.threshold(norm, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+    else:
+        # 默认 Otsu
+        _, binary = cv2.threshold(np_img, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
     _, encoded = cv2.imencode(".png", binary)
     return encoded.tobytes()
 
@@ -121,7 +140,8 @@ async def upload_image(task_id: str = Form(...), file: UploadFile = File(...)):
 
     meta = await run_in_thread(save_buffer_to_png, content, original_path)
     grid_bytes = await run_in_thread(add_grid_overlay, content, meta)
-    binary_bytes = await run_in_thread(preprocess_binary, content)
+    strategy = os.getenv("BINARY_STRATEGY", "otsu").strip().lower()
+    binary_bytes = await run_in_thread(preprocess_binary_adaptive, content, strategy)
 
     grid_path.write_bytes(grid_bytes)
     binary_path.write_bytes(binary_bytes)
@@ -142,9 +162,87 @@ def is_near_blank(image: np.ndarray) -> bool:
     return ratio < 0.02 or ratio > 0.98
 
 
+def _parse_kernel() -> Tuple[int, int]:
+    raw = os.getenv("OPENCV_KERNEL_SIZE", "15,10")
+    try:
+        parts = [int(x) for x in raw.split(",")]
+        if len(parts) >= 2 and parts[0] > 0 and parts[1] > 0:
+            return parts[0], parts[1]
+    except Exception:
+        pass
+    return 15, 10
+
+
+def _get_iterations() -> int:
+    try:
+        value = int(os.getenv("OPENCV_KERNEL_ITERATIONS", "1"))
+        return max(1, value)
+    except Exception:
+        return 1
+
+
+def calculate_iou(box1: List[float], box2: List[float], img_w: int, img_h: int) -> float:
+    """计算两个归一化（0-1000）框的 IoU。"""
+    def _to_px(box: List[float]) -> Tuple[int, int, int, int]:
+        y_min = int(box[0] / 1000 * img_h)
+        x_min = int(box[1] / 1000 * img_w)
+        y_max = int(box[2] / 1000 * img_h)
+        x_max = int(box[3] / 1000 * img_w)
+        return x_min, y_min, x_max, y_max
+
+    x1_min, y1_min, x1_max, y1_max = _to_px(box1)
+    x2_min, y2_min, x2_max, y2_max = _to_px(box2)
+
+    inter_xmin = max(x1_min, x2_min)
+    inter_ymin = max(y1_min, y2_min)
+    inter_xmax = min(x1_max, x2_max)
+    inter_ymax = min(y1_max, y2_max)
+
+    inter_area = max(0, inter_xmax - inter_xmin) * max(0, inter_ymax - inter_ymin)
+
+    area1 = max(0, x1_max - x1_min) * max(0, y1_max - y1_min)
+    area2 = max(0, x2_max - x2_min) * max(0, y2_max - y2_min)
+    union_area = area1 + area2 - inter_area
+
+    return float(inter_area) / max(union_area, 1)
+
+
+def calculate_refine_quality_score(
+    rough_bbox: List[float],
+    refined_bbox: List[float],
+    roi: np.ndarray,
+    img_w: int,
+    img_h: int,
+) -> dict:
+    """计算精修质量评分，仅用于日志/监控。"""
+    iou = calculate_iou(rough_bbox, refined_bbox, img_w, img_h)
+
+    rough_area = ((rough_bbox[2] - rough_bbox[0]) * img_h / 1000) * (
+        (rough_bbox[3] - rough_bbox[1]) * img_w / 1000
+    )
+    refined_area = ((refined_bbox[2] - refined_bbox[0]) * img_h / 1000) * (
+        (refined_bbox[3] - refined_bbox[1]) * img_w / 1000
+    )
+    area_change = (refined_area - rough_area) / max(rough_area, 1)
+
+    edges = cv2.Canny(roi, 50, 150)
+    edge_ratio = float(np.sum(edges > 0)) / max(edges.size, 1)
+
+    confidence = (
+        iou * 0.5 + min(1.0, max(0, 1 - abs(area_change))) * 0.3 + edge_ratio * 0.2
+    )
+
+    return {
+        "iou": round(iou, 3),
+        "area_change": round(area_change, 3),
+        "edge_density": round(edge_ratio, 3),
+        "confidence": round(confidence, 3),
+    }
+
+
 @app.post("/api/refine-bbox")
 async def refine_bbox(
-    rough_bbox: List[float],
+    rough_bbox: List[float] = Query(...),
     binary_path: str = Form(...),
     image_width: int = Form(...),
     image_height: int = Form(...)
@@ -162,15 +260,15 @@ async def refine_bbox(
     ymin, xmin, ymax, xmax = rough_bbox
     pad_y = image_height * 0.02
     pad_x = image_width * 0.02
-    top = max(0, int((ymin / 100) * image_height - pad_y))
-    bottom = min(image_height, int((ymax / 100) * image_height + pad_y))
-    left = max(0, int((xmin / 100) * image_width - pad_x))
-    right = min(image_width, int((xmax / 100) * image_width + pad_x))
+    top = max(0, int((ymin / 1000) * image_height - pad_y))
+    bottom = min(image_height, int((ymax / 1000) * image_height + pad_y))
+    left = max(0, int((xmin / 1000) * image_width - pad_x))
+    right = min(image_width, int((xmax / 1000) * image_width + pad_x))
     roi = binary_img[top:bottom, left:right]
 
     def _process_roi():
-        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
-        dilated = cv2.dilate(roi, kernel, iterations=1)
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, _parse_kernel())
+        dilated = cv2.dilate(roi, kernel, iterations=_get_iterations())
         contours, _ = cv2.findContours(dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         filtered = [
             cnt for cnt in contours
@@ -185,17 +283,40 @@ async def refine_bbox(
         max_idx = int(np.argmax(areas))
         x, y, w, h = cv2.boundingRect(filtered[max_idx])
         refined = (
-            (top + y) / image_height * 100,
-            (left + x) / image_width * 100,
-            (top + y + h) / image_height * 100,
-            (left + x + w) / image_width * 100,
+            (top + y) / image_height * 1000,
+            (left + x) / image_width * 1000,
+            (top + y + h) / image_height * 1000,
+            (left + x + w) / image_width * 1000,
         )
-        return [round(float(v), 1) for v in refined]
+        return [int(round(v)) for v in refined]
 
     refined = await run_in_thread(_process_roi)
     if refined is None:
         return {"status": "fallback", "refined_bbox": rough_bbox}
-    return {"status": "ok", "refined_bbox": refined}
+    iou_threshold = float(os.getenv("OPENCV_IOU_THRESHOLD", "0.3"))
+    iou_score = calculate_iou(rough_bbox, refined, image_width, image_height)
+
+    quality_enabled = os.getenv("ENABLE_QUALITY_SCORE", "false").lower() == "true"
+    quality = None
+    if quality_enabled:
+        quality = calculate_refine_quality_score(
+            rough_bbox, refined, roi, image_width, image_height
+        )
+
+    if iou_score < iou_threshold:
+        return {
+            "status": "fallback",
+            "refined_bbox": rough_bbox,
+            "reason": f"IoU too low: {iou_score:.3f}",
+            **({"quality": quality} if quality else {}),
+        }
+
+    return {
+        "status": "ok",
+        "refined_bbox": refined,
+        "iou": round(iou_score, 3),
+        **({"quality": quality} if quality else {}),
+    }
 
 
 def fuzzy_match(anchor: str, text: str) -> float:

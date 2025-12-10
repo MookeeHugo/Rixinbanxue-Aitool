@@ -45,7 +45,7 @@ export interface ImageRegion {
 }
 
 /**
- * 归一化坐标（0-100 范围，允许 0.1 精度）
+ * 归一化坐标（0-1000 范围，允许 0.1 精度）
  */
 export type NormalizedBox = [number, number, number, number];
 
@@ -59,7 +59,7 @@ export interface GeminiImageRegion {
   rough_bbox?: NormalizedBox;
   label?: string;
   description?: string;
-  position?: 'right' | 'bottom' | 'left' | 'inline';
+  position?: string;
   base64?: string;
   asset_url?: string;
   mime_type?: string;
@@ -86,7 +86,7 @@ export interface GeminiImageRegionCandidate {
   rough_bbox?: NormalizedBox;
   label?: string | null;
   description?: string | null;
-  position?: 'right' | 'bottom' | 'left' | 'inline' | null;
+  position?: string | null;
   anchor_text_prev?: string | null;
   anchor_text_next?: string | null;
   confidence?: number | null;

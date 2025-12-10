@@ -1,6 +1,6 @@
 /**
- * Inngest Worker - 处理 PDF/图片上传与 AI 解析
- * @description 核心异步任务：下载文件 -> Qwen 解析 -> 写入数据库
+ * Inngest Worker - 处理 PDF/图片上传并解析题目
+ * 核心流程：下载文件 -> Qwen 解析 -> 写入数据库
  */
 
 import { inngest } from '../client';
@@ -8,10 +8,8 @@ import { parseQuestions } from '@/lib/ai-question-bank/qwen-flash';
 import { bufferToBase64, calculateAverageConfidence, guessImageMimeType } from '@/lib/ai-question-bank/utils';
 import { createClient } from '@supabase/supabase-js';
 import { downloadFile, FileAccessLevel } from '@/lib/storage';
+import { withTimeout } from '@/lib/utils/timeout';
 
-/**
- * 创建 Supabase Service Client（服务密钥，不持久化会话）
- */
 function createServiceClient() {
   return createClient<any>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -25,9 +23,6 @@ function createServiceClient() {
   );
 }
 
-/**
- * 更新任务状态
- */
 async function updateTaskStatus(
   supabase: ReturnType<typeof createServiceClient>,
   taskId: string,
@@ -49,9 +44,6 @@ async function updateTaskStatus(
   }
 }
 
-/**
- * 批量写入解析结果
- */
 async function insertParsedQuestions(
   supabase: ReturnType<typeof createServiceClient>,
   taskId: string,
@@ -76,7 +68,7 @@ async function insertParsedQuestions(
     confidence_score: q.confidence,
     is_selected: true,
     is_submitted: false,
-    original_image_url: null // 保存原始图片URL，用于在题目卡片中显示
+    original_image_url: null
   }));
 
   const { error } = await supabase.from('parsed_questions').insert(records);
@@ -87,9 +79,6 @@ async function insertParsedQuestions(
   }
 }
 
-/**
- * Worker 入口：处理 PDF/图片上传
- */
 export const processPdfUpload = inngest.createFunction(
   {
     id: 'process-pdf-upload',
@@ -105,7 +94,7 @@ export const processPdfUpload = inngest.createFunction(
     const supabase = createServiceClient();
 
     try {
-      // Step 1: 更新状态为 processing
+      // Step 1: 更新状态 processing
       await step.run('update-status-processing', async () => {
         await updateTaskStatus(supabase, taskId, {
           status: 'processing',
@@ -113,23 +102,27 @@ export const processPdfUpload = inngest.createFunction(
         });
       });
 
-      // Step 2: 从存储下载文件
+      // Step 2: 下载文件（30s 超时）
       const fileBuffer = await step.run('download-file', async () => {
         console.log('开始下载文件', { fileUrl });
 
-        const buffer = await downloadFile(fileUrl, FileAccessLevel.PRIVATE);
+        const buffer = await withTimeout(
+          downloadFile(fileUrl, FileAccessLevel.PRIVATE),
+          30_000,
+          '下载文件超时'
+        );
         console.log('文件下载完成', { size: buffer.length });
 
         return buffer;
       });
 
-      // Step 3: 转换为 Base64
+      // Step 3: 转 Base64
       const imageBase64 = await step.run('convert-to-base64', async () => {
         await updateTaskStatus(supabase, taskId, { progress: 30 });
         return bufferToBase64(fileBuffer as any);
       });
 
-      // Step 4: 调用 Qwen3-VL-Flash 解析
+      // Step 4: Qwen 解析（45s 超时）
       const questions = await step.run('parse-with-qwen', async () => {
         console.log('调用 Qwen3-VL-Flash 解析', { taskId });
         await updateTaskStatus(supabase, taskId, { progress: 50 });
@@ -142,7 +135,11 @@ export const processPdfUpload = inngest.createFunction(
           base64Head: imageBase64?.slice(0, 32),
           base64Tail: imageBase64?.slice(-32)
         });
-        const parsed = await parseQuestions(imageBase64, { mimeType: imageMimeType });
+        const parsed = await withTimeout(
+          parseQuestions(imageBase64, { mimeType: imageMimeType }),
+          45_000,
+          'Qwen 解析超时'
+        );
         console.log('解析完成', {
           taskId,
           questionCount: parsed.length,
@@ -161,7 +158,7 @@ export const processPdfUpload = inngest.createFunction(
         console.log('解析结果已保存', { taskId, count: questions.length });
       });
 
-      // Step 6: 更新任务为完成
+      // Step 6: 状态完成
       await step.run('update-status-completed', async () => {
         await updateTaskStatus(supabase, taskId, {
           status: 'completed',
@@ -170,7 +167,7 @@ export const processPdfUpload = inngest.createFunction(
         });
       });
 
-      // Step 7: 推送完成事件
+      // Step 7: 发送完成事件
       await step.sendEvent('send-completion-event', {
         name: 'question/parse.completed',
         data: {
@@ -188,13 +185,11 @@ export const processPdfUpload = inngest.createFunction(
     } catch (error) {
       console.error('处理上传任务失败', { taskId, error });
 
-      // 更新任务状态为失败
       await updateTaskStatus(supabase, taskId, {
         status: 'failed',
         error_message: error instanceof Error ? error.message : '未知错误'
       });
 
-      // 推送失败事件
       await step.sendEvent('send-failure-event', {
         name: 'question/parse.failed',
         data: {

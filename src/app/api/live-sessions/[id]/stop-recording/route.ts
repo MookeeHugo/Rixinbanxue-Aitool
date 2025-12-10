@@ -9,6 +9,8 @@ import { LiveKitAdapter } from '@/lib/live/providers/livekit';
 import { logger } from '@/lib/logger';
 import { broadcastRecordingStatus } from '../recording-status/stream/route';
 import { performanceMonitor } from '@/lib/performance-monitor';
+import { withTimeout } from '@/lib/utils/timeout';
+import { checkRateLimit, getClientId } from '@/lib/server/rate-limit';
 
 interface RouteParams {
   params: {
@@ -23,26 +25,37 @@ export async function POST(
   const startTime = Date.now();
   const sessionId = params.id;
 
+  const clientId = getClientId(req);
+  const rate = checkRateLimit(`stop-recording:${clientId}`, { limit: 10, windowMs: 60_000 });
+  if (!rate.ok) {
+    return NextResponse.json(
+      { error: '请求过于频繁，请稍后再试' },
+      { status: 429, headers: { 'Retry-After': Math.ceil(rate.retryAfterMs / 1000).toString() } }
+    );
+  }
+
   try {
     const supabase = createServerClient();
 
-    // 获取当前用户
     const {
       data: { user },
       error: userError,
-    } = await supabase.auth.getUser();
+    } = await withTimeout(supabase.auth.getUser(), 10_000, 'Supabase 请求超时');
 
     if (userError || !user) {
       logger.warn('Unauthorized stop recording attempt', { sessionId });
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // 获取会话信息
-    const { data: session, error: sessionError } = await supabase
-      .from('live_sessions')
-      .select('id, created_by')
-      .eq('id', sessionId)
-      .single();
+    const { data: session, error: sessionError } = await withTimeout(
+      supabase
+        .from('live_sessions')
+        .select('id, created_by')
+        .eq('id', sessionId)
+        .single(),
+      10_000,
+      'Supabase 请求超时'
+    );
 
     if (sessionError || !session) {
       logger.error('Failed to fetch session', sessionError, { sessionId });
@@ -52,7 +65,6 @@ export async function POST(
       );
     }
 
-    // 验证权限：只有会话创建者可以停止录制
     if (session.created_by !== user.id) {
       logger.warn('User not authorized to stop recording', {
         sessionId,
@@ -65,24 +77,25 @@ export async function POST(
       );
     }
 
-    // 解析请求体（可选 recordingId）
     let recordingId: string | undefined;
     try {
       const body = await req.json();
       recordingId = body.recordingId;
     } catch {
-      // 如果请求体为空或无效，recordingId 将保持 undefined
+      // ignore parsing error, recordingId remains undefined
     }
 
-    // 初始化 LiveKit 适配器
     const livekit = new LiveKitAdapter();
 
     try {
-      // 停止录制
-      await livekit.stopRecording({
-        sessionId: session.id,
-        recordingId,
-      });
+      await withTimeout(
+        livekit.stopRecording({
+          sessionId: session.id,
+          recordingId,
+        }),
+        15_000,
+        'LiveKit 录制停止超时'
+      );
 
       logger.info('Recording stopped successfully', {
         sessionId,
@@ -90,7 +103,6 @@ export async function POST(
         userId: user.id,
       });
 
-      // Broadcast status update to all connected SSE clients
       broadcastRecordingStatus(sessionId, {
         isRecording: false,
         recordingId: null,
@@ -98,7 +110,6 @@ export async function POST(
         egressId: null,
       });
 
-      // Track performance metrics
       const duration = Date.now() - startTime;
       performanceMonitor.trackAPIResponseTime('stopRecording', duration);
       performanceMonitor.trackRecording('stop');

@@ -16,10 +16,10 @@ export interface PixelRect {
 
 const MIN_PADDING = 20;
 const PADDING_RATIO = 0.02;
-const NORMALIZED_SCALE = 100;
+const NORMALIZED_SCALE = 1000;
 
 /**
- * 归一化坐标（0-100）转换为像素裁剪区域，并自动追加 padding
+ * 归一化坐标（0-1000）转换为像素裁剪区域，并自动追加 padding
  */
 export function convertBoxToPixelRect(
   box: NormalizedBox,
@@ -40,6 +40,16 @@ export function convertBoxToPixelRect(
   const safeXmin = clampValue(xmin);
   const safeYmax = clampValue(ymax);
   const safeXmax = clampValue(xmax);
+
+  // P0修复: 验证坐标逻辑性 (ymax > ymin && xmax > xmin)
+  if (safeYmax <= safeYmin || safeXmax <= safeXmin) {
+    console.warn('[coordinates] 拒绝逆序或零尺寸坐标', {
+      box: [ymin, xmin, ymax, xmax],
+      safeBox: [safeYmin, safeXmin, safeYmax, safeXmax],
+      reason: safeYmax <= safeYmin ? 'ymax <= ymin' : 'xmax <= xmin'
+    });
+    return null;
+  }
 
   let top = Math.round((safeYmin / NORMALIZED_SCALE) * meta.height);
   let left = Math.round((safeXmin / NORMALIZED_SCALE) * meta.width);
@@ -77,25 +87,39 @@ export function rectFromImageRegion(region: ImageRegion): PixelRect {
 
 export function isValidImageBox(rect: PixelRect, meta: ImageMeta): boolean {
   const hasMeta = meta.width > 0 && meta.height > 0;
+  const minDimensionRatioRaw = Number.parseFloat(process.env.CROP_MIN_DIMENSION_RATIO || '0.006');
+  const maxAspectRatioEnv = Number.parseFloat(process.env.CROP_MAX_ASPECT_RATIO || '18');
+  const fullImageThresholdEnv = Number.parseFloat(process.env.CROP_FULL_IMAGE_THRESHOLD || '0.97');
+
+  const minDimensionRatio =
+    Number.isFinite(minDimensionRatioRaw) && minDimensionRatioRaw > 0
+      ? minDimensionRatioRaw
+      : 0.015;
+
+  const maxAspectRatio =
+    Number.isFinite(maxAspectRatioEnv) && maxAspectRatioEnv > 0 ? maxAspectRatioEnv : 10;
+  const fullImageThreshold =
+    Number.isFinite(fullImageThresholdEnv) && fullImageThresholdEnv > 0
+      ? fullImageThresholdEnv
+      : 0.99;
+
   const minDimension = hasMeta
-    ? Math.max(24, Math.round(Math.min(meta.width, meta.height) * 0.025))
-    : 24;
+    ? Math.max(20, Math.round(Math.min(meta.width, meta.height) * minDimensionRatio))
+    : 20;
 
   if (rect.width < minDimension || rect.height < minDimension) {
     return false;
   }
 
   const ratio = rect.width / Math.max(1, rect.height);
-  // 允许更加细长/扁平的题干，只要不是极端值
-  const MAX_RATIO = 6;
-  const MIN_RATIO = 1 / MAX_RATIO;
-  if (ratio > MAX_RATIO || ratio < MIN_RATIO) {
+  const minRatio = 1 / maxAspectRatio;
+  if (ratio > maxAspectRatio || ratio < minRatio) {
     return false;
   }
 
   if (hasMeta) {
-    const almostFullWidth = rect.width >= meta.width * 0.98;
-    const almostFullHeight = rect.height >= meta.height * 0.98;
+    const almostFullWidth = rect.width >= meta.width * fullImageThreshold;
+    const almostFullHeight = rect.height >= meta.height * fullImageThreshold;
 
     if (almostFullWidth && almostFullHeight) {
       return false;

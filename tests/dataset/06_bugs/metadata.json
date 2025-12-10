@@ -2,24 +2,24 @@
   "BUG-01-clip-issue.jpg": {
     "scenario": "06_bugs",
     "source": "tmp/gemini-test-results/测试试卷7/question-8-img1.png",
-    "issue": "第8题顶点A配图被裁切",
-    "notes": "用于验证黑匣子能捕获配图截断问题",
+    "issue": "首题顶点 A 配图被裁切",
+    "notes": "验证坐标扩边与边界裁剪逻辑",
     "addedAt": "2025-12-01T10:56:00+08:00",
     "expected_count": 1
   },
   "BUG-02-timeout.jpg": {
     "scenario": "06_bugs",
-    "source": "tmp/gemini-test-results/测试试卷5/question-10.-img1.png",
+    "source": "tmp/gemini-test-results/测试试卷5/question-10-img1.png",
     "issue": "34s 超时样例",
-    "notes": "转写至黑匣子复现 API 超时路径",
+    "notes": "回归测试超时路径，观察性能日志",
     "addedAt": "2025-12-01T10:56:00+08:00",
     "expected_count": 1
   },
   "BUG-03-json-parse-regression.jpg": {
     "scenario": "06_bugs",
-    "source": "tmp/gemini-test-results/测试试卷9/question-(2025 武汉四调第 20 题)-img1.png",
+    "source": "tmp/gemini-test-results/测试试卷9/question-20-img1.png",
     "issue": "Gemini JSON 结构不稳定",
-    "notes": "用于覆盖 jsonrepair fallback",
+    "notes": "覆盖 jsonrepair 回退逻辑",
     "addedAt": "2025-12-01T10:56:00+08:00",
     "expected_count": 1
   }

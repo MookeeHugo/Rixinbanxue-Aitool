@@ -395,20 +395,46 @@ export async function downloadFile(
     const client = level === FileAccessLevel.PUBLIC ? r2Public : r2Private;
     const bucket = level === FileAccessLevel.PUBLIC ? R2_PUBLIC_BUCKET : R2_PRIVATE_BUCKET;
 
-    const response = await client.send(
-      new GetObjectCommand({
-        Bucket: bucket,
-        Key: key
-      })
-    );
+    try {
+      const response = await client.send(
+        new GetObjectCommand({
+          Bucket: bucket,
+          Key: key
+        })
+      );
 
-    const chunks: Uint8Array[] = [];
-    const bodyStream = response.Body as AsyncIterable<Uint8Array>;
-    for await (const chunk of bodyStream) {
-      chunks.push(chunk);
+      const chunks: Uint8Array[] = [];
+      const bodyStream = response.Body as AsyncIterable<Uint8Array>;
+
+      // 添加内存边界检查（最大 100MB 防止 OOM）
+      const MAX_BUFFER_SIZE = 100 * 1024 * 1024; // 100MB
+      let totalSize = 0;
+
+      try {
+        for await (const chunk of bodyStream) {
+          totalSize += chunk.length;
+
+          if (totalSize > MAX_BUFFER_SIZE) {
+            throw new Error(`文件过大（超过100MB），无法下载: ${key}`);
+          }
+
+          chunks.push(chunk);
+        }
+      } catch (streamError) {
+        logger.error('[Storage] 流读取失败', streamError instanceof Error ? streamError : undefined, {
+          key,
+          bucket,
+          totalSize
+        });
+        throw new Error(`下载流中断: ${streamError instanceof Error ? streamError.message : '网络错误'}`);
+      }
+
+      return Buffer.concat(chunks);
+
+    } catch (error) {
+      logger.error('[Storage] R2 下载失败', error instanceof Error ? error : undefined, { key });
+      throw new Error(`R2下载失败: ${error instanceof Error ? error.message : '未知错误'}`);
     }
-
-    return Buffer.concat(chunks);
   }
 
   if (supabaseClient) {

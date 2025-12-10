@@ -1,15 +1,15 @@
+'use client'
+
 import './globals.css'
 import React from 'react'
 import Navbar from '@/components/Navbar'
-import { AntdRegistry } from '@ant-design/nextjs-registry'
-import { ConfigProvider } from 'antd'
-import zhCN from 'antd/locale/zh_CN'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { ClientErrorMonitor } from '@/components/ClientErrorMonitor'
 import { Toaster } from '@/components/ui/toaster'
 
-export const metadata = {
-  title: '日新数学平台',
-  description: '智能组卷 · 自动改错 · 学情分析'
-}
+// 强制动态渲染，禁用静态生成
+export const dynamic = 'force-dynamic'
+export const fetchCache = 'force-no-store'
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const lightThemeVars: React.CSSProperties = {
@@ -57,78 +57,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <html lang="zh-CN" style={lightThemeVars}>
+      <head>
+        <title>日新数学平台</title>
+        <meta name="description" content="智能组卷 · 自动改错 · 学情分析" />
+      </head>
       <body style={{ backgroundColor: '#ffffff', color: '#111827' }}>
-        <AntdRegistry>
-          <ConfigProvider
-            locale={zhCN}
-            theme={{
-              token: {
-                colorPrimary: '#0052D4',    // 深空蓝
-                colorSuccess: '#10b981',     // 成功绿
-                colorWarning: '#f59e0b',     // 警告橙
-                colorError: '#ef4444',       // 错误红
-                colorInfo: '#2563EB',        // 信息蓝
-                colorText: '#000000',
-                colorTextSecondary: '#3c3c43',
-                colorTextTertiary: '#555555',
-                colorTextQuaternary: '#999999',
-                colorBgContainer: '#ffffff',
-                colorBgElevated: '#ffffff',
-                colorBgLayout: '#ffffff',
-                colorBorder: '#e4e6eb',
-                borderRadius: 12,
-                borderRadiusLG: 16,
-                borderRadiusSM: 8,
-                fontFamily:
-                  "-apple-system, BlinkMacSystemFont, 'Google Sans', Roboto, 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif",
-                fontSize: 16,
-                fontSizeLG: 18,
-                fontSizeSM: 14
-              },
-              components: {
-                Table: {
-                  borderRadius: 12,
-                  headerBg: '#f2f2f7',
-                  headerColor: '#000000',
-                  colorText: '#000000'
-                },
-                Button: {
-                  borderRadius: 14,
-                  controlHeight: 44,
-                  paddingContentHorizontal: 24,
-                  primaryShadow: '0 2px 16px 0 rgba(255, 1, 62, 0.24)',
-                  colorText: '#000000'
-                },
-                Card: {
-                  borderRadius: 12,
-                  boxShadow: '0 2px 16px 0 rgba(0, 0, 0, 0.12)',
-                  colorText: '#000000'
-                },
-                Input: {
-                  borderRadius: 8,
-                  controlHeight: 44,
-                  paddingBlock: 12,
-                  paddingInline: 16,
-                  colorText: '#000000',
-                  colorBgContainer: '#ffffff'
-                },
-                Select: {
-                  borderRadius: 8,
-                  controlHeight: 44,
-                  colorText: '#000000',
-                  colorBgContainer: '#ffffff'
-                }
-              }
-            }}
-          >
-            <Navbar />
-            <main className="rx-container rx-main">{children}</main>
-            <footer className="rx-footer">
-              <div className="rx-container">© 2025 日新数学平台 · MVP v1.0</div>
-            </footer>
-            <Toaster />
-          </ConfigProvider>
-        </AntdRegistry>
+        <ClientErrorMonitor />
+        <ErrorBoundary>
+          <Navbar />
+          <main className="rx-container rx-main">{children}</main>
+          <footer className="rx-footer">
+            <div className="rx-container">© 2025 日新数学平台 · MVP v1.0</div>
+          </footer>
+        </ErrorBoundary>
+        <Toaster />
       </body>
     </html>
   )

@@ -1,72 +1,76 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { checkRateLimit, getClientId } from '@/lib/server/rate-limit'
+import { withTimeout } from '@/lib/utils/timeout'
 
-/**
- * 图片代理API - 解决浏览器CORS和安全策略问题
- *
- * 使用场景：
- * - Supabase Storage签名URL在浏览器中无法直接加载
- * - 绕过CORS、CSP等浏览器安全策略
- *
- * 使用方法：
- * <img src="/api/image-proxy?url=http://127.0.0.1:54321/storage/..." />
- */
+const DEFAULT_ALLOWLIST = ['http://127.0.0.1:54321/storage/']
+const allowlistFromEnv = (process.env.IMAGE_PROXY_ALLOWLIST || '')
+  .split(',')
+  .map(item => item.trim())
+  .filter(Boolean)
+const ALLOWLIST = [...DEFAULT_ALLOWLIST, ...allowlistFromEnv]
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024 // 5MB
+
+function isUrlAllowed(url: string): boolean {
+  return ALLOWLIST.some(prefix => url.startsWith(prefix))
+}
+
 export async function GET(request: NextRequest) {
   const imageUrl = request.nextUrl.searchParams.get('url')
 
   if (!imageUrl) {
+    return NextResponse.json({ error: '缺少 url 参数' }, { status: 400 })
+  }
+
+  const clientId = getClientId(request)
+  const rate = checkRateLimit(`image-proxy:${clientId}`, { limit: 30, windowMs: 60_000 })
+  if (!rate.ok) {
     return NextResponse.json(
-      { error: 'Missing URL parameter' },
-      { status: 400 }
+      { error: '请求过于频繁，请稍后再试' },
+      { status: 429, headers: { 'Retry-After': Math.ceil(rate.retryAfterMs / 1000).toString() } }
     )
   }
 
-  // 安全检查：只允许代理本地Supabase Storage URL
-  if (!imageUrl.startsWith('http://127.0.0.1:54321/storage/')) {
+  if (!isUrlAllowed(imageUrl)) {
     return NextResponse.json(
-      { error: 'Invalid URL: only Supabase Storage URLs are allowed' },
+      { error: '非法 URL：仅允许代理受信任的存储地址' },
       { status: 403 }
     )
   }
 
   try {
-    console.log('[Image Proxy] 代理图片请求:', {
-      imageUrl: imageUrl.substring(0, 100) + '...',
-      timestamp: new Date().toISOString()
-    })
-
-    const response = await fetch(imageUrl, {
-      headers: {
-        // 转发必要的头部
-        'Accept': 'image/*'
-      }
-    })
+    const response = await withTimeout(
+      fetch(imageUrl, {
+        headers: { Accept: 'image/*' },
+      }),
+      10_000,
+      '上游请求超时'
+    )
 
     if (!response.ok) {
-      console.error('[Image Proxy] 上游请求失败:', {
-        status: response.status,
-        statusText: response.statusText,
-        url: imageUrl.substring(0, 100)
-      })
-
       return NextResponse.json(
-        {
-          error: `Failed to fetch image: ${response.status} ${response.statusText}`
-        },
+        { error: `上游请求失败: ${response.status} ${response.statusText}` },
         { status: response.status }
       )
     }
 
-    // 获取图片数据
+    const lengthHeader = response.headers.get('content-length')
+    if (lengthHeader && Number(lengthHeader) > MAX_IMAGE_BYTES) {
+      return NextResponse.json(
+        { error: '图片体积过大，已拒绝代理（上限 5MB）' },
+        { status: 413 }
+      )
+    }
+
     const blob = await response.blob()
+    if (blob.size > MAX_IMAGE_BYTES) {
+      return NextResponse.json(
+        { error: '图片体积过大，已拒绝代理（上限 5MB）' },
+        { status: 413 }
+      )
+    }
+
     const contentType = response.headers.get('Content-Type') || 'image/png'
 
-    console.log('[Image Proxy] ✅ 图片代理成功:', {
-      contentType,
-      size: blob.size,
-      url: imageUrl.substring(0, 100) + '...'
-    })
-
-    // 返回图片，添加CORS头
     return new NextResponse(blob, {
       status: 200,
       headers: {
@@ -74,33 +78,27 @@ export async function GET(request: NextRequest) {
         'Cache-Control': 'public, max-age=3600, immutable',
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET',
-        'Access-Control-Allow-Headers': 'Content-Type'
-      }
+        'Access-Control-Allow-Headers': 'Content-Type',
+      },
     })
   } catch (error) {
-    console.error('[Image Proxy] ❌ 代理失败:', {
-      error: error instanceof Error ? error.message : String(error),
-      url: imageUrl.substring(0, 100) + '...'
-    })
-
     return NextResponse.json(
       {
-        error: 'Internal server error while proxying image',
-        details: error instanceof Error ? error.message : String(error)
+        error: '代理请求失败',
+        details: error instanceof Error ? error.message : String(error),
       },
       { status: 500 }
     )
   }
 }
 
-// 支持OPTIONS预检请求
 export async function OPTIONS() {
   return new NextResponse(null, {
     status: 200,
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type'
-    }
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
   })
 }

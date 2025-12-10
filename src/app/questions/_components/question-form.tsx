@@ -2,12 +2,27 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
-import { Form, Input, Radio, Upload, message as antMessage } from 'antd'
-import type { UploadFile } from 'antd'
-import { Save, Upload as UploadIcon, X } from 'lucide-react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { toast } from 'sonner'
+import { Save, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Textarea } from '@/components/ui/textarea'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
+import { FileUpload, FileUploadPreview } from '@/components/ui/file-upload'
 import { logger } from '@/lib/logger'
 import {
   Select,
@@ -19,6 +34,7 @@ import {
 import { supabase } from '@/lib/supabase'
 import type { Profile } from '@/lib/supabase'
 import { extractR2KeyFromUrl } from '@/lib/storage-utils'
+import { questionFormSchema, type QuestionFormValues } from '@/lib/schemas/question-form'
 
 export type QuestionType = 'choice' | 'fill' | 'essay'
 
@@ -66,22 +82,6 @@ interface QuestionFormProps {
   onCancel?: () => void
 }
 
-interface QuestionFormValues {
-  type: QuestionType
-  content: string
-  answer: string
-  analysis?: string
-  optionA?: string
-  optionB?: string
-  optionC?: string
-  optionD?: string
-  difficulty: 'easy' | 'medium' | 'hard'
-  province?: string
-  year?: string
-  source?: string
-  is_public?: boolean
-}
-
 const normalizeInitialValues = (initial?: QuestionFormData): QuestionFormValues => ({
   type: initial?.type || 'choice',
   content: initial?.content || '',
@@ -106,10 +106,18 @@ export function QuestionForm({
   onSuccess,
   onCancel,
 }: QuestionFormProps) {
-  const [form] = Form.useForm<QuestionFormValues>()
   const [questionType, setQuestionType] = useState<QuestionType>(
     initialData?.type || 'choice'
   )
+  const formInitialValues = useMemo(
+    () => normalizeInitialValues(initialData),
+    [initialData]
+  )
+
+  const form = useForm<QuestionFormValues>({
+    resolver: zodResolver(questionFormSchema),
+    defaultValues: formInitialValues,
+  })
   const [selectedKnowledgePoints, setSelectedKnowledgePoints] = useState<string[]>(
     initialData?.knowledge_points || []
   )
@@ -121,13 +129,8 @@ export function QuestionForm({
   const [submitting, setSubmitting] = useState(false)
   const [pendingDeleteKeys, setPendingDeleteKeys] = useState<string[]>([])
 
-  const formInitialValues = useMemo(
-    () => normalizeInitialValues(initialData),
-    [initialData]
-  )
-
   useEffect(() => {
-    form.setFieldsValue(formInitialValues)
+    form.reset(formInitialValues)
     setQuestionType(initialData?.type || 'choice')
     setSelectedKnowledgePoints(initialData?.knowledge_points || [])
     setImageUrl(initialData?.image_url || '')
@@ -153,43 +156,8 @@ export function QuestionForm({
     })
   }
 
-  const uploadImageThroughApi = async (file: File) => {
-    const prefix = `questions/${mode === 'edit' ? questionId || 'editing' : 'temp'}`
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('prefix', prefix)
-    formData.append('access', 'public')
-
-    const response = await fetch('/api/files/upload', {
-      method: 'POST',
-      body: formData
-    })
-
-    const data = await response.json().catch(() => ({}))
-    if (!response.ok) {
-      throw new Error(data?.error || '文件上传失败')
-    }
-
-    return {
-      key: data.key as string,
-      url: (data.publicUrl || data.cdnUrl || '') as string,
-    }
-  }
-
-  const handleImageUpload = async (file: File) => {
-    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
-    if (!validTypes.includes(file.type)) {
-      antMessage.error('仅支持 JPG/PNG/GIF/WebP 图片')
-      return Upload.LIST_IGNORE
-    }
-    const maxSize = 2 * 1024 * 1024
-    if (file.size > maxSize) {
-      antMessage.error('图片大小需小于 2MB')
-      return Upload.LIST_IGNORE
-    }
+  const handleImageUpload = async (result: { key: string; url: string }) => {
     try {
-      setUploading(true)
-
       if (imageKey) {
         if (mode === 'edit' && imageKey === initialImageKey) {
           addPendingDeleteKey(imageKey)
@@ -198,17 +166,11 @@ export function QuestionForm({
         }
       }
 
-      const uploaded = await uploadImageThroughApi(file)
-      setImageUrl(uploaded.url)
-      setImageKey(uploaded.key)
-      antMessage.success('图片上传成功')
-      return false
+      setImageUrl(result.url)
+      setImageKey(result.key)
     } catch (error) {
-      logger.error('Failed to upload image:', { error: error })
-      antMessage.error('图片上传失败')
-      return false
-    } finally {
-      setUploading(false)
+      logger.error('Failed to handle image upload:', { error })
+      toast.error('图片处理失败')
     }
   }
 
@@ -227,7 +189,7 @@ export function QuestionForm({
       setImageKey('')
     } catch (error) {
       logger.error('Failed to remove image:', { error: error })
-      antMessage.error('删除图片失败，请稍后再试')
+      toast.error('删除图片失败，请稍后再试')
     }
   }
 
@@ -239,7 +201,7 @@ export function QuestionForm({
 
   const handleSubmit = async (values: QuestionFormValues) => {
     if (selectedKnowledgePoints.length === 0) {
-      antMessage.error('请至少选择一个知识点')
+      toast.error('请至少选择一个知识点')
       return
     }
 
@@ -251,11 +213,11 @@ export function QuestionForm({
         values.optionD,
       ].filter((o) => o?.trim())
       if (validOptions.length < 2) {
-        antMessage.error('选择题至少需要2个选项')
+        toast.error('选择题至少需要2个选项')
         return
       }
       if (!['A', 'B', 'C', 'D'].includes(values.answer)) {
-        antMessage.error('请选择正确答案')
+        toast.error('请选择正确答案')
         return
       }
     }
@@ -336,7 +298,7 @@ export function QuestionForm({
       const { data, error } = await saveResult()
       if (error) throw error
 
-      antMessage.success(mode === 'create' ? '题目创建成功' : '题目更新成功')
+      toast.success(mode === 'create' ? '题目创建成功' : '题目更新成功')
 
       if (pendingDeleteKeys.length) {
         await Promise.all(
@@ -357,7 +319,7 @@ export function QuestionForm({
       }
     } catch (error: any) {
       logger.error('Failed to submit question:', { error: error })
-      antMessage.error(error.message || '保存失败，请稍后重试')
+      toast.error(error.message || '保存失败，请稍后重试')
     } finally {
       setSubmitting(false)
     }
@@ -380,12 +342,8 @@ export function QuestionForm({
       </div>
 
       <Card className="p-6">
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleSubmit}
-          initialValues={formInitialValues}
-        >
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6">
               <div>
@@ -394,7 +352,7 @@ export function QuestionForm({
                   value={questionType}
                   onValueChange={(value: QuestionType) => {
                     setQuestionType(value)
-                    form.setFieldsValue({ type: value })
+                    form.setValue('type', value)
                   }}
                 >
                   <SelectTrigger className="w-full">
@@ -408,17 +366,33 @@ export function QuestionForm({
                 </Select>
               </div>
 
-              <Form.Item
-                label="题干"
+              <FormField
+                control={form.control}
                 name="content"
-                rules={[{ required: true, message: '请输入题干' }]}
-              >
-                <Input.TextArea rows={6} placeholder="请输入题干内容，支持 LaTeX" />
-              </Form.Item>
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>题干 *</FormLabel>
+                    <FormControl>
+                      <Textarea rows={6} placeholder="请输入题干内容，支持 LaTeX" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-              <Form.Item label="解析" name="analysis">
-                <Input.TextArea rows={4} placeholder="可选，填写详细解析..." />
-              </Form.Item>
+              <FormField
+                control={form.control}
+                name="analysis"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>解析</FormLabel>
+                    <FormControl>
+                      <Textarea rows={4} placeholder="可选，填写详细解析..." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <div className="space-y-3">
                 <label className="block text-sm font-medium">题目图片</label>
@@ -432,6 +406,7 @@ export function QuestionForm({
                         className="rounded-lg border object-contain"
                       />
                     <Button
+                      type="button"
                       size="sm"
                       variant="outline"
                       className="absolute top-3 right-3"
@@ -441,16 +416,12 @@ export function QuestionForm({
                     </Button>
                   </div>
                 ) : (
-                  <Upload
-                    showUploadList={false}
-                    beforeUpload={handleImageUpload}
-                    maxCount={1}
-                  >
-                    <Button variant="outline">
-                      <UploadIcon className="mr-2 h-4 w-4" />
-                      {uploading ? '上传中...' : '上传图片'}
-                    </Button>
-                  </Upload>
+                  <FileUpload
+                    prefix={`questions/${mode === 'edit' ? questionId || 'editing' : 'temp'}`}
+                    onUpload={handleImageUpload}
+                    uploading={uploading}
+                    buttonText={uploading ? '上传中...' : '上传图片'}
+                  />
                 )}
                 <p className="text-xs text-muted-foreground mt-2">
                   支持 JPG、PNG、GIF 格式，建议大小不超过 2MB
@@ -461,70 +432,148 @@ export function QuestionForm({
                 <div className="space-y-3">
                   <label className="block text-sm font-medium">选项 *</label>
                   {['A', 'B', 'C', 'D'].map((label) => (
-                    <Form.Item key={label} name={`option${label}`} className="mb-0">
-                      <Input
-                        prefix={<span className="font-medium mr-2">{label}.</span>}
-                        placeholder={`选项${label}`}
-                      />
-                    </Form.Item>
+                    <FormField
+                      key={label}
+                      control={form.control}
+                      name={`option${label}` as 'optionA' | 'optionB' | 'optionC' | 'optionD'}
+                      render={({ field }) => (
+                        <FormItem className="mb-0">
+                          <FormControl>
+                            <Input
+                              placeholder={`选项${label}`}
+                              {...field}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
                   ))}
                   <p className="text-xs text-muted-foreground">至少填写 2 个选项</p>
                 </div>
               )}
 
-              <Form.Item
-                label="答案"
+              <FormField
+                control={form.control}
                 name="answer"
-                rules={[{ required: true, message: '请输入答案' }]}
-              >
-                {questionType === 'choice' ? (
-                  <Radio.Group className="flex gap-4">
-                    <Radio value="A">A</Radio>
-                    <Radio value="B">B</Radio>
-                    <Radio value="C">C</Radio>
-                    <Radio value="D">D</Radio>
-                  </Radio.Group>
-                ) : (
-                  <Input.TextArea rows={3} placeholder="请输入标准答案..." />
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>答案 *</FormLabel>
+                    <FormControl>
+                      {questionType === 'choice' ? (
+                        <RadioGroup value={field.value} onValueChange={field.onChange} className="flex gap-4">
+                          {['A', 'B', 'C', 'D'].map((option) => (
+                            <div key={option} className="flex items-center space-x-2">
+                              <RadioGroupItem value={option} id={`answer-${option}`} />
+                              <Label htmlFor={`answer-${option}`}>{option}</Label>
+                            </div>
+                          ))}
+                        </RadioGroup>
+                      ) : (
+                        <Textarea rows={3} placeholder="请输入标准答案..." {...field} />
+                      )}
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
-              </Form.Item>
+              />
             </div>
 
             <div className="space-y-6">
-              <Form.Item
-                label="难度"
+              <FormField
+                control={form.control}
                 name="difficulty"
-                rules={[{ required: true }]}
-              >
-                <Radio.Group className="flex flex-col gap-2">
-                  <Radio value="easy">
-                    <Badge variant="default" className="bg-green-500">简单</Badge>
-                  </Radio>
-                  <Radio value="medium">
-                    <Badge variant="default" className="bg-yellow-500">中等</Badge>
-                  </Radio>
-                  <Radio value="hard">
-                    <Badge variant="default" className="bg-red-500">困难</Badge>
-                  </Radio>
-                </Radio.Group>
-              </Form.Item>
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>难度 *</FormLabel>
+                    <FormControl>
+                      <RadioGroup value={field.value} onValueChange={field.onChange} className="flex flex-col gap-2">
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="easy" id="difficulty-easy" />
+                          <Label htmlFor="difficulty-easy" className="flex items-center cursor-pointer">
+                            <Badge variant="default" className="bg-green-500">简单</Badge>
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="medium" id="difficulty-medium" />
+                          <Label htmlFor="difficulty-medium" className="flex items-center cursor-pointer">
+                            <Badge variant="default" className="bg-yellow-500">中等</Badge>
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="hard" id="difficulty-hard" />
+                          <Label htmlFor="difficulty-hard" className="flex items-center cursor-pointer">
+                            <Badge variant="default" className="bg-red-500">困难</Badge>
+                          </Label>
+                        </div>
+                      </RadioGroup>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <div className="space-y-3">
-                <Form.Item label="年份" name="year">
-                  <Input placeholder="如：2024" />
-                </Form.Item>
-                <Form.Item label="省份" name="province">
-                  <Input placeholder="如：SICHUAN" />
-                </Form.Item>
-                <Form.Item label="来源" name="source">
-                  <Input placeholder="如：2024年四川中考" />
-                </Form.Item>
-                <Form.Item label="可见性" name="is_public">
-                  <Radio.Group>
-                    <Radio value={true}>公开</Radio>
-                    <Radio value={false}>仅自己可见</Radio>
-                  </Radio.Group>
-                </Form.Item>
+                <FormField
+                  control={form.control}
+                  name="year"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>年份</FormLabel>
+                      <FormControl>
+                        <Input placeholder="如：2024" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="province"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>省份</FormLabel>
+                      <FormControl>
+                        <Input placeholder="如：SICHUAN" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="source"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>来源</FormLabel>
+                      <FormControl>
+                        <Input placeholder="如：2024年四川中考" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="is_public"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>可见性</FormLabel>
+                      <FormControl>
+                        <RadioGroup value={field.value ? 'true' : 'false'} onValueChange={(val) => field.onChange(val === 'true')}>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="true" id="visibility-public" />
+                            <Label htmlFor="visibility-public">公开</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="false" id="visibility-private" />
+                            <Label htmlFor="visibility-private">仅自己可见</Label>
+                          </div>
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
               <div>
@@ -574,6 +623,7 @@ export function QuestionForm({
               取消
             </Button>
           </div>
+          </form>
         </Form>
       </Card>
     </div>
