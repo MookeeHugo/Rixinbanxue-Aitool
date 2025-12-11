@@ -10,4 +10,31 @@ if [ $RESULT -ne 0 ]; then
   exit $RESULT
 fi
 
+echo "[pre-commit] Scanning for secrets..."
+
+# Check if detect-secrets is installed
+if command -v detect-secrets >/dev/null 2>&1; then
+  # Get list of staged files
+  STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM)
+
+  if [ -n "$STAGED_FILES" ]; then
+    # Run detect-secrets on staged files
+    echo "$STAGED_FILES" | xargs detect-secrets-hook --baseline .secrets.baseline
+    SECRETS_RESULT=$?
+
+    if [ $SECRETS_RESULT -ne 0 ]; then
+      echo "[pre-commit] ⚠️  Potential secrets detected!"
+      echo "[pre-commit] Please review the files above and:"
+      echo "[pre-commit]   1. Remove any real secrets"
+      echo "[pre-commit]   2. If false positive, update .secrets.baseline:"
+      echo "[pre-commit]      detect-secrets scan --baseline .secrets.baseline"
+      exit $SECRETS_RESULT
+    fi
+    echo "[pre-commit] ✅ No secrets detected"
+  fi
+else
+  echo "[pre-commit] ⚠️  detect-secrets not installed, skipping secret scan"
+  echo "[pre-commit] Install with: pip install detect-secrets"
+fi
+
 exit 0

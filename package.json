@@ -4,6 +4,7 @@
   "private": true,
   "packageManager": "pnpm@10.14.0",
   "scripts": {
+    "validate:env": "tsx scripts/validate-env.ts",
     "dev": "next dev -p 3002",
     "dev:turbo": "next dev -p 3002 --turbo",
     "dev:legacy": "next dev -p 3002",
